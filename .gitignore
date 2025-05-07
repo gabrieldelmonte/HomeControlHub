@@ -1,4 +1,5 @@
 # Ignoring the following files and directories:
 .env
 nodes_modules/
-db/
+postgres/
+dist/

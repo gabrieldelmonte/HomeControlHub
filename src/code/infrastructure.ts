@@ -11,6 +11,9 @@ import { DeviceRepository, UserRepository } from "./repositories";
 import { Device, User } from "./entities";
 import { AuthService } from "./services";
 
+import { PrismaClient } from '../db/prisma/generated/prisma-client';
+
+
 
 export class Config {
     private static instance: Config;
@@ -40,6 +43,7 @@ export class Config {
 export class Database {
     private static instance: Database;
     private connection: any;
+    private prisma: PrismaClient;
 
     private deviceRepository!: DeviceRepository;
     private userRepository!: UserRepository;
@@ -47,20 +51,22 @@ export class Database {
     private user!: User;
 
     private constructor() {
-
+        this.prisma = new PrismaClient();
     }
 
     public static getInstance(): Database {
-        // Implementation placeholder
-        return this.instance;
+        if (!Database.instance) {
+            Database.instance = new Database();
+        }
+        return Database.instance;
     }
 
-    public connect(): void {
-        // Implementation placeholder
+    public async connect(): Promise<void> {
+        await this.prisma.$connect();
     }
-
-    public disconnect(): void {
-        // Implementation placeholder
+    
+    public async disconnect(): Promise<void> {
+        await this.prisma.$disconnect();
     }
 
     public getDeviceModel(): any {

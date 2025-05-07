@@ -1,0 +1,4 @@
+# Keep environment variables and sensitive data out of version control
+node_modules
+.env
+docker/compose/init/

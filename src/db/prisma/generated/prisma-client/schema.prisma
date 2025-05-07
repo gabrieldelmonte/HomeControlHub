@@ -1,0 +1,95 @@
+// Home Control Hub
+//
+// schema.prisma
+//
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./generated/erd-generator.pdf"
+}
+
+enum UserRole {
+  ADMIN
+  STANDARD_USER
+  GUEST
+}
+
+model User {
+  id            String         @id @default(uuid())
+  username      String         @unique
+  passwordHash  String
+  role          UserRole
+  devices       Device[]
+  notifications Notification[] // Relação adicionada aqui
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([username])
+}
+
+model Device {
+  id              String           @id @default(uuid())
+  name            String
+  type            String
+  status          Boolean          @default(false)
+  aesKey          String           @unique
+  lastKnownState  Json?
+  userId          String
+  owner           User             @relation(fields: [userId], references: [id])
+  commands        Command[]
+  automationRules AutomationRule[]
+  firmwareVersion String           @default("1.0.0")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([name, type])
+}
+
+model Command {
+  id         String   @id @default(uuid())
+  name       String
+  payload    Json
+  deviceId   String
+  device     Device   @relation(fields: [deviceId], references: [id])
+  executedAt DateTime @default(now())
+}
+
+model AutomationRule {
+  id               String   @id @default(uuid())
+  triggerCondition String
+  action           Json
+  deviceId         String
+  device           Device   @relation(fields: [deviceId], references: [id])
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  message   String
+  channel   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model SystemLog {
+  id        String   @id @default(uuid())
+  type      String // 'INFO' | 'ERROR'
+  message   String
+  source    String // 'DEVICE' | 'USER' | 'AUTH'
+  createdAt DateTime @default(now())
+
+  @@index([type, source])
+}
