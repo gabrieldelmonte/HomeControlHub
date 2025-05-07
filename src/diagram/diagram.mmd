@@ -1,0 +1,288 @@
+---
+title: Home Control Hub Architecture
+description: |
+  This diagram illustrates the architecture of the Home Control Hub, a system designed to manage and control various smart devices in a home environment. The architecture is modular, with clear separation of concerns between different components such as controllers, services, repositories, and middleware. Each component has its own responsibilities and interacts with others through well-defined interfaces.
+config:
+  theme: neo-dark
+  layout: dagre
+  look: neo
+---
+
+classDiagram
+    direction TB
+
+
+
+    namespace Enums {
+
+        class UserRole_ENUM {
+            <<Enumeration>>
+            ADMIN
+            STANDARD_USER
+            GUEST
+        }
+
+    }
+
+
+    namespace Infrastructure {
+
+        class Config {
+            <<Singleton>>
+            -jwtSecret: string
+            -jwtExpiration: number
+            -mqttBrokerUrl: string
+            -mqttPort: number
+            -encryptionAlgorithm: string
+            -sslCertificatePath: string
+            -sslKeyPath: string
+            -dbConnectionString: string
+            +loadConfig(): void
+            +getInstance(): Config
+        }
+
+        class Database {
+            <<Singleton>>
+            -connection: Pool
+            +connect() void
+            +disconnect() void
+            +getDeviceModel() Device
+            +getUserModel() User
+            +getInstance() Database
+        }
+
+        class Logger {
+            <<Singleton>>
+            +logInfo(message: string) void
+            +logError(error: string) void
+            +getInstance() Logger
+        }
+
+    }
+
+
+    namespace Entities {
+
+        class Command {
+            <<ValueObject>>
+            -name: string
+            -payload: JSON
+        }
+
+        class Device {
+            -id: string
+            -name: string
+            -type: string
+            -status: boolean
+            -aesKey: string
+            -lastKnownState: JSON
+            +checkFirmwareVersion(): string
+            +registerDevice() void
+            +updateStatus(newStatus: boolean) void
+            +handleCommand(cmd: Command) void
+            +getInfo() string
+            +create() Device
+            +findByPk(id: string) Device
+        }
+
+        class User {
+            -id: string
+            -username: string
+            -passwordHash: string
+            -role: UserRole_ENUM
+            +getUsername(): string
+            +setUsername(username: string): void
+            +setPassword(password: string) void
+            +checkPassword(password: string) boolean
+            +getRole(): UserRole_ENUM
+            +setRole(role: UserRole_ENUM): void
+            +static create(): User
+            +static findByUsername(username: string): User
+        }
+
+    }
+
+
+    namespace Controllers {
+
+        class BaseController {
+            +handleRequest(req: Request, res: Response) void
+        }
+
+        class DeviceController {
+            +createDevice(req: Request, res: Response) void
+            +updateDevice(req: Request, res: Response) void
+            +deleteDevice(req: Request, res: Response) void
+            +listDevices(req: Request, res: Response) void
+            +sendCommand(req: Request, res: Response) void
+        }
+
+        class UserController {
+            +registerUser(req: Request, res: Response) void
+            +getProfile(req: Request, res: Response) void
+        }
+
+        class AuthController {
+            +login(req: Request, res: Response) void
+            +register(req: Request, res: Response) void
+        }
+
+    }
+
+
+    namespace Middleware {
+
+        class AuthMiddleware {
+            +authenticateToken(req: Request, res: Response, next: NextFunction) void
+        }
+
+        class AttachContextMiddleware {
+            +attachUser(req: Request, res: Response, next: NextFunction) void
+            +attachDevice(req: Request, res: Response, next: NextFunction) void
+        }
+
+        class RBACMiddleware {
+            +checkRole(requiredRole: UserRole_ENUM): void
+        }
+
+    }
+
+
+    namespace Services {
+
+        class AuthService {
+            +generateJWT(user: User) string
+            +verifyJWT(token: string) boolean
+        }
+
+        class MQTTConnection {
+            -client: MQTT.Client
+            +connect(): void
+            +publish(topic: string, message: string): void
+            +subscribe(topic: string): void
+        }
+
+        class MQTTService {
+            -encryptionService: EncryptionService
+            +publishEncrypted(deviceId: string, message: string): void
+        }
+
+        class EncryptionService {
+            -deviceKeys: Map<string, string>
+            +encrypt(message: string, deviceId: string) string
+            +decrypt(ciphertext: string, deviceId: string) string
+        }
+
+        class AutomationService {
+            -rules: List<AutomationRule>
+            +addRule(rule: AutomationRule) void
+            +removeRule(ruleId: string) void
+            +executeRules(device: Device) void
+        }
+
+        class AutomationRule {
+            +triggerCondition: string
+            +action: Command
+            +evaluate(): boolean
+        }
+
+        class NotificationService {
+            +sendPushNotification(user: User, message: string): void
+        }
+
+    }
+
+
+    namespace Repositories {
+
+        class DeviceRepository {
+            <<Repository>>
+            +add(device: Device) void
+            +update(device: Device) void
+            +delete(id: string) void
+            +findById(id: string) Device
+        }
+
+        class UserRepository {
+            <<Repository>>
+            +add(user: User) void
+            +update(user: User) void
+            +delete(id: string) void
+            +findByUsername(username: string) User
+        }
+
+    }
+
+
+    namespace Application {
+
+        class App {
+            -server: Server
+            -database: Database
+            +start() void
+        }
+
+        class Server {
+            -app: Express
+            -config: Config
+            +configureMiddleware() void
+            +setupRoutes() void
+            +startServer(port: number) void
+            +attachWebsocketServer(ws: WebsocketServer) void
+        }
+
+    }
+
+
+    %% Relationships
+    App *--> Server : "compose"
+    App *--> Database : "compose"
+    
+    Server --> Config : access
+    Server --> AuthMiddleware
+    Server --> AuthController
+    Server --> DeviceController
+    Server --> UserController
+    
+    DeviceController --> MQTTService
+    DeviceController --> DeviceRepository
+    DeviceController ..> QueryMiddleware
+    
+    UserController --> AuthService
+    UserController --> UserRepository
+    UserController ..> QueryMiddleware
+
+    AuthService --> UserRepository
+
+    MQTTService --> EncryptionService
+    MQTTService --> Device : "send commands"
+    MQTTService ..> Config
+    MQTTService --> MQTTConnection
+
+    UserRepository --> Database
+
+    DeviceRepository --> UserRepository
+
+    Logger ..> DeviceController : "register events"
+    Logger ..> UserController : "register events"
+    Logger ..> AuthService : "register events"
+
+    Device --> AutomationRule
+
+    AutomationService --> NotificationService
+    AutomationService --> AutomationRule
+    AuthController --> User : "consult"
+
+    Database --> DeviceRepository
+    Database --> UserRepository
+    Database --> Device
+    Database --> User
+
+    AuthMiddleware ..> Config
+    AuthMiddleware ..> QueryMiddleware
+
+    EncryptionService ..> Config
+
+    BaseController <|-- DeviceController
+    BaseController <|-- UserController
+    BaseController <|-- AuthController
