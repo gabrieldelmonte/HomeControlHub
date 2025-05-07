@@ -246,11 +246,11 @@ classDiagram
     
     DeviceController --> MQTTService
     DeviceController --> DeviceRepository
-    DeviceController ..> QueryMiddleware
+    DeviceController ..> AttachContextMiddleware
     
     UserController --> AuthService
     UserController --> UserRepository
-    UserController ..> QueryMiddleware
+    UserController ..> AttachContextMiddleware
 
     AuthService --> UserRepository
 
@@ -279,7 +279,7 @@ classDiagram
     Database --> User
 
     AuthMiddleware ..> Config
-    AuthMiddleware ..> QueryMiddleware
+    AuthMiddleware ..> AttachContextMiddleware
 
     EncryptionService ..> Config
 
