@@ -138,8 +138,8 @@ exports.Prisma.DeviceScalarFieldEnum = {
   status: 'status',
   aesKey: 'aesKey',
   lastKnownState: 'lastKnownState',
-  userId: 'userId',
   firmwareVersion: 'firmwareVersion',
+  userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -154,6 +154,7 @@ exports.Prisma.CommandScalarFieldEnum = {
 
 exports.Prisma.AutomationRuleScalarFieldEnum = {
   id: 'id',
+  name: 'name',
   triggerCondition: 'triggerCondition',
   action: 'action',
   deviceId: 'deviceId',

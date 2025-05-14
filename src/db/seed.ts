@@ -68,6 +68,7 @@ async function main() {
     // Regras de automação
     await prisma.automationRule.create({
       data: {
+        name: "Turn On AC if Temp > 25",
         triggerCondition: 'temperature > 25',
         action: JSON.stringify({ command: 'LIGAR_ARCONDICIONADO' }),
         deviceId: thermostat.id
