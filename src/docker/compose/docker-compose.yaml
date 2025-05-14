@@ -4,13 +4,19 @@ services:
       context: ../../
       dockerfile: docker/Dockerfile
     env_file:
-      - .env
+      - .env # We will use the environment block below for clarity for the app service
     ports:
       - "3000:3000"
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "npx prisma migrate deploy && node dist/index.js"
+      mosquitto:
+        condition: service_healthy
+    #command: sh -c "npx prisma migrate deploy --schema=./db/prisma/schema.prisma && node dist/main.js"
+    command: ["/usr/local/bin/wait-and-start.sh"]
+    volumes:
+      - .env:/app/.env
+      - ./mosquitto/init/wait-and-start.sh:/app/wait-and-start.sh
 
   db:
     image: postgres:latest
@@ -33,5 +39,25 @@ services:
       timeout: 5s
       retries: 5
 
+  mosquitto: # New Mosquitto service
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto_broker
+    restart: unless-stopped
+    ports:
+      - "1884:1883"   # Changed host port for MQTT
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    networks:
+      - default # Ensure it's on the same network as the app
+    healthcheck:
+      test: ["CMD", "pgrep", "mosquitto"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
 volumes:
   db_data:
+  mosquitto_data: # Volume for mosquitto data persistence
+  mosquitto_log:  # Volume for mosquitto log persistence

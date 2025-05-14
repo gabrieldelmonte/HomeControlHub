@@ -27,6 +27,7 @@ import {
 } from './services';
 import { Command } from './entities';
 import { UserRole_ENUM } from './enums';
+import { createApiRouter } from './routes';
 
 export class App {
     private server: ServerInstance;
@@ -137,55 +138,14 @@ class ServerInstance {
     }
 
     private setupRoutes(): void {
-        const apiRouter: Router = express.Router();
-
-        apiRouter.post('/auth/register', this.authController.register.bind(this.authController));
-        apiRouter.post('/auth/login', this.authController.login.bind(this.authController));
-
-        apiRouter.get('/users/profile', 
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware), 
-            this.attachContextMiddleware.attachFullUser.bind(this.attachContextMiddleware),
-            this.userController.getProfile.bind(this.userController)
-        );
-        apiRouter.get('/users', 
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
-            this.rbacMiddleware.checkRole(UserRole_ENUM.ADMIN),
-            this.userController.listUsers.bind(this.userController)
-        );
-        apiRouter.get('/users/:userId', 
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
-            this.rbacMiddleware.checkRole(UserRole_ENUM.ADMIN),             
-            this.userController.getUserById.bind(this.userController)
-        );
-
-        apiRouter.post('/devices', 
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
-            this.deviceController.createDevice.bind(this.deviceController)
-        );
-        apiRouter.get('/devices', 
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
-            this.deviceController.listDevices.bind(this.deviceController)
-        );
-        apiRouter.get('/devices/:deviceId',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
-            this.attachContextMiddleware.attachDevice.bind(this.attachContextMiddleware),
-            this.deviceController.getDeviceById.bind(this.deviceController)
-        );
-        apiRouter.put('/devices/:deviceId',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
-            this.attachContextMiddleware.attachDevice.bind(this.attachContextMiddleware),
-            this.deviceController.updateDevice.bind(this.deviceController)
-        );
-        apiRouter.delete('/devices/:deviceId',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
-            this.attachContextMiddleware.attachDevice.bind(this.attachContextMiddleware),
-            this.deviceController.deleteDevice.bind(this.deviceController)
-        );
-        apiRouter.post('/devices/:deviceId/command',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
-            this.attachContextMiddleware.attachDevice.bind(this.attachContextMiddleware),
-            this.deviceController.sendCommand.bind(this.deviceController)
-        );
+        const apiRouter = createApiRouter({
+            authController: this.authController,
+            userController: this.userController,
+            deviceController: this.deviceController,
+            authMiddleware: this.authMiddleware,
+            attachContextMiddleware: this.attachContextMiddleware,
+            rbacMiddleware: this.rbacMiddleware
+        });
 
         this.expressApp.use('/api/v1', apiRouter);
         this.logger.logInfo("API routes configured under /api/v1.");

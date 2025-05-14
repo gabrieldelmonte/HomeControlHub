@@ -211,6 +211,7 @@ export class MQTTService {
     }
 
     public async initialize(): Promise<void> {
+        await this.mqttConnection.connect();
         this.mqttConnection.setOnMessageCallback(this.handleIncomingMessage.bind(this));
         await this.mqttConnection.subscribe('home/devices/+/status');
         await this.mqttConnection.subscribe('home/devices/+/telemetry');

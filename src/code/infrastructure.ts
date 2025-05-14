@@ -6,6 +6,7 @@
     *
 */
 
+
 import { PrismaClient } from '../db/prisma/generated/prisma-client';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
@@ -22,7 +23,7 @@ export class Config {
 
     private constructor() {
         // Load .env file from project root
-        const envPath = path.resolve(__dirname, '../../../../.env'); // Adjust path as needed
+        const envPath = path.resolve(__dirname, '../../.env'); // Adjust path as needed
         if (fs.existsSync(envPath)) {
             dotenv.config({ path: envPath });
         } else {
@@ -30,9 +31,9 @@ export class Config {
             console.warn(".env file not found, relying on environment variables or defaults.");
         }
 
-        this.jwtSecret = process.env.JWT_SECRET || "your-default-super-secret-key";
-        this.jwtExpiration = process.env.JWT_EXPIRATION || "1h";
-        this.mqttBrokerUrl = process.env.MQTT_BROKER_URL || "mqtt://localhost";
+        this.jwtSecret = process.env.JWT_SECRET || "secret_jwt_key";
+        this.jwtExpiration = process.env.JWT_EXPIRATION || "3600";
+        this.mqttBrokerUrl = process.env.MQTT_BROKER_URL || "mqtt://mosquitto:1883";
         this.mqttPort = parseInt(process.env.MQTT_PORT || "1883", 10);
         this.encryptionAlgorithm = process.env.ENCRYPTION_ALGORITHM || "aes-256-gcm";
         this.dbConnectionString = process.env.DATABASE_URL || "your-prisma-database-url"; // Prisma uses DATABASE_URL
