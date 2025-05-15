@@ -40,18 +40,19 @@ export function createDeviceRouter(
         deviceController.sendCommand.bind(deviceController)
     );
 
-    // Potentially add routes for updating and deleting devices, with ownership checks.
-    // Example for update:
-    // router.put(
-    //     '/:deviceId',
-    //     attachContextMiddleware.attachDevice.bind(attachContextMiddleware),
-    //     deviceController.updateDevice.bind(deviceController)
-    // );
-    // router.delete(
-    //     '/:deviceId',
-    //     attachContextMiddleware.attachDevice.bind(attachContextMiddleware),
-    //     deviceController.deleteDevice.bind(deviceController)
-    // );
+    // Update a device
+    router.put(
+        '/:deviceId',
+        attachContextMiddleware.attachDevice.bind(attachContextMiddleware),
+        deviceController.updateDevice.bind(deviceController)
+    );
+
+    // Delete a device
+    router.delete(
+        '/:deviceId',
+        attachContextMiddleware.attachDevice.bind(attachContextMiddleware),
+        deviceController.deleteDevice.bind(deviceController)
+    );
 
     return router;
 }

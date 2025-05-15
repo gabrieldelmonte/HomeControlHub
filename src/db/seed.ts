@@ -1,7 +1,6 @@
+import bcrypt from 'bcryptjs';
 import { PrismaClient } from './prisma/generated/prisma-client';
-import bcrypt from 'bcrypt';
-
-
+import { UserRole_ENUM } from '../code/enums';
 
 const prisma = new PrismaClient();
 
@@ -14,7 +13,7 @@ async function main() {
       data: {
         username: 'admin@smartHome',
         passwordHash: await bcrypt.hash('Admin@1234', 10),
-        role: 'ADMIN',
+        role: UserRole_ENUM.ADMIN,
       }
     });
 
@@ -22,7 +21,7 @@ async function main() {
       data: {
         username: 'user@smartHome',
         passwordHash: await bcrypt.hash('User@1234', 10),
-        role: 'STANDARD_USER',
+        role: UserRole_ENUM.STANDARD_USER,
       }
     });
 

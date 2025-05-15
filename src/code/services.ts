@@ -10,7 +10,7 @@ import { User, Device, Command } from './entities';
 import { Config, Logger, Database } from './infrastructure';
 import { UserRepository, DeviceRepository } from './repositories';
 import * as jwt from 'jsonwebtoken';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import * as MQTT from 'mqtt';
 import * as crypto from 'crypto';
 import { UserRole_ENUM } from './enums';
@@ -35,7 +35,18 @@ export class AuthService {
     }
 
     public async hashPassword(password: string): Promise<string> {
-        return bcrypt.hash(password, SALT_ROUNDS);
+        console.error("AUTH_SERVICE_HASH_PASSWORD: Entered method"); // DEBUG
+        console.error(`AUTH_SERVICE_HASH_PASSWORD: Hashing password: '${password}' (type: ${typeof password}), saltRounds: ${SALT_ROUNDS} (type: ${typeof SALT_ROUNDS})`); // DEBUG
+        try {
+            console.error("AUTH_SERVICE_HASH_PASSWORD: About to call bcrypt.hash"); // DEBUG
+            const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+            console.error("AUTH_SERVICE_HASH_PASSWORD: bcrypt.hash successful"); // DEBUG
+            return hashedPassword;
+        } catch (error) {
+            console.error("AUTH_SERVICE_HASH_PASSWORD: Error during bcrypt.hash", error); // DEBUG
+            this.logger.logError(`Error hashing password: ${error}`);
+            throw error; // Re-throw the error to be caught by the controller
+        }
     }
 
     public async comparePassword(password: string, hash: string): Promise<boolean> {

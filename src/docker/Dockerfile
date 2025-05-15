@@ -5,7 +5,7 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Install OpenSSL development libraries
-RUN apk add --no-cache openssl-dev python3 make g++
+RUN apk add --no-cache openssl-dev python3 make g++ curl
 
 # Copying package.json and tsconfig.json files
 COPY package*.json tsconfig*.json ./

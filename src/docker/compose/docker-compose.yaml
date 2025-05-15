@@ -17,6 +17,7 @@ services:
     volumes:
       - .env:/app/.env
       - ./mosquitto/init/wait-and-start.sh:/app/wait-and-start.sh
+    restart: on-failure
 
   db:
     image: postgres:latest

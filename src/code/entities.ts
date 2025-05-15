@@ -9,7 +9,7 @@
 import { MQTTService } from './services';
 import { UserRole_ENUM } from './enums';
 import { DeviceRepository, UserRepository } from './repositories';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 const SALT_ROUNDS = 10;
 
