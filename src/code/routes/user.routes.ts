@@ -3,6 +3,12 @@ import { UserController } from '../controllers';
 import { AuthMiddleware, AttachContextMiddleware, RBACMiddleware } from '../middlewares';
 import { UserRole_ENUM } from '../enums';
 
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User management and profile information
+ */
 export function createUserRouter(
     userController: UserController,
     authMiddleware: AuthMiddleware,
@@ -15,14 +21,49 @@ export function createUserRouter(
     router.use(authMiddleware.authenticateToken.bind(authMiddleware));
     router.use(attachContextMiddleware.attachFullUser.bind(attachContextMiddleware));
 
-    // Get current user's profile
+    /**
+     * @swagger
+     * /users/profile:
+     *   get:
+     *     summary: Get the profile of the currently authenticated user
+     *     tags: [Users]
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Current user's profile
+     *         content:
+     *           application/json:
+     *             schema: { $ref: '#/components/schemas/User' }
+     *       401:
+     *         description: Unauthorized or user data not available
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     */
     router.get(
         '/profile',
-        // Authentication and user context are already applied by router.use above
         userController.getProfile.bind(userController)
     );
 
-    // Get all users (Admin only)
+    /**
+     * @swagger
+     * /users:
+     *   get:
+     *     summary: List all users (Admin only)
+     *     tags: [Users]
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: A list of users
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items: { $ref: '#/components/schemas/User' }
+     *       403:
+     *         description: Forbidden - Insufficient permissions
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     */
     router.get(
         '/',
         // Authentication and user context are already applied
@@ -30,12 +71,39 @@ export function createUserRouter(
         userController.listUsers.bind(userController)
     );
 
-    // Get user by ID (Admin only)
+    /**
+     * @swagger
+     * /users/{userId}:
+     *   get:
+     *     summary: Get a specific user by their ID (Admin only)
+     *     tags: [Users]
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: userId
+     *         required: true
+     *         schema:
+     *           type: string
+     *           format: uuid
+     *         description: The ID of the user to retrieve.
+     *     responses:
+     *       200:
+     *         description: User data
+     *         content:
+     *           application/json:
+     *             schema: { $ref: '#/components/schemas/User' }
+     *       403:
+     *         description: Forbidden - Insufficient permissions
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     *       404:
+     *         description: User not found
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     */
     router.get(
         '/:userId',
-        // Authentication and user context are already applied
         rbacMiddleware.checkRole(UserRole_ENUM.ADMIN).bind(rbacMiddleware),
-        userController.getUserById.bind(userController) // Assuming getUserById is correct, if not, adjust to controller method
+        userController.getUserById.bind(userController)
     );
     
     // Note: User creation is typically handled by /auth/register

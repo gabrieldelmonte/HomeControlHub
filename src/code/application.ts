@@ -11,6 +11,7 @@ import express, { Express, Request, Response, NextFunction, Router } from 'expre
 import { createServer, Server as HttpServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
 
 import { AuthController, DeviceController, UserController } from './controllers';
 import { AuthMiddleware, AttachContextMiddleware, RBACMiddleware } from './middlewares';
@@ -28,6 +29,7 @@ import {
 import { Command } from './entities';
 import { UserRole_ENUM } from './enums';
 import { createApiRouter } from './routes';
+import { swaggerSpec } from './swagger/swaggerConfig';
 
 export class App {
     private server: ServerInstance;
@@ -77,6 +79,7 @@ export class App {
             const port = parseInt(process.env.PORT || "3000", 10);
             await this.server.startServer(port);
             this.logger.logInfo(`Application started successfully on port ${port}.`);
+            this.logger.logInfo(`Swagger UI available at http://localhost:${port}/api-docs`);
         } catch (error) {
             this.logger.logError(`Failed to start application: ${error}`);
             process.exit(1);
@@ -149,6 +152,9 @@ class ServerInstance {
 
         this.expressApp.use('/api/v1', apiRouter);
         this.logger.logInfo("API routes configured under /api/v1.");
+
+        this.expressApp.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+        this.logger.logInfo("Swagger UI configured at /api-docs.");
 
         this.expressApp.get('/health', (req: Request, res: Response) => {
             res.status(200).json({ status: 'UP' });

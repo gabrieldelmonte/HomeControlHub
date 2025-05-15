@@ -7,6 +7,7 @@ services:
       - .env # We will use the environment block below for clarity for the app service
     ports:
       - "3000:3000"
+      - "5555:5555"
     depends_on:
       db:
         condition: service_healthy

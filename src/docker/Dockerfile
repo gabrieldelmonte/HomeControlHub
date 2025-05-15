@@ -36,6 +36,9 @@ RUN mkdir -p ./src/db/prisma/generated/prisma-client && \
 # Output is in ./dist. Compiled JS in dist/code/infrastructure.js will have the same relative import.
 RUN npm run build
 
+# Compile seed.ts into dist as well
+RUN npx tsc ./db/seed.ts --outDir ./dist/db --module commonjs --esModuleInterop --resolveJsonModule --target es2020 --sourceMap --skipLibCheck
+
 # For Runtime:
 # Copy the Prisma client from where tsc found it (src/db/prisma/generated/prisma-client)
 # to where the compiled JS will expect it (dist/db/prisma/generated/prisma-client).

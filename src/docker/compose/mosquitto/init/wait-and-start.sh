@@ -6,5 +6,9 @@ done
 
 echo "Migrating database..."
 npx prisma migrate deploy --schema=./db/prisma/schema.prisma
+
+echo "Seeding database..."
+npx prisma db seed
+
 echo "Starting application..."
 exec node dist/main.js
