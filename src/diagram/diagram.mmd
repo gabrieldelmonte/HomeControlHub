@@ -4,285 +4,392 @@ description: |
   This diagram illustrates the architecture of the Home Control Hub, a system designed to manage and control various smart devices in a home environment. The architecture is modular, with clear separation of concerns between different components such as controllers, services, repositories, and middleware. Each component has its own responsibilities and interacts with others through well-defined interfaces.
 config:
   theme: neo-dark
-  layout: dagre
+  layout: elk
   look: neo
 ---
 
 classDiagram
     direction TB
 
-
-
     namespace Enums {
-
         class UserRole_ENUM {
             <<Enumeration>>
             ADMIN
             STANDARD_USER
             GUEST
         }
-
     }
 
-
     namespace Infrastructure {
-
         class Config {
             <<Singleton>>
             -jwtSecret: string
-            -jwtExpiration: number
+            -jwtExpiration: string
             -mqttBrokerUrl: string
             -mqttPort: number
             -encryptionAlgorithm: string
-            -sslCertificatePath: string
-            -sslKeyPath: string
             -dbConnectionString: string
-            +loadConfig(): void
             +getInstance(): Config
+            +getJwtSecret(): string
+            +getJwtExpiration(): string
+            +getMqttBrokerUrl(): string
+            +getMqttPort(): number
+            +getEncryptionAlgorithm(): string
+            +getDbConnectionString(): string
         }
 
         class Database {
             <<Singleton>>
-            -connection: Pool
-            +connect() void
-            +disconnect() void
-            +getDeviceModel() Device
-            +getUserModel() User
-            +getInstance() Database
+            -prisma: PrismaClient
+            +getInstance(): Database
+            +connect(): Promise<void>
+            +disconnect(): Promise<void>
+            +device: Prisma.DeviceDelegate
+            +user: Prisma.UserDelegate
         }
 
         class Logger {
             <<Singleton>>
-            +logInfo(message: string) void
-            +logError(error: string) void
-            +getInstance() Logger
+            +getInstance(): Logger
+            +logInfo(message: string): void
+            +logError(message: string | Error): void
+            +logWarn(message: string): void
+            +logDebug(message: string): void
         }
-
     }
 
-
     namespace Entities {
-
         class Command {
             <<ValueObject>>
-            -name: string
-            -payload: JSON
+            +name: string
+            +payload: Record<string, any>
+            constructor(name: string, payload: Record<string, any>)
         }
 
         class Device {
-            -id: string
-            -name: string
-            -type: string
-            -status: boolean
-            -aesKey: string
-            -lastKnownState: JSON
-            +checkFirmwareVersion(): string
-            +registerDevice() void
-            +updateStatus(newStatus: boolean) void
-            +handleCommand(cmd: Command) void
-            +getInfo() string
-            +create() Device
-            +findByPk(id: string) Device
+            +id: string
+            +name: string
+            +type: string
+            +status: boolean
+            +aesKey: string
+            +lastKnownState: any
+            +ownerId: string | null
+            +firmwareVersion?: string
+            -mqttService?: MQTTService
+            constructor(id: string, name: string, type: string, status: boolean, aesKey: string, lastKnownState: any, ownerId: string | null, mqttService?: MQTTService, firmwareVersion?: string)
+            +checkFirmwareVersion(): Promise<string>
+            +registerDevice(currentUser: User, deviceRepository: DeviceRepository): Promise<Device | null>
+            +updateStatus(newStatus: boolean): void
+            +handleCommand(cmd: Command): void
+            +getInfo(): string
+            +static create(initData: any, currentUser: User, deviceRepository: DeviceRepository, mqttService?: MQTTService): Promise<Device | null>
+            +static findById(id: string, deviceRepository: DeviceRepository, mqttService?: MQTTService): Promise<Device | null>
         }
 
         class User {
-            -id: string
-            -username: string
+            +id: string
+            +username: string
             -passwordHash: string
-            -role: UserRole_ENUM
+            +role: UserRole_ENUM
+            constructor(id: string, username: string, passwordHash: string, role: UserRole_ENUM)
             +getUsername(): string
             +setUsername(username: string): void
-            +setPassword(password: string) void
-            +checkPassword(password: string) boolean
+            +getPasswordHash(): string
+            +setPassword(newPlainPassword: string): Promise<void>
+            +checkPassword(passwordToCheck: string): Promise<boolean>
             +getRole(): UserRole_ENUM
             +setRole(role: UserRole_ENUM): void
-            +static create(): User
-            +static findByUsername(username: string): User
+            +static create(initData: any, userRepository: UserRepository): Promise<User | null>
+            +static findByUsername(username: string, userRepository: UserRepository): Promise<User | null>
         }
-
     }
 
-
     namespace Controllers {
-
-        class BaseController {
-            +handleRequest(req: Request, res: Response) void
+        class AuthController {
+            constructor(userRepository: UserRepository, authService: AuthService)
+            +register(req: Request, res: Response, next: NextFunction): Promise<void>
+            +login(req: Request, res: Response, next: NextFunction): Promise<void>
         }
 
         class DeviceController {
-            +createDevice(req: Request, res: Response) void
-            +updateDevice(req: Request, res: Response) void
-            +deleteDevice(req: Request, res: Response) void
-            +listDevices(req: Request, res: Response) void
-            +sendCommand(req: Request, res: Response) void
+            constructor(deviceRepository: DeviceRepository, mqttService: MQTTService)
+            +createDevice(req: Request, res: Response, next: NextFunction): Promise<void>
+            +updateDevice(req: Request, res: Response, next: NextFunction): Promise<void>
+            +deleteDevice(req: Request, res: Response, next: NextFunction): Promise<void>
+            +listDevices(req: Request, res: Response, next: NextFunction): Promise<void>
+            +getDeviceById(req: Request, res: Response, next: NextFunction): Promise<void>
+            +sendCommand(req: Request, res: Response, next: NextFunction): Promise<void>
         }
 
         class UserController {
-            +registerUser(req: Request, res: Response) void
-            +getProfile(req: Request, res: Response) void
+            constructor(userRepository: UserRepository, authService: AuthService)
+            +getProfile(req: Request, res: Response, next: NextFunction): Promise<void>
+            +listUsers(req: Request, res: Response, next: NextFunction): Promise<void>
+            +getUserById(req: Request, res: Response, next: NextFunction): Promise<void>
         }
-
-        class AuthController {
-            +login(req: Request, res: Response) void
-            +register(req: Request, res: Response) void
-        }
-
     }
 
-
-    namespace Middleware {
-
+    namespace Middlewares {
         class AuthMiddleware {
-            +authenticateToken(req: Request, res: Response, next: NextFunction) void
+            constructor(authService: AuthService)
+            +authenticateToken(req: Request, res: Response, next: NextFunction): void
         }
 
         class AttachContextMiddleware {
-            +attachUser(req: Request, res: Response, next: NextFunction) void
-            +attachDevice(req: Request, res: Response, next: NextFunction) void
+            constructor(userRepository: UserRepository, deviceRepository: DeviceRepository)
+            +attachFullUser(req: Request, res: Response, next: NextFunction): Promise<void>
+            +attachDevice(req: Request, res: Response, next: NextFunction): Promise<void>
         }
 
         class RBACMiddleware {
-            +checkRole(requiredRole: UserRole_ENUM): void
+            constructor()
+            +checkRole(requiredRoles: UserRole_ENUM | UserRole_ENUM[]): Function
         }
-
     }
 
-
     namespace Services {
-
         class AuthService {
-            +generateJWT(user: User) string
-            +verifyJWT(token: string) boolean
+            constructor(userRepository: UserRepository)
+            +hashPassword(password: string): Promise<string>
+            +comparePassword(password: string, hash: string): Promise<boolean>
+            +generateJWT(user: User): string
+            +verifyJWT(token: string): AuthTokenPayload | null
         }
 
         class MQTTConnection {
-            -client: MQTT.Client
-            +connect(): void
-            +publish(topic: string, message: string): void
-            +subscribe(topic: string): void
+            -client: MqttClient | null
+            constructor()
+            +setOnMessageCallback(callback: Function): void
+            +connect(): Promise<void>
+            +publish(topic: string, message: string | Buffer, options?: any): Promise<any>
+            +subscribe(topic: string, options?: any): Promise<any>
+            +getClient(): MqttClient | null
+            +disconnect(): void
         }
 
         class MQTTService {
-            -encryptionService: EncryptionService
-            +publishEncrypted(deviceId: string, message: string): void
+            constructor(mqttConnection: MQTTConnection, deviceRepository: DeviceRepository, encryptionService: EncryptionService)
+            +setAutomationService(automationService: AutomationService): void
+            +initialize(): Promise<void>
+            -handleIncomingMessage(topic: string, message: Buffer): Promise<void>
+            +publishCommand(deviceId: string, commandName: string, payload: object): Promise<void>
         }
 
         class EncryptionService {
-            -deviceKeys: Map<string, string>
-            +encrypt(message: string, deviceId: string) string
-            +decrypt(ciphertext: string, deviceId: string) string
+            constructor()
+            -getDerivedKey(deviceSpecificKey: string): Buffer
+            +encrypt(text: string, deviceKey: string): string | null
+            +decrypt(encryptedText: string, deviceKey: string): string | null
         }
 
         class AutomationService {
-            -rules: List<AutomationRule>
-            +addRule(rule: AutomationRule) void
-            +removeRule(ruleId: string) void
-            +executeRules(device: Device) void
+            -rules: Map<string, AutomationRule>
+            constructor(notificationService: NotificationService, userRepository: UserRepository)
+            +setMqttService(mqttService: MQTTService): void
+            -loadPlaceholderRules(): void
+            +addRule(rule: AutomationRule): void
+            +removeRule(ruleId: string): void
+            +executeRulesForDevice(triggeringDevice: Device, triggeringPayload: any): Promise<void>
         }
 
         class AutomationRule {
+            +id: string
+            +name: string
             +triggerCondition: string
-            +action: Command
-            +evaluate(): boolean
+            +actionDeviceId: string
+            +actionCommand: Command
+            constructor(id: string, name: string, triggerCondition: string, actionDeviceId: string, actionCommand: Command)
+            +evaluate(triggeringDevice: Device, triggeringPayload: any): boolean
         }
 
         class NotificationService {
+            constructor()
             +sendPushNotification(user: User, message: string): void
         }
-
     }
 
-
     namespace Repositories {
-
         class DeviceRepository {
             <<Repository>>
-            +add(device: Device) void
-            +update(device: Device) void
-            +delete(id: string) void
-            +findById(id: string) Device
+            constructor()
+            +add(deviceData: any): Promise<Device | null>
+            +update(id: string, deviceUpdateData: any): Promise<Device | null>
+            +delete(id: string): Promise<boolean>
+            +findById(id: string): Promise<Device | null>
+            +findAll(): Promise<Device[]>
+            +findByOwnerId(ownerId: string): Promise<Device[]>
         }
 
         class UserRepository {
             <<Repository>>
-            +add(user: User) void
-            +update(user: User) void
-            +delete(id: string) void
-            +findByUsername(username: string) User
+            constructor()
+            +add(userData: any): Promise<User | null>
+            +update(id: string, userUpdateData: any): Promise<User | null>
+            +delete(id: string): Promise<boolean>
+            +findByUsername(username: string): Promise<User | null>
+            +findById(id: string): Promise<User | null>
+            +findAll(): Promise<User[]>
         }
-
     }
-
 
     namespace Application {
-
         class App {
-            -server: Server
-            -database: Database
-            +start() void
+            -server: ServerInstance
+            -logger: Logger
+            constructor()
+            +start(): Promise<void>
         }
 
-        class Server {
-            -app: Express
+        class ServerInstance {
+            -expressApp: Express
+            -httpServer: HttpServer
+            -wss: WebSocketServer | null
+            -logger: Logger
             -config: Config
-            +configureMiddleware() void
-            +setupRoutes() void
-            +startServer(port: number) void
-            +attachWebsocketServer(ws: WebsocketServer) void
+            -database: Database
+            -mqttService: MQTTService
+            -authController: AuthController
+            -userController: UserController
+            -deviceController: DeviceController
+            -authMiddleware: AuthMiddleware
+            -attachContextMiddleware: AttachContextMiddleware
+            -rbacMiddleware: RBACMiddleware
+            constructor(config: Config, database: Database, mqttService: MQTTService, authController: AuthController, userController: UserController, deviceController: DeviceController, authMiddleware: AuthMiddleware, attachContextMiddleware: AttachContextMiddleware, rbacMiddleware: RBACMiddleware)
+            -configureMiddleware(): void
+            -setupRoutes(): void
+            -configureGlobalErrorHandler(): void
+            +startServer(port: number): Promise<void>
+            -attachWebsocketServer(): void
+            +getHttpServer(): HttpServer
         }
-
     }
 
-
     %% Relationships
-    App *--> Server : "compose"
-    App *--> Database : "compose"
+
+    App o--> Config : "initializes"
+    App o--> Database : "initializes"
+    App o--> Logger : "initializes"
+    App o--> UserRepository : "initializes"
+    App o--> DeviceRepository : "initializes"
+    App o--> AuthService : "initializes"
+    App o--> MQTTConnection : "initializes"
+    App o--> EncryptionService : "initializes"
+    App o--> MQTTService : "initializes"
+    App o--> NotificationService : "initializes"
+    App o--> AutomationService : "initializes"
+    App o--> AuthController : "initializes"
+    App o--> UserController : "initializes"
+    App o--> DeviceController : "initializes"
+    App o--> AuthMiddleware : "initializes"
+    App o--> AttachContextMiddleware : "initializes"
+    App o--> RBACMiddleware : "initializes"
+    App *--> ServerInstance : "composes and starts"
+
+    ServerInstance --> Config : "uses"
+    ServerInstance --> Database : "uses"
+    ServerInstance --> Logger : "uses"
+    ServerInstance --> MQTTService : "uses"
+    ServerInstance --> AuthController : "routes to"
+    ServerInstance --> UserController : "routes to"
+    ServerInstance --> DeviceController : "routes to"
+    ServerInstance ..> AuthMiddleware : "uses for routes"
+    ServerInstance ..> AttachContextMiddleware : "uses for routes"
+    ServerInstance ..> RBACMiddleware : "uses for routes"
+    ServerInstance --> swaggerUi : "uses for /api-docs"
+
+    AuthController --> UserRepository : "uses"
+    AuthController --> AuthService : "uses"
+    AuthController ..> UserRole_ENUM : "uses for role logic"
+    AuthController ..> User : "responds with"
+    AuthController ..> Logger : "uses"
+
+    DeviceController --> DeviceRepository : "uses"
+    DeviceController --> MQTTService : "uses"
+    DeviceController ..> UserRole_ENUM : "uses for permissions"
+    DeviceController ..> User : "uses for owner check"
+    DeviceController ..> Device : "responds with / manipulates"
+    DeviceController ..> Logger : "uses"
+
+    UserController --> UserRepository : "uses"
+    UserController --> AuthService : "uses"
+    UserController ..> User : "responds with / manipulates"
+    UserController ..> Logger : "uses"
+
+    AuthMiddleware --> AuthService : "uses"
+    AuthMiddleware ..> Logger : "uses"
+
+    AttachContextMiddleware --> UserRepository : "uses"
+    AttachContextMiddleware --> DeviceRepository : "uses"
+    AttachContextMiddleware ..> Logger : "uses"
+
+    RBACMiddleware ..> UserRole_ENUM : "uses for role check"
+    RBACMiddleware ..> Logger : "uses"
+
+    AuthService --> UserRepository : "uses"
+    AuthService --> Config : "uses"
+    AuthService ..> User : "operates on"
+    AuthService ..> Logger : "uses"
+    AuthService ..> jwt : "uses for token generation"
+    AuthService ..> bcryptjs : "uses for hashing"
+
+    MQTTService --> MQTTConnection : "uses"
+    MQTTService --> DeviceRepository : "uses"
+    MQTTService --> EncryptionService : "uses"
+    MQTTService --> AutomationService : "notifies"
+    MQTTService ..> Logger : "uses"
+
+    MQTTConnection --> Config : "uses"
+    MQTTConnection ..> Logger : "uses"
+    MQTTConnection ..> MQTT : "uses MQTT library"
+
+    EncryptionService --> Config : "uses"
+    EncryptionService ..> Logger : "uses"
+    EncryptionService ..> crypto : "uses for encryption"
+
+    AutomationService --> NotificationService : "uses"
+    AutomationService --> UserRepository : "uses for user notifications"
+    AutomationService --> MQTTService : "uses to send commands"
+    AutomationService o--> AutomationRule : "manages"
+    AutomationService ..> Logger : "uses"
+    AutomationService ..> Device : "evaluates for"
+    AutomationService ..> Command : "executes"
     
-    Server --> Config : access
-    Server --> AuthMiddleware
-    Server --> AuthController
-    Server --> DeviceController
-    Server --> UserController
+    AutomationRule ..> Command : "defines action"
+    AutomationRule ..> Device : "trigger condition based on"
+    AutomationRule ..> Logger : "uses"
+
+    NotificationService ..> User : "sends to"
+    NotificationService ..> Logger : "uses"
+
+    DeviceRepository --> Database : "accesses Prisma delegate"
+    DeviceRepository ..> Device : "constructs/returns"
+    DeviceRepository ..> Logger : "uses"
+
+    UserRepository --> Database : "accesses Prisma delegate"
+    UserRepository ..> User : "constructs/returns"
+    UserRepository ..> UserRole_ENUM : "uses for roles"
+    UserRepository ..> Logger : "uses"
     
-    DeviceController --> MQTTService
-    DeviceController --> DeviceRepository
-    DeviceController ..> AttachContextMiddleware
+    Device ..> User : "owned by"
+    Device ..> Command : "handles"
+    Device ..> MQTTService : "optional for methods"
+    Device ..> DeviceRepository : "used in static methods"
     
-    UserController --> AuthService
-    UserController --> UserRepository
-    UserController ..> AttachContextMiddleware
+    User ..> UserRole_ENUM : "has role"
+    User ..> bcryptjs : "uses for password ops"
+    User ..> UserRepository : "used in static methods"
 
-    AuthService --> UserRepository
-
-    MQTTService --> EncryptionService
-    MQTTService --> Device : "send commands"
-    MQTTService ..> Config
-    MQTTService --> MQTTConnection
-
-    UserRepository --> Database
-
-    DeviceRepository --> UserRepository
-
-    Logger ..> DeviceController : "register events"
-    Logger ..> UserController : "register events"
-    Logger ..> AuthService : "register events"
-
-    Device --> AutomationRule
-
-    AutomationService --> NotificationService
-    AutomationService --> AutomationRule
-    AuthController --> User : "consult"
-
-    Database --> DeviceRepository
-    Database --> UserRepository
-    Database --> Device
-    Database --> User
-
-    AuthMiddleware ..> Config
-    AuthMiddleware ..> AttachContextMiddleware
-
-    EncryptionService ..> Config
-
-    BaseController <|-- DeviceController
-    BaseController <|-- UserController
-    BaseController <|-- AuthController
+    %% External / Library types
+    class Express
+    class HttpServer
+    class WebSocketServer
+    class Request
+    class Response
+    class NextFunction
+    class PrismaClient
+    class MqttClient
+    class swaggerUi
+    class jwt
+    class bcryptjs
+    class crypto
+    class MQTT
