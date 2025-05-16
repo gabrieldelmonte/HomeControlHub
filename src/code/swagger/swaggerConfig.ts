@@ -75,20 +75,24 @@ const swaggerDefinition: OAS3Definition = {
       // Add more schemas for request/response bodies as needed
     },
   },
-  // security: [ // Global security requirement (can be overridden at operation level)
-  //   {
-  //     bearerAuth: [], // Requires bearerAuth for all routes by default
-  //   },
-  // ],
+  security: [ // Global security requirement (can be overridden at operation level)
+    {
+      bearerAuth: [], // Requires bearerAuth for all routes by default
+    },
+  ]
 };
 
 const swaggerOptions: OAS3Options = {
   definition: swaggerDefinition,
   apis: [ // Paths to files containing OpenAPI definitions (JSDoc comments)
-    './src/code/routes/*.ts',
-    './src/code/controllers.ts', // If you put detailed JSDoc in controllers
-    './src/code/entities.ts',    // For schema definitions if not manually defined above
-  ],
+    /*
+    '../routes/auth.routes.ts',
+    '../routes/device.routes.ts',
+    '../routes/user.routes.ts'
+    */
+    '/app/dist/code/routes/*.js'
+  ]
 };
 
-export const swaggerSpec = swaggerJSDoc(swaggerOptions); 
+export const swaggerSpec = swaggerJSDoc(swaggerOptions);
+console.log("Generated Swagger Spec:", JSON.stringify(swaggerSpec, null, 2)); // DEBUG LINE
