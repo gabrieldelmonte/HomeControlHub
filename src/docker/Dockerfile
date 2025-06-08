@@ -78,4 +78,3 @@ RUN chmod +x /usr/local/bin/wait-and-start.sh
 # Copying the public directory
 EXPOSE 3000
 ENTRYPOINT ["/usr/local/bin/wait-and-start.sh"]
-#CMD ["node", "dist/main.js"]
