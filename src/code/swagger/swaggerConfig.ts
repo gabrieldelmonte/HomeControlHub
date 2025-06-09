@@ -79,18 +79,15 @@ const swaggerDefinition: OAS3Definition = {
     {
       bearerAuth: [], // Requires bearerAuth for all routes by default
     },
-  ]
+  ] 
 };
 
 const swaggerOptions: OAS3Options = {
   definition: swaggerDefinition,
   apis: [ // Paths to files containing OpenAPI definitions (JSDoc comments)
-    /*
-    '../routes/auth.routes.ts',
-    '../routes/device.routes.ts',
-    '../routes/user.routes.ts'
-    */
-    '/app/dist/code/routes/*.js'
+    '/app/dist/code/routes/*.js',
+//    './dist/code/routes/*.js',
+//    './dist/code/routes/*.ts'
   ]
 };
 

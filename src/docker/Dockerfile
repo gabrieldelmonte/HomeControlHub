@@ -13,35 +13,29 @@ COPY package*.json tsconfig*.json ./
 # Installing dependencies
 RUN npm ci
 
-# Explicitly install jsonwebtoken and its types before building (can be done after npm ci)
+# Explicitly install jsonwebtoken and its types before building
 RUN npm install jsonwebtoken @types/jsonwebtoken
 
-# Copying the entire source code (this includes db/prisma/schema.prisma and src/)
+# Copying the entire source code
 COPY . .
 
-# Generate Prisma client - path relative to WORKDIR /app
-# Schema: /app/db/prisma/schema.prisma
-# Output according to schema.prisma: /app/db/prisma/generated/prisma-client
+# Generate Prisma client
 RUN npx prisma generate --schema=./db/prisma/schema.prisma || true
 
-# For TypeScript Compiler (tsc):
-# Copy the generated client from where schema.prisma dictates its output
-# to src/db/prisma/generated/prisma-client so infrastructure.ts can find it.
+# Copy the generated client to the correct location
 RUN mkdir -p ./src/db/prisma/generated/prisma-client && \
     cp -R ./db/prisma/generated/prisma-client/* ./src/db/prisma/generated/prisma-client/
 
-# Build the application
-# tsc compiles src/code/infrastructure.ts which imports ../db/prisma/generated/prisma-client
-# (resolves to src/db/prisma/generated/prisma-client, which now exists with the correct client)
-# Output is in ./dist. Compiled JS in dist/code/infrastructure.js will have the same relative import.
+# Build the backend application
 RUN npm run build
 
-# Compile seed.ts into dist as well
+# Build the React UI
+RUN npm run build:ui
+
+# Compile seed.ts into dist
 RUN npx tsc ./db/seed.ts --outDir ./dist/db --module commonjs --esModuleInterop --resolveJsonModule --target es2020 --sourceMap --skipLibCheck
 
-# For Runtime:
-# Copy the Prisma client from where tsc found it (src/db/prisma/generated/prisma-client)
-# to where the compiled JS will expect it (dist/db/prisma/generated/prisma-client).
+# Copy the Prisma client to the dist directory
 RUN mkdir -p ./dist/db/prisma/generated/prisma-client && \
     cp -R ./src/db/prisma/generated/prisma-client/* ./dist/db/prisma/generated/prisma-client/
 
@@ -56,25 +50,27 @@ RUN apk add --no-cache openssl
 # Set the environment variable to production
 ENV NODE_ENV=production
 
-# Copy package.json (might be needed for npm start scripts or metadata)
+# Copy package.json
 COPY package.json ./
 
 # Copy node_modules from builder stage
 COPY --from=builder /app/node_modules ./node_modules
 
-# Copying the built application from the builder stage
-# The /app/dist directory in builder now contains the client at dist/db/prisma/generated/prisma-client
+# Copy the built backend application
 COPY --from=builder /app/dist ./dist
 
-# Copy the Prisma schema and migrations from the original db/prisma location in builder
-# for runtime use by Prisma CLI (e.g., prisma migrate deploy)
-# This should also include the db/prisma/generated/prisma-client if needed directly by prisma CLI tools in runtime,
-# but the primary use for runtime is the client within dist.
+# Copy the built React UI
+COPY --from=builder /app/dist-ui ./dist-ui
+
+# Copy the Prisma schema and migrations
 COPY --from=builder /app/db/prisma ./db/prisma
 
+# Copy the wait-and-start script
 COPY docker/compose/mosquitto/init/wait-and-start.sh /usr/local/bin/wait-and-start.sh
 RUN chmod +x /usr/local/bin/wait-and-start.sh
 
-# Copying the public directory
-EXPOSE 3000
+# Expose ports for backend (3000) and frontend (80)
+EXPOSE 3000 80
+
+# Start both the backend and serve the frontend
 ENTRYPOINT ["/usr/local/bin/wait-and-start.sh"]

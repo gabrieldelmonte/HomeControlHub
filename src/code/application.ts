@@ -12,6 +12,7 @@ import { createServer, Server as HttpServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
+import path from 'path';
 
 import { AuthController, DeviceController, UserController } from './controllers';
 import { AuthMiddleware, AttachContextMiddleware, RBACMiddleware } from './middlewares';
@@ -159,8 +160,24 @@ class ServerInstance {
         this.expressApp.get('/health', (req: Request, res: Response) => {
             res.status(200).json({ status: 'UP' });
         });
+/*
+        // Serve static React files
+        const staticPath = path.join(process.cwd(), 'dist-ui');
+        this.expressApp.use(express.static(staticPath));
+        
+        // Serve React app for all non-API routes (SPA routing)
+        this.expressApp.get('/*', (req: Request, res: Response) => {
+            // Skip API routes
+            if (req.path.startsWith('/api') || req.path.startsWith('/health')) {
+                res.status(404).json({ message: 'Route not found' });
+                return;
+            }
+            res.sendFile(path.join(staticPath, 'index.html'));
+        });
+        
+        this.logger.logInfo(`Static React files served from ${staticPath}`);
+*/
     }
-
     private configureGlobalErrorHandler(): void {
         this.expressApp.use((err: Error, req: Request, res: Response, next: NextFunction) => {
             this.logger.logError(`Global Error Handler: ${err.message}`);
