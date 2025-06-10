@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   FormCard,
@@ -19,16 +20,17 @@ import {
 } from './LoginRegister.styles';
 
 interface FormData {
-  email: string;
+  username: string;
   password: string;
   confirmPassword?: string;
   name?: string;
 }
 
 const LoginRegister: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [formData, setFormData] = useState<FormData>({
-    email: '',
+    username: '',
     password: '',
     confirmPassword: '',
     name: ''
@@ -36,6 +38,13 @@ const LoginRegister: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Clear any existing token when the login page loads
+  useEffect(() => {
+    console.log('Current token:', localStorage.getItem('token'));
+    localStorage.removeItem('token');
+    console.log('Token after removal:', localStorage.getItem('token'));
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,19 +57,13 @@ const LoginRegister: React.FC = () => {
   };
 
   const validateForm = (): boolean => {
-    if (!formData.email || !formData.password) {
-      setError('Email and password are required');
-      return false;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
+    if (!formData.username || !formData.password) {
+      setError('Username and password are required');
       return false;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('Password must be at least 6 characters long!');
       return false;
     }
 
@@ -88,23 +91,42 @@ const LoginRegister: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      const endpoint = activeTab === 'login' ? '/api/v1/auth/login' : '/api/v1/auth/register';
+      const response = await fetch(`http://localhost:3000${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+          ...(activeTab === 'register' && { name: formData.name })
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
       if (activeTab === 'login') {
-        setSuccess('Login successful! Welcome back.');
-        // Here you would typically redirect to dashboard
+        // Store the token
+        localStorage.setItem('token', data.token);
+        setSuccess('Login successful!');
+        // Force a page reload to ensure proper state update
+        window.location.href = '/dashboard';
       } else {
-        setSuccess('Registration successful! Please check your email.');
+        setSuccess('Registration successful! Please log in.');
         // Switch to login tab after successful registration
         setTimeout(() => {
           setActiveTab('login');
           setSuccess('');
-          setFormData({ email: formData.email, password: '', confirmPassword: '', name: '' });
+          setFormData({ username: formData.username, password: '', confirmPassword: '', name: '' });
         }, 2000);
       }
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -114,12 +136,12 @@ const LoginRegister: React.FC = () => {
     setActiveTab(tab);
     setError('');
     setSuccess('');
-    setFormData({ email: '', password: '', confirmPassword: '', name: '' });
+    setFormData({ username: '', password: '', confirmPassword: '', name: '' });
   };
 
   const handleForgotPassword = () => {
     setError('');
-    setSuccess('Password reset link has been sent to your email.');
+    setSuccess('Password reset functionality coming soon.');
   };
 
   return (
@@ -167,14 +189,14 @@ const LoginRegister: React.FC = () => {
           )}
 
           <InputGroup>
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
               onChange={handleInputChange}
-              placeholder="Enter your email"
+              placeholder="Enter your username"
               required
             />
           </InputGroup>

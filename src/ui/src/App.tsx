@@ -1,17 +1,47 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginRegister from './components/LoginRegister';
+import Dashboard from './components/Dashboard';
+import styled from 'styled-components';
 
-function App() {
+const AppContainer = styled.div`
+  min-height: 100vh;
+  background-color: #f5f5f5;
+`;
+
+const App: React.FC = () => {
+  const isAuthenticated = () => {
+    const token = localStorage.getItem('token');
+    console.log('Checking authentication. Token:', token);
+    const isAuth = Boolean(token && token.trim() !== '');
+    console.log('Is authenticated:', isAuth);
+    return isAuth;
+  };
+
   return (
     <Router>
-      <div className="App">
+      <AppContainer>
         <Routes>
-          <Route path="/auth" element={<LoginRegister />} />
-          <Route path="/" element={<Navigate to="/auth" replace />} />
+          <Route 
+            path="/login" 
+            element={
+              isAuthenticated() ? <Navigate to="/dashboard" replace /> : <LoginRegister />
+            } 
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              isAuthenticated() ? <Dashboard /> : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/" 
+            element={<Navigate to={isAuthenticated() ? "/dashboard" : "/login"} replace />} 
+          />
         </Routes>
-      </div>
+      </AppContainer>
     </Router>
   );
-}
+};
 
 export default App;
