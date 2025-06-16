@@ -19,6 +19,7 @@ import {
   TableCell,
   StatusBadge,
   DetailsButton,
+  ToggleSwitch, // <-- import the new styled component
 } from "./Dashboard.styles";
 
 interface Device {
@@ -30,7 +31,7 @@ interface Device {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [devices] = useState<Device[]>([
+  const [devices, setDevices] = useState<Device[]>([
     {
       id: "849084302",
       name: "Termostato Quarto",
@@ -77,6 +78,16 @@ const Dashboard: React.FC = () => {
     alert(`Device details for ${deviceId} coming soon!`);
   };
 
+  const handleToggleStatus = (deviceId: string) => {
+    setDevices((prevDevices) =>
+      prevDevices.map((device) =>
+        device.id === deviceId
+          ? { ...device, status: device.status === "On" ? "Off" : "On" }
+          : device
+      )
+    );
+  };
+
   return (
     <Container>
       <Header>
@@ -86,7 +97,7 @@ const Dashboard: React.FC = () => {
         </HeaderLeft>
         <HeaderNav>
           <NavItem>Profile</NavItem>
-          <NavItem>Devices</NavItem>
+          <NavItem>Dashboard</NavItem>
           <NavItem>FAQ</NavItem>
           <NavItem>Support</NavItem>
           <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
@@ -116,9 +127,11 @@ const Dashboard: React.FC = () => {
                 <TableCell>{device.id}</TableCell>
                 <TableCell>{device.type}</TableCell>
                 <TableCell>
-                  <StatusBadge status={device.status}>
-                    {device.status}
-                  </StatusBadge>
+                  <ToggleSwitch
+                    checked={device.status === "On"}
+                    onClick={() => handleToggleStatus(device.id)}
+                    aria-label={`Toggle ${device.name}`}
+                  />
                 </TableCell>
                 <TableCell>
                   <DetailsButton onClick={() => handleDetails(device.id)}>

@@ -6,7 +6,7 @@ export const Container = styled.div`
 `;
 
 export const Header = styled.header`
-  background: linear-gradient(135deg, #ff7f50 0%, #ff6b35 100%);
+  background: linear-gradient(270deg, #ff7f50 0%, #ff6b35 50%, #40e0d0 100%);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -189,5 +189,31 @@ export const DetailsButton = styled.button`
 
   &:hover {
     background-color: #ff6b35;
+  }
+`;
+
+export const ToggleSwitch = styled.button<{ checked: boolean }>`
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  background: ${({ checked }) => (checked ? "#28a745" : "#dc3545")};
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  outline: none;
+  margin-left: 1rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: ${({ checked }) => (checked ? "22px" : "2px")};
+    top: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
 `;
