@@ -6,7 +6,7 @@ export const Container = styled.div`
 `;
 
 export const Header = styled.header`
-  background: linear-gradient(270deg, #ff7f50 0%, #ff6b35 50%, #40e0d0 100%);
+  background: linear-gradient(270deg, #ff7f50 0%, rgb(255, 157, 53) 50%, #40e0d0 100%);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;

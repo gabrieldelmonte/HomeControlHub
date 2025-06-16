@@ -5,7 +5,7 @@ export const Container = styled.div`
   height: 100vh;
   min-height: 100vh;
   width: 100vw;
-  background: linear-gradient(315deg, #ff7f50 0%, #ff6b35 50%, #40e0d0 100%);
+  background: linear-gradient(315deg, #ff7f50 0%,rgb(255, 157, 53) 50%, #40e0d0 100%);
 `;
 
 export const ContentWrapper = styled.div`
