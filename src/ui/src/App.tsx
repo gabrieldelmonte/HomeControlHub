@@ -1,47 +1,91 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LoginRegister from './components/LoginRegister';
-import Dashboard from './components/Dashboard';
-import styled from 'styled-components';
-
-const AppContainer = styled.div`
-  min-height: 100vh;
-  background-color: #f5f5f5;
-`;
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import Dashboard from "./components/Dashboard";
 
 const App: React.FC = () => {
   const isAuthenticated = () => {
-    const token = localStorage.getItem('token');
-    console.log('Checking authentication. Token:', token);
-    const isAuth = Boolean(token && token.trim() !== '');
-    console.log('Is authenticated:', isAuth);
-    return isAuth;
+    const token = localStorage.getItem("token");
+    return Boolean(token && token.trim() !== "");
   };
 
   return (
     <Router>
-      <AppContainer>
-        <Routes>
-          <Route 
-            path="/login" 
-            element={
-              isAuthenticated() ? <Navigate to="/dashboard" replace /> : <LoginRegister />
-            } 
-          />
-          <Route 
-            path="/dashboard" 
-            element={
-              isAuthenticated() ? <Dashboard /> : <Navigate to="/login" replace />
-            } 
-          />
-          <Route 
-            path="/" 
-            element={<Navigate to={isAuthenticated() ? "/dashboard" : "/login"} replace />} 
-          />
-        </Routes>
-      </AppContainer>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <Login />
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <Register />
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <Dashboard />
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <Login />
+          }
+        />
+      </Routes>
     </Router>
   );
 };
+
+/*
+  return (
+    <Router>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            isAuthenticated() ? <Navigate to="/dashboard" replace /> : <Login />
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            isAuthenticated() ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Register />
+            )
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            isAuthenticated() ? <Dashboard /> : <Navigate to="/login" replace />
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <Navigate
+              to={isAuthenticated() ? "/dashboard" : "/login"}
+              replace
+            />
+          }
+        />
+      </Routes>
+    </Router>
+  );
+};
+*/
 
 export default App;

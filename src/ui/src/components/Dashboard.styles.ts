@@ -1,171 +1,193 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
-export const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 1.2rem;
-  color: #666;
+export const Container = styled.div`
+  min-height: 100vh;
+  background-color: #f5f5f5;
 `;
 
-export const ErrorContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 1.2rem;
-  color: #f44336;
-  text-align: center;
-  padding: 2rem;
-`;
-
-export const EmptyState = styled.div`
-  text-align: center;
-  padding: 3rem;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  margin-top: 2rem;
-
-  h3 {
-    color: #666;
-    margin-bottom: 1rem;
-  }
-
-  p {
-    color: #999;
-    margin-bottom: 1.5rem;
-  }
-`;
-
-export const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-export const ModalContent = styled.div`
-  background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-`;
-
-export const ModalHeader = styled.div`
+export const Header = styled.header`
+  background: linear-gradient(135deg, #ff7f50 0%, #ff6b35 100%);
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-
-  h2 {
-    margin: 0;
-    color: #333;
-  }
+  color: white;
 `;
 
-export const ModalCloseButton = styled.button`
-  background: none;
-  border: none;
+export const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+export const HouseIcon = styled.span`
   font-size: 1.5rem;
-  cursor: pointer;
-  color: #666;
-  padding: 0.5rem;
+`;
 
-  &:hover {
-    color: #333;
+export const AppTitle = styled.h1`
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+`;
+
+export const HeaderNav = styled.nav`
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    gap: 1rem;
   }
 `;
 
-export const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+export const NavItem = styled.button`
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
 `;
 
-export const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+export const LogoutButton = styled.button`
+  background: none;
+  border: 1px solid white;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
 `;
 
-export const Label = styled.label`
-  font-weight: 500;
+export const MainContent = styled.main`
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+export const SectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+`;
+
+export const SectionTitle = styled.h2`
+  font-size: 2rem;
+  font-weight: 600;
   color: #333;
+  margin: 0;
 `;
 
-export const Input = styled.input`
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-
-  &:focus {
-    outline: none;
-    border-color: #4CAF50;
-  }
-`;
-
-export const Select = styled.select`
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  background-color: white;
-
-  &:focus {
-    outline: none;
-    border-color: #4CAF50;
-  }
-`;
-
-export const SubmitButton = styled.button`
-  background-color: #4CAF50;
+export const AddButton = styled.button`
+  background-color: #007bff;
   color: white;
-  padding: 0.75rem;
   border: none;
-  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 1rem;
-  margin-top: 1rem;
+  transition: background-color 0.2s;
 
   &:hover {
-    background-color: #45a049;
-  }
-
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
+    background-color: #0056b3;
   }
 `;
 
-export const Toast = styled.div<{ type: 'success' | 'error' }>`
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  padding: 1rem 2rem;
-  border-radius: 4px;
-  color: white;
-  background-color: ${props => props.type === 'success' ? '#4CAF50' : '#f44336'};
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  animation: slideIn 0.3s ease-out;
+export const DevicesTable = styled.table`
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-collapse: collapse;
+`;
 
-  @keyframes slideIn {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
+export const TableHeader = styled.thead`
+  background-color: #f8f9fa;
+`;
+
+export const TableRow = styled.tr`
+  &:not(:last-child) {
+    border-bottom: 1px solid #e9ecef;
   }
-`; 
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+`;
+
+export const TableCell = styled.td`
+  padding: 1rem;
+  text-align: left;
+  color: #333;
+  font-size: 0.875rem;
+
+  &:first-child {
+    padding-left: 1.5rem;
+  }
+
+  &:last-child {
+    padding-right: 1.5rem;
+  }
+
+  &[as="th"] {
+    font-weight: 600;
+    color: #666;
+    background-color: #f8f9fa;
+  }
+`;
+
+export const StatusBadge = styled.span<{ status: "On" | "Off" }>`
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+  background-color: ${(props) =>
+    props.status === "On" ? "#28a745" : "#dc3545"};
+`;
+
+export const DetailsButton = styled.button`
+  background-color: #ff7f50;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #ff6b35;
+  }
+`;

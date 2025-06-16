@@ -6,13 +6,22 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
   min-height: 100vh;
   color: #333;
+  margin: 0;
+  padding: 0;
 }
 
 #root {
   min-height: 100vh;
+}
+
+/* Apply orange background only to login/register pages */
+body.auth-page {
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+}
+
+body.auth-page #root {
   display: flex;
   align-items: center;
   justify-content: center;
