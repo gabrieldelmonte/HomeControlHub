@@ -40,18 +40,22 @@ export const HeaderNav = styled.nav`
   }
 `;
 
-export const NavItem = styled.button`
-  background: none;
+export const NavItem = styled.button<{ selected?: boolean }>`
+  background: ${({ selected }) => (selected ? 'rgba(255,255,255,0.2)' : 'none')};
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.875rem;
-  transition: background-color 0.2s;
+  transition: background-color 0.5s, box-shadow 1s cubic-bezier(.4,2,.3,1), transform 1s cubic-bezier(.4,2,.3,1);
+  box-shadow: ${({ selected }) => (selected ? '0 4px 16px 0 rgba(0,0,0,0.10)' : 'none')};
+  z-index: 1;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: ${({ selected }) => (selected ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)')};
+    box-shadow: ${({ selected }) => (selected ? '0 4px 16px 0 rgba(0,0,0,0.10)' : '0 8px 24px 0 rgba(0,0,0,0.18)')};
+    transform: ${({ selected }) => (selected ? 'none' : 'translateY(-4px) scale(1.04)')};
   }
 
   @media (max-width: 768px) {
@@ -146,8 +150,8 @@ export const TableRow = styled.tr`
 `;
 
 export const TableCell = styled.td`
-  padding: 1rem;
-  text-align: left;
+  padding: 1.25rem;
+  text-align: center;
   color: #333;
   font-size: 0.875rem;
 
@@ -163,6 +167,7 @@ export const TableCell = styled.td`
     font-weight: 600;
     color: #666;
     background-color: #f8f9fa;
+    text-align: center;
   }
 `;
 

@@ -96,17 +96,17 @@ const Dashboard: React.FC = () => {
           <AppTitle>Home Control Hub</AppTitle>
         </HeaderLeft>
         <HeaderNav>
-          <NavItem>Profile</NavItem>
-          <NavItem>Dashboard</NavItem>
-          <NavItem>FAQ</NavItem>
-          <NavItem>Support</NavItem>
+          <NavItem onClick={() => navigate("/profile")}>Profile</NavItem>
+          <NavItem selected onClick={() => navigate("/dashboard")}>Dashboard</NavItem>
+          <NavItem onClick={() => navigate("/faq")}>FAQ</NavItem>
+          <NavItem onClick={() => navigate("/support")}>Support</NavItem>
           <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
         </HeaderNav>
       </Header>
 
       <MainContent>
         <SectionHeader>
-          <SectionTitle>Devices</SectionTitle>
+          <SectionTitle>Interactive dashboard</SectionTitle>
           <AddButton onClick={handleAddDevice}>Add a device</AddButton>
         </SectionHeader>
 
