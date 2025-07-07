@@ -9,7 +9,20 @@ import {
   NavItem,
   LogoutButton,
   MainContent,
-} from "./Dashboard.styles";
+  PageTitle,
+} from "./styles/Common.styles";
+import {
+  SupportForm,
+  FormGroup,
+  Label,
+  Select,
+  Input,
+  TextArea,
+  FileInput,
+  FileList,
+  SubmitButton,
+  SuccessMessage,
+} from "./styles/Support.styles";
 import { useNavigate } from "react-router-dom";
 
 const SUBJECT_OPTIONS = [
@@ -64,38 +77,15 @@ const Support: React.FC = () => {
         </HeaderNav>
       </Header>
       <MainContent>
-        <h2 style={{ textAlign: "center", marginBottom: "2rem" }}>Contact Support</h2>
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            maxWidth: 600,
-            margin: "0 auto",
-            background: "#fff",
-            borderRadius: 10,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-            padding: "2rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "1.5rem",
-          }}
-        >
-          <div>
-            <label htmlFor="subject" style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
-              Subject
-            </label>
-            <select
+        <PageTitle>Contact Support</PageTitle>
+        <SupportForm onSubmit={handleSubmit}>
+          <FormGroup>
+            <Label htmlFor="subject">Subject</Label>
+            <Select
               id="subject"
               value={subject}
               onChange={handleSubjectChange}
               required
-              style={{
-                width: "100%",
-                padding: "0.75rem 1rem",
-                borderRadius: 6,
-                border: "1px solid #e0e0e0",
-                fontSize: "1rem",
-                marginBottom: subject === "Other" ? 12 : 0,
-              }}
             >
               <option value="" disabled>
                 Select a subject
@@ -105,87 +95,54 @@ const Support: React.FC = () => {
                   {opt}
                 </option>
               ))}
-            </select>
+            </Select>
             {subject === "Other" && (
-              <input
+              <Input
                 type="text"
                 placeholder="Enter your subject"
                 value={customSubject}
                 onChange={(e) => setCustomSubject(e.target.value)}
                 required
-                style={{
-                  width: "100%",
-                  padding: "0.75rem 1rem",
-                  borderRadius: 6,
-                  border: "1px solid #e0e0e0",
-                  fontSize: "1rem",
-                  marginTop: 8,
-                }}
               />
             )}
-          </div>
-          <div>
-            <label htmlFor="message" style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
-              Describe your problem
-            </label>
-            <textarea
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="message">Describe your problem</Label>
+            <TextArea
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               required
               rows={7}
-              style={{
-                width: "100%",
-                padding: "1rem",
-                borderRadius: 6,
-                border: "1px solid #e0e0e0",
-                fontSize: "1rem",
-                resize: "vertical",
-              }}
             />
-          </div>
-          <div>
-            <label style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
-              Attach files (optional)
-            </label>
-            <input
+          </FormGroup>
+          <FormGroup>
+            <Label>Attach files (optional)</Label>
+            <FileInput
               type="file"
               multiple
               onChange={handleFileChange}
-              style={{ fontSize: "1rem" }}
             />
             {files && files.length > 0 && (
-              <ul style={{ marginTop: 8, fontSize: "0.95rem", color: "#555" }}>
+              <FileList>
                 {Array.from(files).map((file, idx) => (
                   <li key={idx}>{file.name}</li>
                 ))}
-              </ul>
+              </FileList>
             )}
-          </div>
-          <button
+          </FormGroup>
+          <SubmitButton
             type="submit"
             disabled={message.trim() === ""}
-            style={{
-              background: message.trim() === "" ? "#ccc" : "linear-gradient(135deg, #ff7f50 0%,rgb(255, 157, 53) 50%, #40e0d0 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              padding: "0.9rem 1.5rem",
-              fontSize: "1.1rem",
-              fontWeight: 600,
-              cursor: message.trim() === "" ? "not-allowed" : "pointer",
-              marginTop: 8,
-              transition: "background 0.2s",
-            }}
           >
             Send
-          </button>
+          </SubmitButton>
           {submitted && (
-            <div style={{ color: "#28a745", fontWeight: 600, textAlign: "center", marginTop: 12 }}>
+            <SuccessMessage>
               Your message has been sent! Our support team will contact you soon.
-            </div>
+            </SuccessMessage>
           )}
-        </form>
+        </SupportForm>
       </MainContent>
     </Container>
   );

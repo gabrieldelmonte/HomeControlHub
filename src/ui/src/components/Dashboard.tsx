@@ -10,6 +10,8 @@ import {
   NavItem,
   LogoutButton,
   MainContent,
+} from "./styles/Common.styles";
+import {
   SectionHeader,
   SectionTitle,
   AddButton,
@@ -17,10 +19,9 @@ import {
   TableHeader,
   TableRow,
   TableCell,
-  StatusBadge,
   DetailsButton,
-  ToggleSwitch, // <-- import the new styled component
-} from "./Dashboard.styles";
+  ToggleSwitch,
+} from "./styles/Dashboard.styles";
 
 interface Device {
   id: string;
@@ -69,13 +70,11 @@ const Dashboard: React.FC = () => {
   };
 
   const handleAddDevice = () => {
-    // TODO: Implement add device functionality
-    alert("Add device functionality coming soon!");
+    navigate("/add-device");
   };
 
   const handleDetails = (deviceId: string) => {
-    // TODO: Implement device details functionality
-    alert(`Device details for ${deviceId} coming soon!`);
+    navigate(`/device/${deviceId}`);
   };
 
   const handleToggleStatus = (deviceId: string) => {

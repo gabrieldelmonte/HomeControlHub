@@ -20,7 +20,7 @@ import {
   LoginButton,
   ErrorMessage,
   SuccessMessage,
-} from "./Register.styles";
+} from "./styles/Register.styles";
 
 interface RegisterFormData {
   fullName: string;

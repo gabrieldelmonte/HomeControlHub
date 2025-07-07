@@ -21,7 +21,7 @@ import {
   CreateAccountButton,
   ErrorMessage,
   SuccessMessage,
-} from "./Login.styles";
+} from "./styles/Login.styles";
 
 interface LoginFormData {
   email: string;

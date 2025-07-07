@@ -10,6 +10,9 @@ import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
 import FAQ from "./components/FAQ";
 import Support from "./components/Support";
+import Profile from "./components/Profile";
+import AddDevice from "./components/AddDevice";
+import DeviceDetails from "./components/DeviceDetails";
 
 const App: React.FC = () => {
   const isAuthenticated = () => {
@@ -45,6 +48,18 @@ const App: React.FC = () => {
         <Route
           path="/support"
           element={<Support />}
+        />
+        <Route
+          path="/profile"
+          element={<Profile />}
+        />
+        <Route
+          path="/add-device"
+          element={<AddDevice />}
+        />
+        <Route
+          path="/device/:deviceId"
+          element={<DeviceDetails />}
         />
         <Route
           path="/"

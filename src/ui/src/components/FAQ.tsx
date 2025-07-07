@@ -9,7 +9,15 @@ import {
   NavItem,
   LogoutButton,
   MainContent,
-} from "./Dashboard.styles";
+  PageTitle,
+} from "./styles/Common.styles";
+import {
+  FAQContainer,
+  FAQItem,
+  FAQQuestion,
+  FAQIcon,
+  FAQAnswer,
+} from "./styles/FAQ.styles";
 import { useNavigate } from "react-router-dom";
 
 const faqData = [
@@ -78,57 +86,29 @@ const FAQ: React.FC = () => {
         </HeaderNav>
       </Header>
       <MainContent>
-        <h2 style={{ textAlign: "center", marginBottom: "2rem" }}>Frequently Asked Questions</h2>
-        <div style={{ maxWidth: 700, margin: "0 auto" }}>
+        <PageTitle>Frequently Asked Questions</PageTitle>
+        <FAQContainer>
           {faqData.map((item, idx) => {
             const isOpen = openIndexes.includes(idx);
             return (
-              <div key={idx} style={{ marginBottom: "1.5rem", borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", background: "#fff" }}>
-                <button
+              <FAQItem key={idx}>
+                <FAQQuestion
                   onClick={() => handleToggle(idx)}
-                  style={{
-                    width: "100%",
-                    textAlign: "left",
-                    background: "none",
-                    border: "none",
-                    padding: "1.25rem 1.5rem",
-                    fontSize: "1.1rem",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    borderBottom: isOpen ? "1px solid #eee" : "none",
-                    borderRadius: isOpen ? "8px 8px 0 0" : "8px",
-                    transition: "background 0.2s"
-                  }}
+                  isOpen={isOpen}
                   aria-expanded={isOpen}
                 >
                   {item.question}
-                  <span style={{ fontSize: "1.5rem", marginLeft: 12, transition: "transform 0.3s" }}>
+                  <FAQIcon isOpen={isOpen}>
                     {isOpen ? "−" : "+"}
-                  </span>
-                </button>
-                <div
-                  style={{
-                    maxHeight: isOpen ? 200 : 0,
-                    opacity: isOpen ? 1 : 0,
-                    overflow: "hidden",
-                    transition: "max-height 0.8s cubic-bezier(.4,2,.3,1), opacity 0.6s",
-                    padding: isOpen ? "1.25rem 1.5rem" : "0 1.5rem",
-                    fontSize: "1rem",
-                    color: "#444",
-                    background: "#fafbfc",
-                    borderRadius: "0 0 8px 8px",
-                    borderTop: isOpen ? "1px solid #eee" : "none"
-                  }}
-                >
+                  </FAQIcon>
+                </FAQQuestion>
+                <FAQAnswer isOpen={isOpen}>
                   {isOpen && item.answer}
-                </div>
-              </div>
+                </FAQAnswer>
+              </FAQItem>
             );
           })}
-        </div>
+        </FAQContainer>
       </MainContent>
     </Container>
   );
