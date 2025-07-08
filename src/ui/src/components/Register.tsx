@@ -123,39 +123,32 @@ const Register: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call - replace with your actual API endpoint
-      const response = await fetch("/api/v1/auth/register", {
+      // Make real API call to backend
+      const response = await fetch("http://localhost:8080/api/v1/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          fullName: formData.fullName,
           username: formData.username,
           email: formData.email,
           password: formData.password,
         }),
       });
 
-      if (!response.ok) {
-        // For demo purposes, we'll just simulate a successful registration
-        setSuccess("Registration successful! Redirecting to login...");
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
-      } else {
+      if (response.ok) {
         const data = await response.json();
         setSuccess("Registration successful! Redirecting to login...");
         setTimeout(() => {
           navigate("/login");
         }, 2000);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || "Registration failed. Please try again.");
       }
     } catch (err) {
-      // For demo purposes, simulate successful registration
-      setSuccess("Registration successful! Redirecting to login...");
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+      console.error("Registration error:", err);
+      setError("Unable to connect to server. Please try again later.");
     } finally {
       setIsLoading(false);
     }

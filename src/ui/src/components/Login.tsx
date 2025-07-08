@@ -103,8 +103,9 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call - replace with your actual API endpoint
-      const response = await fetch("/api/v1/auth/login", {
+      // Make real API call to backend
+      //const response = await fetch("/api/v1/auth/login", {
+      const response = await fetch("http://localhost:8080/api/v1/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,28 +116,22 @@ const Login: React.FC = () => {
         }),
       });
 
-      if (!response.ok) {
-        // For demo purposes, we'll just simulate a successful login
-        localStorage.setItem("token", "demo-token-" + Date.now());
+      if (response.ok) {
+        const data = await response.json();
+        // Store token and user info
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
         setSuccess("Login successful!");
         setTimeout(() => {
           navigate("/dashboard");
         }, 1000);
       } else {
-        const data = await response.json();
-        localStorage.setItem("token", data.token);
-        setSuccess("Login successful!");
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 1000);
+        const errorData = await response.json();
+        setError(errorData.message || "Login failed. Please check your credentials.");
       }
     } catch (err) {
-      // For demo purposes, simulate successful login
-      localStorage.setItem("token", "demo-token-" + Date.now());
-      setSuccess("Login successful!");
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
+      console.error("Login error:", err);
+      setError("Unable to connect to server. Please try again later.");
     } finally {
       setIsLoading(false);
     }
