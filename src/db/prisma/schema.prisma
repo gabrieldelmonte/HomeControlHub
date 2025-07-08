@@ -16,10 +16,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "./generated/erd-generator.pdf"
-}
+//generator erd {
+//  provider = "prisma-erd-generator"
+//  output   = "./generated/erd-generator.pdf"
+//}
 
 enum UserRole {
   ADMIN
@@ -30,6 +30,7 @@ enum UserRole {
 model User {
   id             String          @id @default(uuid())
   username       String          @unique
+  email          String          @unique
   passwordHash   String
   role           UserRole
   devices        Device[]
@@ -38,6 +39,7 @@ model User {
   updatedAt      DateTime        @updatedAt
 
   @@index([username])
+  @@index([email])
 }
 
 model Device {

@@ -12,6 +12,7 @@ async function main() {
     const adminUser = await prisma.user.create({
       data: {
         username: 'admin@smartHome',
+        email: 'admin@smarthome.com',
         passwordHash: await bcrypt.hash('Admin@1234', 10),
         role: UserRole_ENUM.ADMIN,
       }
@@ -20,6 +21,7 @@ async function main() {
     const standardUser = await prisma.user.create({
       data: {
         username: 'user@smartHome',
+        email: 'user@smarthome.com',
         passwordHash: await bcrypt.hash('User@1234', 10),
         role: UserRole_ENUM.STANDARD_USER,
       }
