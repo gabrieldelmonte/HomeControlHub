@@ -24,9 +24,11 @@ export function createAuthRouter(authController: AuthController): Router {
      *             type: object
      *             required:
      *               - username
+     *               - email
      *               - password
      *             properties:
      *               username: { type: string, example: 'newuser' }
+     *               email: { type: string, format: email, example: 'newuser@example.com' }
      *               password: { type: string, format: 'password', example: 'strongPassword123' }
      *               role: { type: string, enum: ['STANDARD_USER', 'GUEST'], example: 'STANDARD_USER', description: 'Defaults to STANDARD_USER. ADMIN role can only be set by an existing ADMIN (implicitly).' }
      *     responses:
@@ -36,10 +38,10 @@ export function createAuthRouter(authController: AuthController): Router {
      *           application/json:
      *             schema: { $ref: '#/components/schemas/User' }
      *       400:
-     *         description: Missing username or password
+     *         description: Missing username, email or password
      *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
      *       409:
-     *         description: Username already exists
+     *         description: Username or email already exists
      *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
      *       500:
      *         description: Failed to register user
@@ -60,10 +62,10 @@ export function createAuthRouter(authController: AuthController): Router {
      *           schema:
      *             type: object
      *             required:
-     *               - username
+     *               - email
      *               - password
      *             properties:
-     *               username: { type: string, example: 'testuser' }
+     *               email: { type: string, format: email, example: 'user@example.com' }
      *               password: { type: string, format: 'password', example: 'password123' }
      *     responses:
      *       200:
@@ -76,7 +78,7 @@ export function createAuthRouter(authController: AuthController): Router {
      *                 token: { type: string, example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' }
      *                 user: { $ref: '#/components/schemas/User' }
      *       400:
-     *         description: Missing username or password
+     *         description: Missing email or password
      *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
      *       401:
      *         description: Invalid credentials

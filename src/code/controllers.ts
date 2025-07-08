@@ -104,6 +104,50 @@ export class DeviceController {
         }
     }
 
+    public async updateDeviceStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+        console.error("DEVICE_CONTROLLER_UPDATE_STATUS: Entry"); // DEBUG
+        try {
+            const { deviceId } = req.params;
+            const { status } = req.body;
+            
+            console.error(`DEVICE_CONTROLLER_UPDATE_STATUS: Updating device ${deviceId} status to ${status}`); // DEBUG
+            
+            if (typeof status !== 'boolean') {
+                res.status(400).json({ message: 'Status must be a boolean value' });
+                return;
+            }
+            
+            // Check if device exists and belongs to user
+            const existingDevice = await this.deviceRepository.findById(deviceId);
+            if (!existingDevice) {
+                res.status(404).json({ message: 'Device not found' });
+                return;
+            }
+            
+            // Check if user owns the device (unless admin)
+            if (req.user?.role !== UserRole_ENUM.ADMIN && existingDevice.ownerId !== req.user?.userId) {
+                res.status(403).json({ message: 'You can only update your own devices' });
+                return;
+            }
+            
+            // Update device status
+            const updatedDevice = await this.deviceRepository.updateStatus(deviceId, status);
+            
+            if (!updatedDevice) {
+                res.status(500).json({ message: 'Failed to update device status' });
+                return;
+            }
+            
+            console.error("DEVICE_CONTROLLER_UPDATE_STATUS: Device status updated successfully"); // DEBUG
+            res.status(200).json(updatedDevice);
+            
+        } catch (error) {
+            console.error("DEVICE_CONTROLLER_UPDATE_STATUS: Caught error", error); // DEBUG
+            this.logger.logError(`Error in updateDeviceStatus: ${error}`);
+            next(error);
+        }
+    }
+
     public async deleteDevice(req: Request, res: Response, next: NextFunction): Promise<void> {
         console.error("DEVICE_CONTROLLER_DELETE_DEVICE: Entry"); // DEBUG
         try {
@@ -316,19 +360,25 @@ export class AuthController {
         console.error("AUTH_CONTROLLER_REGISTER: Entry"); // DEBUG
         try {
             console.error("AUTH_CONTROLLER_REGISTER: Inside try block"); // DEBUG
-            const { username, password, role } = req.body;
-            console.error(`AUTH_CONTROLLER_REGISTER: Body parsed - username: ${username}`); // DEBUG
-            if (!username || !password) {
-                console.error("AUTH_CONTROLLER_REGISTER: Missing username or password"); // DEBUG
-                res.status(400).json({ message: 'Username and password are required' });
+            const { username, email, password, role } = req.body;
+            console.error(`AUTH_CONTROLLER_REGISTER: Body parsed - username: ${username}, email: ${email}`); // DEBUG
+            if (!username || !email || !password) {
+                console.error("AUTH_CONTROLLER_REGISTER: Missing required fields"); // DEBUG
+                res.status(400).json({ message: 'Username, email and password are required' });
                 return;
             }
 
             console.error("AUTH_CONTROLLER_REGISTER: Checking existing user"); // DEBUG
-            const existingUser = await this.userRepository.findByUsername(username);
-            if (existingUser) {
+            const existingUserByUsername = await this.userRepository.findByUsername(username);
+            const existingUserByEmail = await this.userRepository.findByEmail(email);
+            if (existingUserByUsername) {
                 console.error("AUTH_CONTROLLER_REGISTER: Username already exists"); // DEBUG
                 res.status(409).json({ message: 'Username already exists' });
+                return;
+            }
+            if (existingUserByEmail) {
+                console.error("AUTH_CONTROLLER_REGISTER: Email already exists"); // DEBUG
+                res.status(409).json({ message: 'Email already exists' });
                 return;
             }
 
@@ -353,6 +403,7 @@ export class AuthController {
             console.error("AUTH_CONTROLLER_REGISTER: Adding user to repository"); // DEBUG
             const newUserEntity = await this.userRepository.add({
                 username,
+                email,
                 passwordHash,
                 role: newRole,
             });
@@ -362,7 +413,8 @@ export class AuthController {
                 console.error("AUTH_CONTROLLER_REGISTER: User registration successful"); // DEBUG
                 const userResponse = { 
                     id: newUserEntity.id, 
-                    username: newUserEntity.username, 
+                    username: newUserEntity.username,
+                    email: newUserEntity.email, 
                     role: newUserEntity.role 
                 };
                 res.status(201).json(userResponse);
@@ -381,15 +433,15 @@ export class AuthController {
         console.error("AUTH_CONTROLLER_LOGIN: Entry"); // DEBUG
         try {
             console.error("AUTH_CONTROLLER_LOGIN: Inside try block"); // DEBUG
-            const { username, password } = req.body;
-            console.error(`AUTH_CONTROLLER_LOGIN: Body parsed - username: ${username}`); // DEBUG
-            if (!username || !password) {
-                console.error("AUTH_CONTROLLER_LOGIN: Missing username or password"); // DEBUG
-                res.status(400).json({ message: 'Username and password are required' });
+            const { email, password } = req.body;
+            console.error(`AUTH_CONTROLLER_LOGIN: Body parsed - email: ${email}`); // DEBUG
+            if (!email || !password) {
+                console.error("AUTH_CONTROLLER_LOGIN: Missing email or password"); // DEBUG
+                res.status(400).json({ message: 'Email and password are required' });
                 return;
             }
 
-            const user = await this.userRepository.findByUsername(username);
+            const user = await this.userRepository.findByEmail(email);
             if (!user) {
                 console.error("AUTH_CONTROLLER_LOGIN: User not found"); // DEBUG
                 res.status(401).json({ message: 'Invalid credentials - user not found' });
@@ -409,14 +461,15 @@ export class AuthController {
                 token, 
                 user: { 
                     id: user.id, 
-                    username: user.username, 
+                    username: user.username,
+                    email: user.email, 
                     role: user.role 
                 } 
             });
             console.error("AUTH_CONTROLLER_LOGIN: Response sent"); // DEBUG
         } catch (error) {
             console.error("AUTH_CONTROLLER_LOGIN: Caught error in try block", error); // DEBUG
-            this.logger.logError(`Error in user login for ${req.body.username}: ${error}`);
+            this.logger.logError(`Error in user login for ${req.body.email}: ${error}`);
             next(error);
         }
     }

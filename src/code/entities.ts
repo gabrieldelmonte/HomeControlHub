@@ -188,12 +188,14 @@ export class Device {
 export class User {
     public id: string;
     public username: string;
+    public email: string;
     private passwordHash: string;
     public role: UserRole_ENUM;
 
-    constructor(id: string, username: string, passwordHash: string, role: UserRole_ENUM) {
+    constructor(id: string, username: string, email: string, passwordHash: string, role: UserRole_ENUM) {
         this.id = id;
         this.username = username;
+        this.email = email;
         this.passwordHash = passwordHash;
         this.role = role;
     }
@@ -204,6 +206,14 @@ export class User {
 
     public setUsername(username: string): void {
         this.username = username;
+    }
+
+    public getEmail(): string {
+        return this.email;
+    }
+
+    public setEmail(email: string): void {
+        this.email = email;
     }
 
     public getPasswordHash(): string {
@@ -227,12 +237,13 @@ export class User {
     }
 
     public static async create(
-        initData: { username: string; passwordPlain: string; role: UserRole_ENUM }, 
+        initData: { username: string; email: string; passwordPlain: string; role: UserRole_ENUM }, 
         userRepository: UserRepository
     ): Promise<User | null> {
         const passwordHash = await bcrypt.hash(initData.passwordPlain, SALT_ROUNDS);
         return userRepository.add({
             username: initData.username,
+            email: initData.email,
             passwordHash: passwordHash,
             role: initData.role,
         });
@@ -243,5 +254,12 @@ export class User {
         userRepository: UserRepository
     ): Promise<User | null> {
         return userRepository.findByUsername(username);
+    }
+
+    public static async findByEmail(
+        email: string, 
+        userRepository: UserRepository
+    ): Promise<User | null> {
+        return userRepository.findByEmail(email);
     }
 }

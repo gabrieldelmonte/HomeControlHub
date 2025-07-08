@@ -88,6 +88,36 @@ export class DeviceRepository {
         }
     }
 
+    public async updateStatus(id: string, status: boolean): Promise<Device | null> {
+        console.error(`DEVICE_REPOSITORY_UPDATE_STATUS: Updating device ${id} status to ${status}`); // DEBUG
+        try {
+            const updatedDevice = await this.db.device.update({
+                where: { id },
+                data: { 
+                    status,
+                    updatedAt: new Date()
+                }
+            });
+            
+            console.error("DEVICE_REPOSITORY_UPDATE_STATUS: Status update successful"); // DEBUG
+            return new Device(
+                updatedDevice.id, 
+                updatedDevice.name, 
+                updatedDevice.type, 
+                updatedDevice.status, 
+                updatedDevice.aesKey, 
+                updatedDevice.lastKnownState as any, 
+                updatedDevice.userId, 
+                undefined, // mqttService is optional
+                updatedDevice.firmwareVersion || undefined // Pass firmwareVersion
+            );
+        } catch (error) {
+            console.error("DEVICE_REPOSITORY_UPDATE_STATUS: Error updating status", error); // DEBUG
+            this.logger.logError(`Error updating device status: ${error}`);
+            return null;
+        }
+    }
+
     public async delete(id: string): Promise<boolean> {
         try {
             await this.db.device.delete({ where: { id } });
@@ -176,7 +206,7 @@ export class UserRepository {
             const newUserPrisma = await this.db.user.create({
                 data: userData,
             });
-            return new User(newUserPrisma.id, newUserPrisma.username, newUserPrisma.passwordHash, newUserPrisma.role as UserRole_ENUM);
+            return new User(newUserPrisma.id, newUserPrisma.username, newUserPrisma.email, newUserPrisma.passwordHash, newUserPrisma.role as UserRole_ENUM);
         } catch (error) {
             this.logger.logError(`Error adding user: ${error}`);
             return null;
@@ -189,7 +219,7 @@ export class UserRepository {
                 where: { id },
                 data: userUpdateData,
             });
-            return new User(updatedUserPrisma.id, updatedUserPrisma.username, updatedUserPrisma.passwordHash, updatedUserPrisma.role as UserRole_ENUM);
+            return new User(updatedUserPrisma.id, updatedUserPrisma.username, updatedUserPrisma.email, updatedUserPrisma.passwordHash, updatedUserPrisma.role as UserRole_ENUM);
         } catch (error) {
             this.logger.logError(`Error updating user ${id}: ${error}`);
             return null;
@@ -210,9 +240,20 @@ export class UserRepository {
         try {
             const userPrisma = await this.db.user.findUnique({ where: { username } });
             if (!userPrisma) return null;
-            return new User(userPrisma.id, userPrisma.username, userPrisma.passwordHash, userPrisma.role as UserRole_ENUM);
+            return new User(userPrisma.id, userPrisma.username, userPrisma.email, userPrisma.passwordHash, userPrisma.role as UserRole_ENUM);
         } catch (error) {
             this.logger.logError(`Error finding user by username ${username}: ${error}`);
+            return null;
+        }
+    }
+
+    public async findByEmail(email: string): Promise<User | null> {
+        try {
+            const userPrisma = await this.db.user.findUnique({ where: { email } });
+            if (!userPrisma) return null;
+            return new User(userPrisma.id, userPrisma.username, userPrisma.email, userPrisma.passwordHash, userPrisma.role as UserRole_ENUM);
+        } catch (error) {
+            this.logger.logError(`Error finding user by email ${email}: ${error}`);
             return null;
         }
     }
@@ -221,7 +262,7 @@ export class UserRepository {
         try {
             const userPrisma = await this.db.user.findUnique({ where: { id } });
             if (!userPrisma) return null;
-            return new User(userPrisma.id, userPrisma.username, userPrisma.passwordHash, userPrisma.role as UserRole_ENUM);
+            return new User(userPrisma.id, userPrisma.username, userPrisma.email, userPrisma.passwordHash, userPrisma.role as UserRole_ENUM);
         } catch (error) {
             this.logger.logError(`Error finding user by ID ${id}: ${error}`);
             return null;
@@ -231,7 +272,7 @@ export class UserRepository {
     public async findAll(): Promise<User[]> {
         try {
             const usersPrisma = await this.db.user.findMany();
-            return usersPrisma.map(u => new User(u.id, u.username, u.passwordHash, u.role as UserRole_ENUM));
+            return usersPrisma.map(u => new User(u.id, u.username, u.email, u.passwordHash, u.role as UserRole_ENUM));
         } catch (error) {
             this.logger.logError(`Error finding all users: ${error}`);
             return [];

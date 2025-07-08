@@ -77,7 +77,7 @@ export class App {
 
     public async start(): Promise<void> {
         try {
-            const port = parseInt(process.env.PORT || "3000", 10);
+            const port = parseInt(process.env.PORT || "8080", 10);
             await this.server.startServer(port);
             this.logger.logInfo(`Application started successfully on port ${port}.`);
             this.logger.logInfo(`Swagger UI available at http://localhost:${port}/api-docs`);
@@ -135,7 +135,12 @@ class ServerInstance {
     }
 
     private configureMiddleware(): void {
-        this.expressApp.use(cors());
+        this.expressApp.use(cors({
+            origin: ['http://localhost:9877'], // Frontend port
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization'],
+            credentials: true
+        }));
         this.expressApp.use(express.json());
         this.expressApp.use(express.urlencoded({ extended: true }));
         this.logger.logInfo("Global middlewares configured.");
@@ -160,23 +165,6 @@ class ServerInstance {
         this.expressApp.get('/health', (req: Request, res: Response) => {
             res.status(200).json({ status: 'UP' });
         });
-/*
-        // Serve static React files
-        const staticPath = path.join(process.cwd(), 'dist-ui');
-        this.expressApp.use(express.static(staticPath));
-        
-        // Serve React app for all non-API routes (SPA routing)
-        this.expressApp.get('/*', (req: Request, res: Response) => {
-            // Skip API routes
-            if (req.path.startsWith('/api') || req.path.startsWith('/health')) {
-                res.status(404).json({ message: 'Route not found' });
-                return;
-            }
-            res.sendFile(path.join(staticPath, 'index.html'));
-        });
-        
-        this.logger.logInfo(`Static React files served from ${staticPath}`);
-*/
     }
     private configureGlobalErrorHandler(): void {
         this.expressApp.use((err: Error, req: Request, res: Response, next: NextFunction) => {

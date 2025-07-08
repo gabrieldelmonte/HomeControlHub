@@ -15,6 +15,7 @@ export function createDeviceRouter(
 ): Router {
     const router = Router();
 
+
     // All device routes require authentication
     router.use(authMiddleware.authenticateToken.bind(authMiddleware));
     // Attach full user context after authentication
