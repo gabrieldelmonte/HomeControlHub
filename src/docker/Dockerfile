@@ -4,8 +4,16 @@ FROM node:18-alpine AS builder
 # Defining the working directory inside the container
 WORKDIR /app
 
+
 # Install OpenSSL development libraries
-RUN apk add --no-cache openssl-dev python3 make g++ curl
+RUN apk add --no-cache \
+    openssl \
+    openssl-dev \
+    libstdc++ \
+    python3 \
+    make \
+    g++ \
+    curl
 
 # Copying package.json and tsconfig.json files
 COPY package*.json tsconfig*.json ./
@@ -19,8 +27,11 @@ RUN npm install jsonwebtoken @types/jsonwebtoken
 # Copying the entire source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate --schema=./db/prisma/schema.prisma || true
+# Generate Prisma client and other necessary files
+RUN npx prisma generate --schema=./db/prisma/schema.prisma
+
+# Set the user back to root for migration tasks
+USER root
 
 # Copy the generated client to the correct location
 RUN mkdir -p ./src/db/prisma/generated/prisma-client && \
@@ -69,8 +80,8 @@ COPY --from=builder /app/db/prisma ./db/prisma
 COPY docker/compose/mosquitto/init/wait-and-start.sh /usr/local/bin/wait-and-start.sh
 RUN chmod +x /usr/local/bin/wait-and-start.sh
 
-# Expose ports for backend (3000) and frontend (80)
-EXPOSE 3000 80
+# Expose ports
+EXPOSE 80 3000 5555 8080 9877
 
 # Start both the backend and serve the frontend
 ENTRYPOINT ["/usr/local/bin/wait-and-start.sh"]

@@ -7,13 +7,32 @@ until nc -z mosquitto 1883; do
 done
 echo "MQTT broker is up!"
 
+# Wait for database to be ready
+until nc -z db 5432; do
+  echo "Waiting for database..."
+  sleep 2
+done
+echo "Database is up!"
+
 # Run database migrations
 echo "Running database migrations..."
 npx prisma migrate deploy --schema=./db/prisma/schema.prisma
+#npx prisma migrate dev --schema=./db/prisma/schema.prisma
+if [ $? -eq 0 ]; then
+    echo "✅ Migrations completed successfully"
+else
+    echo "❌ Migration failed"
+    exit 1
+fi
 
 # Seed the database
 echo "Seeding the database..."
 npx prisma db seed
+if [ $? -eq 0 ]; then
+    echo "✅ Database seeded successfully"
+else
+    echo "⚠️ Seeding failed, but continuing..."
+fi
 
 # Start Prisma Studio in the background
 echo "Starting Prisma Studio..."
