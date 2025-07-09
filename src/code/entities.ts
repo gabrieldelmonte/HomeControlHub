@@ -28,10 +28,11 @@ export class Device {
     public name: string;
     public type: string;
     public status: boolean;
+    public description?: string;
+    public location: string;
+    public mqttTopic: string;
     public aesKey: string;
-    public lastKnownState: any;
     public ownerId: string | null;
-    public firmwareVersion?: string;
     private mqttService?: MQTTService;
 
     constructor(
@@ -39,23 +40,27 @@ export class Device {
         name: string,
         type: string,
         status: boolean,
+        location: string,
+        mqttTopic: string,
         aesKey: string,
-        lastKnownState: any,
         ownerId: string | null,
         mqttService?: MQTTService,
-        firmwareVersion?: string
+        description?: string
     ) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.status = status;
+        this.location = location;
+        this.mqttTopic = mqttTopic;
         this.aesKey = aesKey;
-        this.lastKnownState = lastKnownState;
         this.ownerId = ownerId;
         this.mqttService = mqttService;
-        this.firmwareVersion = firmwareVersion;
+        this.description = description;
     }
 
+    /*
+    // This is method is deprecated and should not be used!
     public async checkFirmwareVersion(): Promise<string> {
         if (!this.mqttService) {
             throw new Error('MQTTService is not available to check firmware version.');
@@ -77,6 +82,7 @@ export class Device {
             }, 1000);
         });
     }
+    */
 
     public async registerDevice(currentUser: User, deviceRepository: DeviceRepository): Promise<Device | null> {
         if (currentUser.getRole() === UserRole_ENUM.GUEST) {
@@ -88,9 +94,10 @@ export class Device {
             name: this.name,
             type: this.type,
             status: this.status,
+            description: this.description,
+            location: this.location,
+            mqttTopic: this.mqttTopic,
             aesKey: this.aesKey,
-            lastKnownState: this.lastKnownState || {},
-            firmwareVersion: this.firmwareVersion,
             ownerId: currentUser.id,
         };
 
@@ -125,7 +132,9 @@ export class Device {
             name: this.name,
             type: this.type,
             status: this.status,
-            lastKnownState: this.lastKnownState,
+            description: this.description,
+            location: this.location,
+            mqttTopic: this.mqttTopic,
             ownerId: this.ownerId
         });
     }
@@ -134,10 +143,11 @@ export class Device {
         initData: { 
             name: string; 
             type: string; 
+            location: string;
+            mqttTopic: string;
             aesKey: string; 
             status?: boolean; 
-            lastKnownState?: any; 
-            firmwareVersion?: string 
+            description?: string;
         },
         currentUser: User, 
         deviceRepository: DeviceRepository, 
@@ -148,11 +158,12 @@ export class Device {
             initData.name,
             initData.type,
             initData.status || false,
+            initData.location,
+            initData.mqttTopic,
             initData.aesKey,
-            initData.lastKnownState || {},
-            null, // ownerId will be set by registerDevice using currentUser.id
+            currentUser.id, // Set ownerId directly
             mqttService,
-            initData.firmwareVersion
+            initData.description
         );
 
         return newDevice.registerDevice(currentUser, deviceRepository);
@@ -170,17 +181,17 @@ export class Device {
         }
 
         // Re-construct the Device entity to include the passed mqttService
-        // The instance from the repository (deviceFromRepo) would have mqttService as undefined by default.
         return new Device(
             deviceFromRepo.id,
             deviceFromRepo.name,
             deviceFromRepo.type,
             deviceFromRepo.status,
+            deviceFromRepo.location,
+            deviceFromRepo.mqttTopic,
             deviceFromRepo.aesKey,
-            deviceFromRepo.lastKnownState,
-            deviceFromRepo.ownerId,
-            mqttService, // Pass the mqttService received by this static method
-            deviceFromRepo.firmwareVersion
+            deviceFromRepo.ownerId || '',
+            mqttService,
+            deviceFromRepo.description
         );
     }
 }

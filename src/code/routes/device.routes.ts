@@ -38,13 +38,17 @@ export function createDeviceRouter(
      *             required:
      *               - name
      *               - type
+     *               - location
+     *               - mqttTopic
      *               - aesKey
      *             properties:
      *               name: { type: string, example: 'Living Room Lamp' }
      *               type: { type: string, example: 'SMART_LIGHT' }
+     *               description: { type: string, example: 'Smart LED lamp with dimming capabilities' }
+     *               location: { type: string, example: 'Living Room' }
+     *               mqttTopic: { type: string, example: 'devices/livingroom/lamp' }
      *               aesKey: { type: string, example: 'supersecretdevicekey123' }
      *               status: { type: boolean, example: false, default: false }
-     *               lastKnownState: { type: object, additionalProperties: true, example: { color: 'red' } }
      *     responses:
      *       201:
      *         description: Device created successfully
@@ -210,10 +214,11 @@ export function createDeviceRouter(
      *             properties:
      *               name: { type: string, example: 'Updated Living Room Lamp' }
      *               type: { type: string, example: 'SMART_LIGHT_PLUS' }
+     *               description: { type: string, example: 'Updated smart LED lamp with color changing' }
+     *               location: { type: string, example: 'Living Room' }
+     *               mqttTopic: { type: string, example: 'devices/livingroom/lamp_updated' }
      *               status: { type: boolean, example: true }
      *               aesKey: { type: string, example: 'newsupersecretdevicekey456' }
-     *               lastKnownState: { type: object, additionalProperties: true, example: { color: 'blue' } }
-     *               firmwareVersion: { type: string, example: '2.2.0' }
      *     responses:
      *       200:
      *         description: Device updated successfully
@@ -269,6 +274,54 @@ export function createDeviceRouter(
         '/:deviceId',
         attachContextMiddleware.attachDevice.bind(attachContextMiddleware),
         deviceController.deleteDevice.bind(deviceController)
+    );
+
+    /**
+     * @swagger
+     * /devices/{deviceId}/status:
+     *   put:
+     *     summary: Update device status (on/off)
+     *     tags: [Devices]
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: deviceId
+     *         required: true
+     *         schema:
+     *           type: string
+     *           format: uuid
+     *         description: The ID of the device to update.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - status
+     *             properties:
+     *               status: { type: boolean, example: true }
+     *     responses:
+     *       200:
+     *         description: Device status updated successfully
+     *         content:
+     *           application/json:
+     *             schema: { $ref: '#/components/schemas/Device' }
+     *       401:
+     *         description: Unauthorized
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     *       403:
+     *         description: Forbidden (not owner or admin)
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     *       404:
+     *         description: Device not found
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     */
+    router.put(
+        '/:deviceId/status',
+        attachContextMiddleware.attachDevice.bind(attachContextMiddleware),
+        deviceController.updateDeviceStatus.bind(deviceController)
     );
 
     return router;

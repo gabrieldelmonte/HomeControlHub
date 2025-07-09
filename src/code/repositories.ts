@@ -28,10 +28,11 @@ export class DeviceRepository {
         name: string;
         type: string;
         status: boolean;
+        description?: string;
+        location: string;
+        mqttTopic: string;
         aesKey: string;
-        ownerId: string; // This is the ID of the user who owns the device
-        lastKnownState?: Prisma.JsonObject;
-        firmwareVersion?: string; // Added firmwareVersion to input type
+        ownerId: string;
     }): Promise<Device | null> {
         try {
             const newDevicePrisma = await this.db.device.create({
@@ -39,25 +40,25 @@ export class DeviceRepository {
                     name: deviceData.name,
                     type: deviceData.type,
                     status: deviceData.status,
+                    description: deviceData.description,
+                    location: deviceData.location,
+                    mqttTopic: deviceData.mqttTopic,
                     aesKey: deviceData.aesKey,
-                    lastKnownState: deviceData.lastKnownState || {},
-                    firmwareVersion: deviceData.firmwareVersion, // Added firmwareVersion
-                    // Correcting based on typical Prisma relation naming, assuming relation is 'owner'
-                    // and the foreign key field on the Device model is 'userId'
                     owner: { connect: { id: deviceData.ownerId } }
                 },
             });
-            // Prisma returns the created record, which should include the foreign key field (e.g., userId)
+            
             return new Device(
                 newDevicePrisma.id, 
                 newDevicePrisma.name, 
                 newDevicePrisma.type, 
                 newDevicePrisma.status, 
+                newDevicePrisma.location,
+                newDevicePrisma.mqttTopic,
                 newDevicePrisma.aesKey, 
-                newDevicePrisma.lastKnownState as any, 
                 newDevicePrisma.userId, 
                 undefined, // mqttService is optional
-                newDevicePrisma.firmwareVersion || undefined // Pass firmwareVersion
+                newDevicePrisma.description || undefined
             );
         } catch (error) {
             this.logger.logError(`Error adding device: ${error}`);
@@ -75,12 +76,13 @@ export class DeviceRepository {
                 updatedDevicePrisma.id, 
                 updatedDevicePrisma.name, 
                 updatedDevicePrisma.type, 
-                updatedDevicePrisma.status, 
+                updatedDevicePrisma.status,
+                updatedDevicePrisma.location,
+                updatedDevicePrisma.mqttTopic,
                 updatedDevicePrisma.aesKey, 
-                updatedDevicePrisma.lastKnownState as any, 
                 updatedDevicePrisma.userId, 
                 undefined, // mqttService is optional
-                updatedDevicePrisma.firmwareVersion || undefined // Pass firmwareVersion
+                updatedDevicePrisma.description || undefined
             );
         } catch (error) {
             this.logger.logError(`Error updating device ${id}: ${error}`);
@@ -104,12 +106,13 @@ export class DeviceRepository {
                 updatedDevice.id, 
                 updatedDevice.name, 
                 updatedDevice.type, 
-                updatedDevice.status, 
+                updatedDevice.status,
+                updatedDevice.location,
+                updatedDevice.mqttTopic,
                 updatedDevice.aesKey, 
-                updatedDevice.lastKnownState as any, 
                 updatedDevice.userId, 
                 undefined, // mqttService is optional
-                updatedDevice.firmwareVersion || undefined // Pass firmwareVersion
+                updatedDevice.description || undefined
             );
         } catch (error) {
             console.error("DEVICE_REPOSITORY_UPDATE_STATUS: Error updating status", error); // DEBUG
@@ -136,12 +139,13 @@ export class DeviceRepository {
                 devicePrisma.id, 
                 devicePrisma.name, 
                 devicePrisma.type, 
-                devicePrisma.status, 
+                devicePrisma.status,
+                devicePrisma.location,
+                devicePrisma.mqttTopic,
                 devicePrisma.aesKey, 
-                devicePrisma.lastKnownState as any, 
                 devicePrisma.userId, 
                 undefined, // mqttService is optional
-                devicePrisma.firmwareVersion || undefined // Pass firmwareVersion
+                devicePrisma.description || undefined
             );
         } catch (error) {
             this.logger.logError(`Error finding device by ID ${id}: ${error}`);
@@ -156,12 +160,13 @@ export class DeviceRepository {
                 d.id, 
                 d.name, 
                 d.type, 
-                d.status, 
+                d.status,
+                d.location,
+                d.mqttTopic,
                 d.aesKey, 
-                d.lastKnownState as any, 
                 d.userId, 
                 undefined, // mqttService is optional
-                d.firmwareVersion || undefined // Pass firmwareVersion
+                d.description || undefined
             ));
         } catch (error) {
             this.logger.logError(`Error finding all devices: ${error}`);
@@ -176,12 +181,13 @@ export class DeviceRepository {
                 d.id, 
                 d.name, 
                 d.type, 
-                d.status, 
+                d.status,
+                d.location,
+                d.mqttTopic,
                 d.aesKey, 
-                d.lastKnownState as any, 
                 d.userId, 
                 undefined, // mqttService is optional
-                d.firmwareVersion || undefined // Pass firmwareVersion
+                d.description || undefined
             ));
         } catch (error) {
             this.logger.logError(`Error finding devices by owner ID ${ownerId}: ${error}`);

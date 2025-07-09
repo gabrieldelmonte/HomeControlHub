@@ -39,8 +39,9 @@ interface DeviceFormData {
   type: string;
   location: string;
   description: string;
-  ipAddress: string;
-  port: string;
+  mqttTopic: string;
+  aesKey: string;
+  status: boolean;
 }
 
 const DEVICE_TYPES = [
@@ -76,8 +77,9 @@ const AddDevice: React.FC = () => {
     type: "",
     location: "",
     description: "",
-    ipAddress: "",
-    port: "",
+    mqttTopic: "",
+    aesKey: "",
+    status: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(null);
@@ -98,21 +100,44 @@ const AddDevice: React.FC = () => {
     setSubmitStatus(null);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulate random success/failure for demo
-      const success = Math.random() > 0.3;
-      
-      if (success) {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setSubmitStatus("error");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const response = await fetch("http://localhost:8080/api/v1/devices", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          type: formData.type,
+          description: formData.description,
+          location: formData.location,
+          mqttTopic: formData.mqttTopic,
+          aesKey: formData.aesKey,
+          status: formData.status,
+        }),
+      });
+
+      if (response.ok) {
         setSubmitStatus("success");
+        // Clear any cached device data to ensure fresh fetch
+        localStorage.removeItem("deviceCache");
         setTimeout(() => {
           navigate("/dashboard");
         }, 2000);
       } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error response:", errorData);
         setSubmitStatus("error");
       }
     } catch (error) {
+      console.error("Error creating device:", error);
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
@@ -126,8 +151,9 @@ const AddDevice: React.FC = () => {
   const isFormValid = () => {
     return formData.name.trim() && 
            formData.type && 
-           formData.location && 
-           formData.ipAddress.trim();
+           formData.location &&
+           formData.mqttTopic.trim() &&
+           formData.aesKey.trim();
   };
 
   return (
@@ -203,27 +229,41 @@ const AddDevice: React.FC = () => {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label htmlFor="port">Port</Label>
-                  <Input
-                    type="text"
-                    id="port"
-                    name="port"
-                    value={formData.port}
-                    onChange={handleChange}
-                    placeholder="e.g., 8080"
-                  />
+                  <Label htmlFor="status">Current Status</Label>
+                  <Select
+                    id="status"
+                    name="status"
+                    value={formData.status.toString()}
+                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value === 'true' }))}
+                  >
+                    <option value="false">Off</option>
+                    <option value="true">On</option>
+                  </Select>
                 </FormGroup>
               </FormRow>
 
               <FormGroup>
-                <Label htmlFor="ipAddress">IP Address *</Label>
+                <Label htmlFor="mqttTopic">MQTT Topic *</Label>
                 <Input
                   type="text"
-                  id="ipAddress"
-                  name="ipAddress"
-                  value={formData.ipAddress}
+                  id="mqttTopic"
+                  name="mqttTopic"
+                  value={formData.mqttTopic}
                   onChange={handleChange}
-                  placeholder="e.g., 192.168.1.100"
+                  placeholder="e.g., devices/livingroom/lamp"
+                  required
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label htmlFor="aesKey">Device AES Key *</Label>
+                <Input
+                  type="password"
+                  id="aesKey"
+                  name="aesKey"
+                  value={formData.aesKey}
+                  onChange={handleChange}
+                  placeholder="Secure encryption key for device communication"
                   required
                 />
               </FormGroup>
@@ -282,15 +322,17 @@ const AddDevice: React.FC = () => {
                 <PreviewValue>{formData.location || "Not specified"}</PreviewValue>
               </PreviewItem>
               <PreviewItem>
-                <PreviewLabel>IP Address:</PreviewLabel>
-                <PreviewValue>{formData.ipAddress || "Not specified"}</PreviewValue>
+                <PreviewLabel>Status:</PreviewLabel>
+                <PreviewValue>{formData.status ? "On" : "Off"}</PreviewValue>
               </PreviewItem>
-              {formData.port && (
-                <PreviewItem>
-                  <PreviewLabel>Port:</PreviewLabel>
-                  <PreviewValue>{formData.port}</PreviewValue>
-                </PreviewItem>
-              )}
+              <PreviewItem>
+                <PreviewLabel>MQTT Topic:</PreviewLabel>
+                <PreviewValue>{formData.mqttTopic || "Not specified"}</PreviewValue>
+              </PreviewItem>
+              <PreviewItem>
+                <PreviewLabel>AES Key:</PreviewLabel>
+                <PreviewValue>{formData.aesKey ? "••••••••••••" : "Not specified"}</PreviewValue>
+              </PreviewItem>
               {formData.description && (
                 <PreviewItem>
                   <PreviewLabel>Description:</PreviewLabel>

@@ -31,9 +31,10 @@ interface Device {
   name: string;
   type: string;
   status: boolean;
+  description?: string;
+  location: string;
+  mqttTopic: string;
   aesKey?: string;
-  lastKnownState?: any;
-  firmwareVersion?: string;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -44,10 +45,22 @@ const Dashboard: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   // Remove auth-page class when dashboard loads
   useEffect(() => {
     document.body.classList.remove("auth-page");
+    
+    // Get user role from localStorage
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        setUserRole(user.role);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
   }, []);
 
   // Fetch user's devices
@@ -92,6 +105,8 @@ const Dashboard: React.FC = () => {
 
     fetchDevices();
   }, [navigate]);
+
+  const isAdmin = userRole === 'ADMIN';
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -224,23 +239,45 @@ const Dashboard: React.FC = () => {
         {devices.length === 0 ? (
           <>
             <SectionHeader>
-              <SectionTitle>Interactive dashboard</SectionTitle>
-              {/* No button */}
+              <SectionTitle>
+                {isAdmin ? "System Overview" : "Interactive dashboard"}
+              </SectionTitle>
+              {/* Only show Add Device button for non-admin users */}
+              {!isAdmin && <div>{/* No button for empty state when admin */}</div>}
             </SectionHeader>
 
             <EmptyState>
-              <h3>No devices found</h3>
-              <p>You haven't added any devices yet. Get started by adding your first smart device!</p>
-              <AddButton onClick={handleAddDevice}>Add your first device</AddButton>
+              {isAdmin ? (
+                <>
+                  <h3>No devices in the system</h3>
+                  <p>There are currently no devices registered in the Home Control Hub system. Users can add devices to start monitoring and controlling them.</p>
+                </>
+              ) : (
+                <>
+                  <h3>No devices found</h3>
+                  <p>You haven't added any devices yet. Get started by adding your first smart device!</p>
+                  <AddButton onClick={handleAddDevice}>Add your first device</AddButton>
+                </>
+              )}
             </EmptyState>
           </>
         ) : (
-          <DevicesTable>
+          <>
+            <SectionHeader>
+              <SectionTitle>
+                {isAdmin ? "All System Devices" : "Your Devices"}
+              </SectionTitle>
+              {/* Only show Add Device button for non-admin users */}
+              {!isAdmin && <AddButton onClick={handleAddDevice}>Add Device</AddButton>}
+            </SectionHeader>
+
+            <DevicesTable>
             <TableHeader>
               <TableRow>
                 <TableCell as="th">Device name</TableCell>
                 <TableCell as="th">ID</TableCell>
                 <TableCell as="th">Type</TableCell>
+                <TableCell as="th">Location</TableCell>
                 <TableCell as="th">Status</TableCell>
                 <TableCell as="th">Actions</TableCell>
               </TableRow>
@@ -251,22 +288,35 @@ const Dashboard: React.FC = () => {
                   <TableCell>{device.name}</TableCell>
                   <TableCell>{device.id}</TableCell>
                   <TableCell>{device.type}</TableCell>
+                  <TableCell>{device.location}</TableCell>
                   <TableCell>
-                    <ToggleSwitch
-                      checked={device.status}
-                      onClick={() => handleToggleStatus(device.id)}
-                      aria-label={`Toggle ${device.name}`}
-                    />
+                    {isAdmin ? (
+                      // Admins can only view status, not change it
+                      <span style={{ 
+                        color: device.status ? "#4CAF50" : "#f44336",
+                        fontWeight: "bold"
+                      }}>
+                        {device.status ? "ON" : "OFF"}
+                      </span>
+                    ) : (
+                      // Regular users can toggle status
+                      <ToggleSwitch
+                        checked={device.status}
+                        onClick={() => handleToggleStatus(device.id)}
+                        aria-label={`Toggle ${device.name}`}
+                      />
+                    )}
                   </TableCell>
                   <TableCell>
                     <DetailsButton onClick={() => handleDetails(device.id)}>
-                      Details
+                      {isAdmin ? "View Details" : "Details"}
                     </DetailsButton>
                   </TableCell>
                 </TableRow>
               ))}
             </tbody>
-          </DevicesTable>
+            </DevicesTable>
+          </>
         )}
       </MainContent>
     </Container>

@@ -2381,8 +2381,10 @@ export namespace Prisma {
     name: string | null
     type: string | null
     status: boolean | null
+    description: string | null
+    location: string | null
+    mqttTopic: string | null
     aesKey: string | null
-    firmwareVersion: string | null
     userId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2393,8 +2395,10 @@ export namespace Prisma {
     name: string | null
     type: string | null
     status: boolean | null
+    description: string | null
+    location: string | null
+    mqttTopic: string | null
     aesKey: string | null
-    firmwareVersion: string | null
     userId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2405,9 +2409,10 @@ export namespace Prisma {
     name: number
     type: number
     status: number
+    description: number
+    location: number
+    mqttTopic: number
     aesKey: number
-    lastKnownState: number
-    firmwareVersion: number
     userId: number
     createdAt: number
     updatedAt: number
@@ -2420,8 +2425,10 @@ export namespace Prisma {
     name?: true
     type?: true
     status?: true
+    description?: true
+    location?: true
+    mqttTopic?: true
     aesKey?: true
-    firmwareVersion?: true
     userId?: true
     createdAt?: true
     updatedAt?: true
@@ -2432,8 +2439,10 @@ export namespace Prisma {
     name?: true
     type?: true
     status?: true
+    description?: true
+    location?: true
+    mqttTopic?: true
     aesKey?: true
-    firmwareVersion?: true
     userId?: true
     createdAt?: true
     updatedAt?: true
@@ -2444,9 +2453,10 @@ export namespace Prisma {
     name?: true
     type?: true
     status?: true
+    description?: true
+    location?: true
+    mqttTopic?: true
     aesKey?: true
-    lastKnownState?: true
-    firmwareVersion?: true
     userId?: true
     createdAt?: true
     updatedAt?: true
@@ -2530,9 +2540,10 @@ export namespace Prisma {
     name: string
     type: string
     status: boolean
+    description: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState: JsonValue | null
-    firmwareVersion: string | null
     userId: string
     createdAt: Date
     updatedAt: Date
@@ -2560,9 +2571,10 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     status?: boolean
+    description?: boolean
+    location?: boolean
+    mqttTopic?: boolean
     aesKey?: boolean
-    lastKnownState?: boolean
-    firmwareVersion?: boolean
     userId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2577,9 +2589,10 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     status?: boolean
+    description?: boolean
+    location?: boolean
+    mqttTopic?: boolean
     aesKey?: boolean
-    lastKnownState?: boolean
-    firmwareVersion?: boolean
     userId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2591,9 +2604,10 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     status?: boolean
+    description?: boolean
+    location?: boolean
+    mqttTopic?: boolean
     aesKey?: boolean
-    lastKnownState?: boolean
-    firmwareVersion?: boolean
     userId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2621,9 +2635,10 @@ export namespace Prisma {
       name: string
       type: string
       status: boolean
+      description: string | null
+      location: string
+      mqttTopic: string
       aesKey: string
-      lastKnownState: Prisma.JsonValue | null
-      firmwareVersion: string | null
       userId: string
       createdAt: Date
       updatedAt: Date
@@ -3027,9 +3042,10 @@ export namespace Prisma {
     readonly name: FieldRef<"Device", 'String'>
     readonly type: FieldRef<"Device", 'String'>
     readonly status: FieldRef<"Device", 'Boolean'>
+    readonly description: FieldRef<"Device", 'String'>
+    readonly location: FieldRef<"Device", 'String'>
+    readonly mqttTopic: FieldRef<"Device", 'String'>
     readonly aesKey: FieldRef<"Device", 'String'>
-    readonly lastKnownState: FieldRef<"Device", 'Json'>
-    readonly firmwareVersion: FieldRef<"Device", 'String'>
     readonly userId: FieldRef<"Device", 'String'>
     readonly createdAt: FieldRef<"Device", 'DateTime'>
     readonly updatedAt: FieldRef<"Device", 'DateTime'>
@@ -7142,9 +7158,10 @@ export namespace Prisma {
     name: 'name',
     type: 'type',
     status: 'status',
+    description: 'description',
+    location: 'location',
+    mqttTopic: 'mqttTopic',
     aesKey: 'aesKey',
-    lastKnownState: 'lastKnownState',
-    firmwareVersion: 'firmwareVersion',
     userId: 'userId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -7208,14 +7225,6 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
-  export const NullableJsonNullValueInput: {
-    DbNull: typeof DbNull,
-    JsonNull: typeof JsonNull
-  };
-
-  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
-
-
   export const JsonNullValueInput: {
     JsonNull: typeof JsonNull
   };
@@ -7231,6 +7240,14 @@ export namespace Prisma {
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
   export const JsonNullValueFilter: {
     DbNull: typeof DbNull,
     JsonNull: typeof JsonNull,
@@ -7238,14 +7255,6 @@ export namespace Prisma {
   };
 
   export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
-
-
-  export const NullsOrder: {
-    first: 'first',
-    last: 'last'
-  };
-
-  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -7402,9 +7411,10 @@ export namespace Prisma {
     name?: StringFilter<"Device"> | string
     type?: StringFilter<"Device"> | string
     status?: BoolFilter<"Device"> | boolean
+    description?: StringNullableFilter<"Device"> | string | null
+    location?: StringFilter<"Device"> | string
+    mqttTopic?: StringFilter<"Device"> | string
     aesKey?: StringFilter<"Device"> | string
-    lastKnownState?: JsonNullableFilter<"Device">
-    firmwareVersion?: StringNullableFilter<"Device"> | string | null
     userId?: StringFilter<"Device"> | string
     createdAt?: DateTimeFilter<"Device"> | Date | string
     updatedAt?: DateTimeFilter<"Device"> | Date | string
@@ -7418,9 +7428,10 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    description?: SortOrderInput | SortOrder
+    location?: SortOrder
+    mqttTopic?: SortOrder
     aesKey?: SortOrder
-    lastKnownState?: SortOrderInput | SortOrder
-    firmwareVersion?: SortOrderInput | SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -7431,6 +7442,7 @@ export namespace Prisma {
 
   export type DeviceWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    mqttTopic?: string
     aesKey?: string
     AND?: DeviceWhereInput | DeviceWhereInput[]
     OR?: DeviceWhereInput[]
@@ -7438,24 +7450,25 @@ export namespace Prisma {
     name?: StringFilter<"Device"> | string
     type?: StringFilter<"Device"> | string
     status?: BoolFilter<"Device"> | boolean
-    lastKnownState?: JsonNullableFilter<"Device">
-    firmwareVersion?: StringNullableFilter<"Device"> | string | null
+    description?: StringNullableFilter<"Device"> | string | null
+    location?: StringFilter<"Device"> | string
     userId?: StringFilter<"Device"> | string
     createdAt?: DateTimeFilter<"Device"> | Date | string
     updatedAt?: DateTimeFilter<"Device"> | Date | string
     owner?: XOR<UserRelationFilter, UserWhereInput>
     commands?: CommandListRelationFilter
     automationRules?: AutomationRuleListRelationFilter
-  }, "id" | "aesKey">
+  }, "id" | "mqttTopic" | "aesKey">
 
   export type DeviceOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    description?: SortOrderInput | SortOrder
+    location?: SortOrder
+    mqttTopic?: SortOrder
     aesKey?: SortOrder
-    lastKnownState?: SortOrderInput | SortOrder
-    firmwareVersion?: SortOrderInput | SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -7472,9 +7485,10 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"Device"> | string
     type?: StringWithAggregatesFilter<"Device"> | string
     status?: BoolWithAggregatesFilter<"Device"> | boolean
+    description?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    location?: StringWithAggregatesFilter<"Device"> | string
+    mqttTopic?: StringWithAggregatesFilter<"Device"> | string
     aesKey?: StringWithAggregatesFilter<"Device"> | string
-    lastKnownState?: JsonNullableWithAggregatesFilter<"Device">
-    firmwareVersion?: StringNullableWithAggregatesFilter<"Device"> | string | null
     userId?: StringWithAggregatesFilter<"Device"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Device"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Device"> | Date | string
@@ -7795,9 +7809,10 @@ export namespace Prisma {
     name: string
     type: string
     status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutDevicesInput
@@ -7810,9 +7825,10 @@ export namespace Prisma {
     name: string
     type: string
     status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: string | null
     userId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -7825,9 +7841,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutDevicesNestedInput
@@ -7840,9 +7857,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7855,9 +7873,10 @@ export namespace Prisma {
     name: string
     type: string
     status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: string | null
     userId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -7868,9 +7887,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -7880,9 +7900,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8259,28 +8280,6 @@ export namespace Prisma {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
-  export type JsonNullableFilter<$PrismaModel = never> = 
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
@@ -8332,9 +8331,10 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    description?: SortOrder
+    location?: SortOrder
+    mqttTopic?: SortOrder
     aesKey?: SortOrder
-    lastKnownState?: SortOrder
-    firmwareVersion?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -8345,8 +8345,10 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    description?: SortOrder
+    location?: SortOrder
+    mqttTopic?: SortOrder
     aesKey?: SortOrder
-    firmwareVersion?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -8357,8 +8359,10 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    description?: SortOrder
+    location?: SortOrder
+    mqttTopic?: SortOrder
     aesKey?: SortOrder
-    firmwareVersion?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -8370,31 +8374,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> = 
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -8923,39 +8902,6 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-  export type NestedJsonNullableFilter<$PrismaModel = never> = 
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -8971,6 +8917,17 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
   export type NestedJsonFilter<$PrismaModel = never> = 
     | PatchUndefined<
@@ -9000,9 +8957,10 @@ export namespace Prisma {
     name: string
     type: string
     status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     commands?: CommandCreateNestedManyWithoutDeviceInput
@@ -9014,9 +8972,10 @@ export namespace Prisma {
     name: string
     type: string
     status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     commands?: CommandUncheckedCreateNestedManyWithoutDeviceInput
@@ -9083,9 +9042,10 @@ export namespace Prisma {
     name?: StringFilter<"Device"> | string
     type?: StringFilter<"Device"> | string
     status?: BoolFilter<"Device"> | boolean
+    description?: StringNullableFilter<"Device"> | string | null
+    location?: StringFilter<"Device"> | string
+    mqttTopic?: StringFilter<"Device"> | string
     aesKey?: StringFilter<"Device"> | string
-    lastKnownState?: JsonNullableFilter<"Device">
-    firmwareVersion?: StringNullableFilter<"Device"> | string | null
     userId?: StringFilter<"Device"> | string
     createdAt?: DateTimeFilter<"Device"> | Date | string
     updatedAt?: DateTimeFilter<"Device"> | Date | string
@@ -9292,9 +9252,10 @@ export namespace Prisma {
     name: string
     type: string
     status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutDevicesInput
@@ -9306,9 +9267,10 @@ export namespace Prisma {
     name: string
     type: string
     status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: string | null
     userId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -9336,9 +9298,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutDevicesNestedInput
@@ -9350,9 +9313,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9364,9 +9328,10 @@ export namespace Prisma {
     name: string
     type: string
     status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutDevicesInput
@@ -9378,9 +9343,10 @@ export namespace Prisma {
     name: string
     type: string
     status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: string | null
     userId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -9408,9 +9374,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutDevicesNestedInput
@@ -9422,9 +9389,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9496,9 +9464,10 @@ export namespace Prisma {
     name: string
     type: string
     status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
     aesKey: string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -9516,9 +9485,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     commands?: CommandUpdateManyWithoutDeviceNestedInput
@@ -9530,9 +9500,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     commands?: CommandUncheckedUpdateManyWithoutDeviceNestedInput
@@ -9544,9 +9515,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
     aesKey?: StringFieldUpdateOperationsInput | string
-    lastKnownState?: NullableJsonNullValueInput | InputJsonValue
-    firmwareVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

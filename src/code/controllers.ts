@@ -29,11 +29,11 @@ export class DeviceController {
         console.error("DEVICE_CONTROLLER_CREATE_DEVICE: Entry"); // DEBUG
         try {
             console.error("DEVICE_CONTROLLER_CREATE_DEVICE: Inside try block"); // DEBUG
-            const { name, type, aesKey, status, lastKnownState } = req.body;
+            const { name, type, description, location, mqttTopic, aesKey, status } = req.body;
             console.error(`DEVICE_CONTROLLER_CREATE_DEVICE: Body parsed - name: ${name}`); // DEBUG
-            if (!name || !type || !aesKey) {
+            if (!name || !type || !location || !mqttTopic || !aesKey) {
                 console.error("DEVICE_CONTROLLER_CREATE_DEVICE: Missing required fields"); // DEBUG
-                res.status(400).json({ message: 'Missing required fields: name, type, aesKey' });
+                res.status(400).json({ message: 'Missing required fields: name, type, location, mqttTopic, aesKey' });
                 return;
             }
             if (!req.user || !req.user.userId) {
@@ -46,8 +46,10 @@ export class DeviceController {
                 name,
                 type,
                 status: typeof status === 'boolean' ? status : false,
+                description,
+                location,
+                mqttTopic,
                 aesKey,
-                lastKnownState: lastKnownState || {},
                 ownerId: req.user.userId,
             });
             console.error("DEVICE_CONTROLLER_CREATE_DEVICE: Device added to repository"); // DEBUG

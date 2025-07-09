@@ -45,9 +45,10 @@ model Device {
   name            String
   type            String
   status          Boolean          @default(false)
+  description     String?
+  location        String
+  mqttTopic       String           @unique
   aesKey          String           @unique
-  lastKnownState  Json?
-  firmwareVersion String?
   userId          String
   owner           User             @relation(fields: [userId], references: [id])
   commands        Command[]
@@ -56,6 +57,7 @@ model Device {
   updatedAt       DateTime         @updatedAt
 
   @@index([name, type])
+  @@index([location])
 }
 
 model Command {

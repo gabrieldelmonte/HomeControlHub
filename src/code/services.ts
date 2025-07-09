@@ -260,20 +260,13 @@ export class MQTTService {
             let updated = false;
             if (messageType === 'status') {
                 if (typeof payload.status === 'boolean') {
-                    await this.deviceRepository.update(deviceId, { status: payload.status, lastKnownState: payload as any });
+                    await this.deviceRepository.update(deviceId, { status: payload.status });
                     updated = true;
-                } else {
-                     await this.deviceRepository.update(deviceId, { lastKnownState: payload as any });
-                     updated = true;
                 }
             } else if (messageType === 'telemetry') {
-                if (subMessageType === 'firmwareVersion' && typeof payload.version === 'string') {
-                    await this.deviceRepository.update(deviceId, { firmwareVersion: payload.version, lastKnownState: device.lastKnownState });
-                    updated = true;
-                } else {
-                    await this.deviceRepository.update(deviceId, { lastKnownState: payload as any });
-                    updated = true;
-                }
+                // Handle telemetry data (could be logged separately)
+                this.logger.logInfo(`Telemetry data received from device ${deviceId}: ${JSON.stringify(payload)}`);
+                updated = true;
             } else {
                 this.logger.logWarn(`Unhandled message type '${messageType}' from device ${deviceId}`);
             }
@@ -495,3 +488,5 @@ export class NotificationService {
         this.logger.logInfo(`PUSH_NOTIFICATION to user ${user.username} (ID: ${user.id}): ${message}`);
     }
 }
+
+export { DeviceService } from './services/DeviceService';
