@@ -7,8 +7,8 @@ const char* ssid = "YOUR_WIFI_SSID";
 const char* password = "YOUR_WIFI_PASSWORD";
 
 // MQTT Broker settings - Update with your HomeControlHub MQTT broker
-const char* mqtt_server = "192.168.1.100";  // Replace with your broker IP
-const int mqtt_port = 1883;
+const char* mqtt_server = "";  // Replace with your broker IP
+const int mqtt_port = 1884;
 const char* mqtt_user = "";     // No authentication
 const char* mqtt_password = ""; // No authentication
 
