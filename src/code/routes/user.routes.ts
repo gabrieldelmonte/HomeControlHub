@@ -46,6 +46,49 @@ export function createUserRouter(
 
     /**
      * @swagger
+     * /users/profile:
+     *   put:
+     *     summary: Update the profile of the currently authenticated user
+     *     tags: [Users]
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               username:
+     *                 type: string
+     *                 description: New username
+     *               email:
+     *                 type: string
+     *                 format: email
+     *                 description: New email address
+     *               password:
+     *                 type: string
+     *                 description: New password (optional)
+     *     responses:
+     *       200:
+     *         description: Updated user profile
+     *         content:
+     *           application/json:
+     *             schema: { $ref: '#/components/schemas/User' }
+     *       400:
+     *         description: Username or email already taken
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     *       401:
+     *         description: Unauthorized or user data not available
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     */
+    router.put(
+        '/profile',
+        userController.updateProfile.bind(userController)
+    );
+
+    /**
+     * @swagger
      * /users:
      *   get:
      *     summary: List all users (Admin only)

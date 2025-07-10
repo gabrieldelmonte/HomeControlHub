@@ -224,7 +224,15 @@ export class UserRepository {
             const newUserPrisma = await this.db.user.create({
                 data: userData,
             });
-            return new User(newUserPrisma.id, newUserPrisma.username, newUserPrisma.email, newUserPrisma.passwordHash, newUserPrisma.role as UserRole_ENUM);
+            return new User(
+                newUserPrisma.id, 
+                newUserPrisma.username, 
+                newUserPrisma.email, 
+                newUserPrisma.passwordHash, 
+                newUserPrisma.role as UserRole_ENUM,
+                newUserPrisma.createdAt,
+                newUserPrisma.updatedAt
+            );
         } catch (error) {
             this.logger.logError(`Error adding user: ${error}`);
             return null;
@@ -237,7 +245,15 @@ export class UserRepository {
                 where: { id },
                 data: userUpdateData,
             });
-            return new User(updatedUserPrisma.id, updatedUserPrisma.username, updatedUserPrisma.email, updatedUserPrisma.passwordHash, updatedUserPrisma.role as UserRole_ENUM);
+            return new User(
+                updatedUserPrisma.id, 
+                updatedUserPrisma.username, 
+                updatedUserPrisma.email, 
+                updatedUserPrisma.passwordHash, 
+                updatedUserPrisma.role as UserRole_ENUM,
+                updatedUserPrisma.createdAt,
+                updatedUserPrisma.updatedAt
+            );
         } catch (error) {
             this.logger.logError(`Error updating user ${id}: ${error}`);
             return null;
@@ -258,7 +274,15 @@ export class UserRepository {
         try {
             const userPrisma = await this.db.user.findUnique({ where: { username } });
             if (!userPrisma) return null;
-            return new User(userPrisma.id, userPrisma.username, userPrisma.email, userPrisma.passwordHash, userPrisma.role as UserRole_ENUM);
+            return new User(
+                userPrisma.id, 
+                userPrisma.username, 
+                userPrisma.email, 
+                userPrisma.passwordHash, 
+                userPrisma.role as UserRole_ENUM,
+                userPrisma.createdAt,
+                userPrisma.updatedAt
+            );
         } catch (error) {
             this.logger.logError(`Error finding user by username ${username}: ${error}`);
             return null;
@@ -269,7 +293,15 @@ export class UserRepository {
         try {
             const userPrisma = await this.db.user.findUnique({ where: { email } });
             if (!userPrisma) return null;
-            return new User(userPrisma.id, userPrisma.username, userPrisma.email, userPrisma.passwordHash, userPrisma.role as UserRole_ENUM);
+            return new User(
+                userPrisma.id, 
+                userPrisma.username, 
+                userPrisma.email, 
+                userPrisma.passwordHash, 
+                userPrisma.role as UserRole_ENUM,
+                userPrisma.createdAt,
+                userPrisma.updatedAt
+            );
         } catch (error) {
             this.logger.logError(`Error finding user by email ${email}: ${error}`);
             return null;
@@ -280,7 +312,15 @@ export class UserRepository {
         try {
             const userPrisma = await this.db.user.findUnique({ where: { id } });
             if (!userPrisma) return null;
-            return new User(userPrisma.id, userPrisma.username, userPrisma.email, userPrisma.passwordHash, userPrisma.role as UserRole_ENUM);
+            return new User(
+                userPrisma.id, 
+                userPrisma.username, 
+                userPrisma.email, 
+                userPrisma.passwordHash, 
+                userPrisma.role as UserRole_ENUM,
+                userPrisma.createdAt,
+                userPrisma.updatedAt
+            );
         } catch (error) {
             this.logger.logError(`Error finding user by ID ${id}: ${error}`);
             return null;
@@ -290,7 +330,15 @@ export class UserRepository {
     public async findAll(): Promise<User[]> {
         try {
             const usersPrisma = await this.db.user.findMany();
-            return usersPrisma.map(u => new User(u.id, u.username, u.email, u.passwordHash, u.role as UserRole_ENUM));
+            return usersPrisma.map(u => new User(
+                u.id, 
+                u.username, 
+                u.email, 
+                u.passwordHash, 
+                u.role as UserRole_ENUM,
+                u.createdAt,
+                u.updatedAt
+            ));
         } catch (error) {
             this.logger.logError(`Error finding all users: ${error}`);
             return [];

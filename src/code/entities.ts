@@ -212,13 +212,25 @@ export class User {
     public email: string;
     private passwordHash: string;
     public role: UserRole_ENUM;
+    public createdAt: Date;
+    public updatedAt: Date;
 
-    constructor(id: string, username: string, email: string, passwordHash: string, role: UserRole_ENUM) {
+    constructor(
+        id: string, 
+        username: string, 
+        email: string, 
+        passwordHash: string, 
+        role: UserRole_ENUM,
+        createdAt: Date,
+        updatedAt: Date
+    ) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
         this.role = role;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public getUsername(): string {

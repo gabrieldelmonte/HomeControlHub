@@ -294,7 +294,10 @@ export class UserController {
             const userProfile = {
                 id: req.fullUser.id,
                 username: req.fullUser.username,
-                role: req.fullUser.role
+                email: req.fullUser.email,
+                role: req.fullUser.role,
+                createdAt: req.fullUser.createdAt,
+                updatedAt: req.fullUser.updatedAt
             };
             res.status(200).json(userProfile);
         } catch (error) {
@@ -342,6 +345,82 @@ export class UserController {
         } catch (error) {
             console.error("USER_CONTROLLER_GET_USER_BY_ID: Caught error in try block", error); // DEBUG
             this.logger.logError(`Error in getUserById for ${req.params.userId}: ${error}`);
+            next(error);
+        }
+    }
+
+    public async updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            if (!req.fullUser) {
+                res.status(401).json({ message: 'Unauthorized or user data not available' });
+                return;
+            }
+
+            const { username, email, password } = req.body;
+            
+            // Prepare update data
+            const updateData: any = {};
+            
+            if (username && username !== req.fullUser.username) {
+                // Check if username is already taken
+                const existingUser = await this.userRepository.findByUsername(username);
+                if (existingUser && existingUser.id !== req.fullUser.id) {
+                    res.status(400).json({ message: 'Username already taken' });
+                    return;
+                }
+                updateData.username = username;
+            }
+            
+            if (email && email !== req.fullUser.email) {
+                // Check if email is already taken
+                const existingUser = await this.userRepository.findByEmail(email);
+                if (existingUser && existingUser.id !== req.fullUser.id) {
+                    res.status(400).json({ message: 'Email already taken' });
+                    return;
+                }
+                updateData.email = email;
+            }
+            
+            if (password && password.trim() !== '') {
+                // Hash the new password
+                const bcrypt = require('bcrypt');
+                const SALT_ROUNDS = 10;
+                updateData.passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+            }
+
+            // If no changes, return current profile
+            if (Object.keys(updateData).length === 0) {
+                const userProfile = {
+                    id: req.fullUser.id,
+                    username: req.fullUser.username,
+                    email: req.fullUser.email,
+                    role: req.fullUser.role,
+                    createdAt: req.fullUser.createdAt,
+                    updatedAt: req.fullUser.updatedAt
+                };
+                res.status(200).json(userProfile);
+                return;
+            }
+
+            // Update the user
+            const updatedUser = await this.userRepository.update(req.fullUser.id, updateData);
+            if (!updatedUser) {
+                res.status(500).json({ message: 'Failed to update profile' });
+                return;
+            }
+
+            const userProfile = {
+                id: updatedUser.id,
+                username: updatedUser.username,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                createdAt: updatedUser.createdAt,
+                updatedAt: updatedUser.updatedAt
+            };
+            
+            res.status(200).json(userProfile);
+        } catch (error) {
+            this.logger.logError(`Error in updateProfile for user ${req.user?.userId}: ${error}`);
             next(error);
         }
     }
