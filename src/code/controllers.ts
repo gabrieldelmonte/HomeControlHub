@@ -59,6 +59,14 @@ export class DeviceController {
             if (newDevice) {
                 console.error("DEVICE_CONTROLLER_CREATE_DEVICE: Device added successfully"); // DEBUG
                 
+                // Subscribe to MQTT topics for the new device
+                try {
+                    await this.mqttService.subscribeToDeviceTopics(newDevice);
+                    this.logger.logInfo(`Subscribed to MQTT topics for new device: ${newDevice.name}`);
+                } catch (error) {
+                    this.logger.logError(`Failed to subscribe to MQTT topics for device ${newDevice.name}: ${error}`);
+                }
+                
                 // Log device creation
                 await this.systemLogRepository.createDeviceLog({
                     deviceId: newDevice.id,
@@ -103,9 +111,36 @@ export class DeviceController {
             delete updateData.ownerId; // Prevent changing owner directly
             delete updateData.userId; // Prevent changing owner directly (if passed as userId)
 
+            // Check if MQTT topic is being changed
+            const oldDevice = req.device;
+            const mqttTopicChanged = updateData.mqttTopic && updateData.mqttTopic !== oldDevice.mqttTopic;
+
             const updatedDevice = await this.deviceRepository.update(deviceId, updateData);
             if (updatedDevice) {
                 console.error("DEVICE_CONTROLLER_UPDATE_DEVICE: Device updated successfully"); // DEBUG
+                
+                // Handle MQTT topic changes
+                if (mqttTopicChanged) {
+                    try {
+                        // Unsubscribe from old topics
+                        await this.mqttService.unsubscribeFromDeviceTopics(oldDevice);
+                        // Subscribe to new topics
+                        await this.mqttService.subscribeToDeviceTopics(updatedDevice);
+                        this.logger.logInfo(`Updated MQTT topic subscriptions for device: ${updatedDevice.name}`);
+                    } catch (error) {
+                        this.logger.logError(`Failed to update MQTT subscriptions for device ${updatedDevice.name}: ${error}`);
+                    }
+                }
+                
+                // Log device update
+                await this.systemLogRepository.createDeviceLog({
+                    deviceId: updatedDevice.id,
+                    userId: req.user?.userId || 'system',
+                    message: `Device "${updatedDevice.name}" information was updated`,
+                    type: 'INFO',
+                    source: 'DEVICE'
+                });
+                
                 res.status(200).json(updatedDevice);
             } else {
                 console.error("DEVICE_CONTROLLER_UPDATE_DEVICE: Device not found or update failed"); // DEBUG
@@ -192,6 +227,24 @@ export class DeviceController {
             const success = await this.deviceRepository.delete(deviceId);
             if (success) {
                 console.error("DEVICE_CONTROLLER_DELETE_DEVICE: Device deleted successfully"); // DEBUG
+                
+                // Unsubscribe from MQTT topics for the deleted device
+                try {
+                    await this.mqttService.unsubscribeFromDeviceTopics(req.device);
+                    this.logger.logInfo(`Unsubscribed from MQTT topics for deleted device: ${req.device.name}`);
+                } catch (error) {
+                    this.logger.logError(`Failed to unsubscribe from MQTT topics for device ${req.device.name}: ${error}`);
+                }
+                
+                // Log device deletion
+                await this.systemLogRepository.createDeviceLog({
+                    deviceId: req.device.id,
+                    userId: req.user?.userId || 'system',
+                    message: `Device "${req.device.name}" was deleted`,
+                    type: 'INFO',
+                    source: 'DEVICE'
+                });
+                
                 res.status(204).send();
             } else {
                 console.error("DEVICE_CONTROLLER_DELETE_DEVICE: Device not found or deletion failed"); // DEBUG
@@ -276,7 +329,7 @@ export class DeviceController {
                 return;
             }
 
-            await this.mqttService.publishCommand(deviceId, commandName, payload);
+            await this.mqttService.sendCommand(req.device, { name: commandName, payload });
             res.status(202).json({ message: `Command '${commandName}' sent to device ${deviceId}` });
         } catch (error) {
             console.error("DEVICE_CONTROLLER_SEND_COMMAND: Caught error in try block", error); // DEBUG

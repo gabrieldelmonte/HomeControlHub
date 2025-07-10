@@ -1506,7 +1506,7 @@ Error generating stack: `+s.message+`
   margin-bottom: 2rem;
 `,Vv=S(Yo)`
   grid-column: 1 / -1;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: white;
   border: 2px solid #e1e5e9;
 `,Qv=S.div`
   display: flex;

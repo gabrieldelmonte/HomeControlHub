@@ -52,7 +52,7 @@ export class App {
         const mqttConnection = new MQTTConnection();
         const mqttService = new MQTTService(mqttConnection, deviceRepository, encryptionService);
         const notificationService = new NotificationService();
-        const automationService = new AutomationService(notificationService, userRepository);
+        const automationService = new AutomationService(notificationService, userRepository, deviceRepository);
         
         mqttService.setAutomationService(automationService);
         automationService.setMqttService(mqttService);

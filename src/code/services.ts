@@ -192,6 +192,23 @@ export class MQTTConnection {
         });
     }
 
+    public unsubscribe(topic: string, options?: MQTT.IClientOptions): Promise<MQTT.Packet | undefined> {
+        return new Promise((resolve, reject) => {
+            if (!this.client || !this.client.connected) {
+                this.logger.logError('MQTT client not connected. Cannot unsubscribe.');
+                return reject(new Error('MQTT client not connected'));
+            }
+            this.client.unsubscribe(topic, options, (error, packet) => {
+                if (error) {
+                    this.logger.logError(`MQTT unsubscribe error from topic ${topic}: ${error}`);
+                    return reject(error);
+                }
+                this.logger.logInfo(`Unsubscribed from MQTT topic ${topic}`);
+                resolve(packet as MQTT.Packet | undefined);
+            });
+        });
+    }
+
     public getClient(): MQTT.MqttClient | null {
         return this.client;
     }
@@ -224,83 +241,16 @@ export class MQTTService {
     public async initialize(): Promise<void> {
         await this.mqttConnection.connect();
         this.mqttConnection.setOnMessageCallback(this.handleIncomingMessage.bind(this));
+        
+        // Subscribe to legacy topics for backward compatibility
         await this.mqttConnection.subscribe('home/devices/+/status');
         await this.mqttConnection.subscribe('home/devices/+/telemetry');
         await this.mqttConnection.subscribe('home/devices/+/telemetry/firmwareVersion');
-        this.logger.logInfo('MQTTService initialized and subscribed to device topics.');
-    }
-
-    private async handleIncomingMessage(topic: string, message: Buffer): Promise<void> {
-        this.logger.logInfo(`MQTTService handling message from topic: ${topic}`);
-        const topicParts = topic.split('/');
-        if (topicParts.length < 4 || topicParts[0] !== 'home' || topicParts[1] !== 'devices') {
-            this.logger.logWarn(`Received message on unknown topic structure: ${topic}`);
-            return;
-        }
-        const deviceId = topicParts[2];
-        const messageType = topicParts[3];
-        const subMessageType = topicParts.length > 4 ? topicParts[4] : null;
-
-        const device = await this.deviceRepository.findById(deviceId);
-        if (!device) {
-            this.logger.logWarn(`Received MQTT message for unknown device ID: ${deviceId} on topic ${topic}`);
-            return;
-        }
-
-        const decryptedPayloadString = this.encryptionService.decrypt(message.toString('utf-8'), device.aesKey);
-        if (!decryptedPayloadString) {
-            this.logger.logError(`Failed to decrypt message from device ${deviceId} on topic ${topic}`);
-            return;
-        }
-
-        try {
-            const payload = JSON.parse(decryptedPayloadString);
-            this.logger.logInfo(`Decrypted data from ${deviceId} (${messageType}${subMessageType ? '/' + subMessageType : ''}): ${JSON.stringify(payload)}`);
-            
-            let updated = false;
-            if (messageType === 'status') {
-                if (typeof payload.status === 'boolean') {
-                    await this.deviceRepository.update(deviceId, { status: payload.status });
-                    updated = true;
-                }
-            } else if (messageType === 'telemetry') {
-                // Handle telemetry data (could be logged separately)
-                this.logger.logInfo(`Telemetry data received from device ${deviceId}: ${JSON.stringify(payload)}`);
-                updated = true;
-            } else {
-                this.logger.logWarn(`Unhandled message type '${messageType}' from device ${deviceId}`);
-            }
-
-            if (updated && this.automationService) {
-                const freshDeviceState = await this.deviceRepository.findById(deviceId);
-                if (freshDeviceState) {
-                    await this.automationService.executeRulesForDevice(freshDeviceState, payload);
-                }
-            }
-
-        } catch (error) {
-            this.logger.logError(`Error processing decrypted message from ${deviceId}: ${error}. Payload: ${decryptedPayloadString}`);
-        }
-    }
-
-    public async publishCommand(deviceId: string, commandName: string, payload: object): Promise<void> {
-        const device = await this.deviceRepository.findById(deviceId);
-        if (!device) {
-            this.logger.logError(`Device ${deviceId} not found for publishing command.`);
-            throw new Error(`Device ${deviceId} not found`);
-        }
-
-        const messageString = JSON.stringify(payload);
-        const encryptedMessage = this.encryptionService.encrypt(messageString, device.aesKey);
-
-        if (!encryptedMessage) {
-            this.logger.logError(`Failed to encrypt command for device ${deviceId}`);
-            throw new Error("Encryption failed for command");
-        }
-
-        const topic = `home/devices/${deviceId}/command/${commandName}`;
-        await this.mqttConnection.publish(topic, encryptedMessage);
-        this.logger.logInfo(`Published command '${commandName}' to ${topic}`);
+        
+        // Subscribe to all existing device-specific topics
+        await this.subscribeToAllDeviceTopics();
+        
+        this.logger.logInfo('MQTTService initialized and subscribed to all device topics.');
     }
 
     public async sendCommand(device: Device, command: { name: string; payload: any }): Promise<boolean> {
@@ -322,6 +272,171 @@ export class MQTTService {
         } catch (error) {
             this.logger.logError(`Error sending MQTT command to device ${device.name}: ${error}`);
             return false;
+        }
+    }
+
+    /**
+     * Subscribe to all necessary topics for a specific device
+     */
+    public async subscribeToDeviceTopics(device: Device): Promise<void> {
+        const baseTopic = device.mqttTopic;
+        const topicsToSubscribe = [
+            `${baseTopic}/status`,           // Device status updates
+            `${baseTopic}/telemetry`,        // Device telemetry data
+            `${baseTopic}/heartbeat`,        // Device heartbeat/connectivity
+            `${baseTopic}/response`,         // Command responses
+            `${baseTopic}/error`,            // Error messages from device
+        ];
+
+        for (const topic of topicsToSubscribe) {
+            try {
+                await this.mqttConnection.subscribe(topic);
+                this.logger.logInfo(`Subscribed to device topic: ${topic}`);
+            } catch (error) {
+                this.logger.logError(`Failed to subscribe to topic ${topic}: ${error}`);
+            }
+        }
+    }
+
+    /**
+     * Unsubscribe from all topics for a specific device
+     */
+    public async unsubscribeFromDeviceTopics(device: Device): Promise<void> {
+        const baseTopic = device.mqttTopic;
+        const topicsToUnsubscribe = [
+            `${baseTopic}/status`,
+            `${baseTopic}/telemetry`,
+            `${baseTopic}/heartbeat`,
+            `${baseTopic}/response`,
+            `${baseTopic}/error`,
+        ];
+
+        for (const topic of topicsToUnsubscribe) {
+            try {
+                await this.mqttConnection.unsubscribe(topic);
+                this.logger.logInfo(`Unsubscribed from device topic: ${topic}`);
+            } catch (error) {
+                this.logger.logError(`Failed to unsubscribe from topic ${topic}: ${error}`);
+            }
+        }
+    }
+
+    /**
+     * Subscribe to all existing device topics when service starts
+     */
+    public async subscribeToAllDeviceTopics(): Promise<void> {
+        try {
+            const devices = await this.deviceRepository.findAll();
+            this.logger.logInfo(`Found ${devices.length} devices, subscribing to their topics...`);
+            
+            for (const device of devices) {
+                await this.subscribeToDeviceTopics(device);
+            }
+            
+            this.logger.logInfo('Successfully subscribed to all existing device topics');
+        } catch (error) {
+            this.logger.logError(`Error subscribing to all device topics: ${error}`);
+        }
+    }
+
+    /**
+     * Publish a device online/offline status message
+     */
+    public async publishDeviceStatus(device: Device, online: boolean): Promise<void> {
+        try {
+            const statusPayload = { online, timestamp: new Date().toISOString() };
+            const messageString = JSON.stringify(statusPayload);
+            const encryptedMessage = this.encryptionService.encrypt(messageString, device.aesKey);
+
+            if (!encryptedMessage) {
+                this.logger.logError(`Failed to encrypt status message for device ${device.id}`);
+                return;
+            }
+
+            const statusTopic = `${device.mqttTopic}/status`;
+            await this.mqttConnection.publish(statusTopic, encryptedMessage, { retain: true });
+            this.logger.logInfo(`Published ${online ? 'online' : 'offline'} status for device ${device.name}`);
+        } catch (error) {
+            this.logger.logError(`Error publishing device status: ${error}`);
+        }
+    }
+
+    /**
+     * Enhanced message handler with better topic parsing
+     */
+    private async handleIncomingMessage(topic: string, message: Buffer): Promise<void> {
+        this.logger.logInfo(`MQTTService handling message from topic: ${topic}`);
+        
+        // Find the device by matching the topic prefix
+        const devices = await this.deviceRepository.findAll();
+        const device = devices.find(d => topic.startsWith(d.mqttTopic));
+        
+        if (!device) {
+            this.logger.logWarn(`Received message on topic ${topic} but no matching device found`);
+            return;
+        }
+
+        // Extract message type from topic
+        const topicSuffix = topic.replace(device.mqttTopic + '/', '');
+        const messageType = topicSuffix.split('/')[0];
+
+        const decryptedPayloadString = this.encryptionService.decrypt(message.toString('utf-8'), device.aesKey);
+        if (!decryptedPayloadString) {
+            this.logger.logError(`Failed to decrypt message from device ${device.id} on topic ${topic}`);
+            return;
+        }
+
+        try {
+            const payload = JSON.parse(decryptedPayloadString);
+            this.logger.logInfo(`Decrypted data from ${device.name} (${messageType}): ${JSON.stringify(payload)}`);
+            
+            let updated = false;
+            
+            switch (messageType) {
+                case 'status':
+                    if (typeof payload.status === 'boolean') {
+                        await this.deviceRepository.update(device.id, { status: payload.status });
+                        updated = true;
+                        this.logger.logInfo(`Updated device ${device.name} status to ${payload.status}`);
+                    }
+                    if (typeof payload.online === 'boolean') {
+                        // Update device connectivity status if needed
+                        this.logger.logInfo(`Device ${device.name} is ${payload.online ? 'online' : 'offline'}`);
+                    }
+                    break;
+                    
+                case 'telemetry':
+                    this.logger.logInfo(`Telemetry data received from device ${device.name}: ${JSON.stringify(payload)}`);
+                    updated = true;
+                    break;
+                    
+                case 'heartbeat':
+                    this.logger.logDebug(`Heartbeat received from device ${device.name}`);
+                    // Update last seen timestamp if you have that field
+                    break;
+                    
+                case 'response':
+                    this.logger.logInfo(`Command response from device ${device.name}: ${JSON.stringify(payload)}`);
+                    break;
+                    
+                case 'error':
+                    this.logger.logError(`Error reported by device ${device.name}: ${JSON.stringify(payload)}`);
+                    break;
+                    
+                default:
+                    this.logger.logWarn(`Unhandled message type '${messageType}' from device ${device.name}`);
+            }
+
+            // Execute automation rules if device state was updated
+            if (updated && this.automationService) {
+                const freshDeviceState = await this.deviceRepository.findById(device.id);
+                if (freshDeviceState) {
+                    await this.automationService.executeRulesForDevice(freshDeviceState, payload);
+                }
+            }
+
+        } catch (error) {
+            this.logger.logError(`Error processing decrypted message from ${device.name}: ${error}. Payload: ${decryptedPayloadString}`);
         }
     }
 }
@@ -445,10 +560,12 @@ export class AutomationService {
     private mqttService!: MQTTService;
     private logger: Logger;
     private userRepository: UserRepository;
+    private deviceRepository: DeviceRepository;
 
-    constructor(notificationService: NotificationService, userRepository: UserRepository) {
+    constructor(notificationService: NotificationService, userRepository: UserRepository, deviceRepository: DeviceRepository) {
         this.notificationService = notificationService;
         this.userRepository = userRepository;
+        this.deviceRepository = deviceRepository;
         this.logger = Logger.getInstance();
         this.loadPlaceholderRules();
     }
@@ -489,8 +606,15 @@ export class AutomationService {
             if (rule.evaluate(triggeringDevice, triggeringPayload)) {
                 this.logger.logInfo(`Rule '${rule.name}' triggered by ${triggeringDevice.name}. Executing action on device ${rule.actionDeviceId}.`);
                 try {
-                    await this.mqttService.publishCommand(rule.actionDeviceId, rule.actionCommand.name, rule.actionCommand.payload as any);
-                    this.logger.logInfo(`Action '${rule.actionCommand.name}' for rule '${rule.name}' sent to device ${rule.actionDeviceId}`);
+                    // Get the target device and send command
+                    const targetDevice = await this.deviceRepository.findById(rule.actionDeviceId);
+                    if (targetDevice) {
+                        const command = { name: rule.actionCommand.name, payload: rule.actionCommand.payload };
+                        await this.mqttService.sendCommand(targetDevice, command);
+                        this.logger.logInfo(`Action '${rule.actionCommand.name}' for rule '${rule.name}' sent to device ${targetDevice.name}`);
+                    } else {
+                        this.logger.logError(`Target device ${rule.actionDeviceId} not found for automation rule '${rule.name}'`);
+                    }
                 } catch (error) {
                     this.logger.logError(`Error executing action for rule '${rule.name}' on device ${rule.actionDeviceId}: ${error}`);
                 }
