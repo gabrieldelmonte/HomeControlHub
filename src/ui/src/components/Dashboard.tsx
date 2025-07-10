@@ -23,7 +23,13 @@ import {
   ToggleSwitch,
   LoadingContainer,
   ErrorContainer,
-  EmptyState
+  EmptyState,
+  WelcomeBanner,
+  WelcomeBannerContent,
+  WelcomeMessage,
+  WelcomeTitle,
+  WelcomeText,
+  DismissButton
 } from "./styles/Dashboard.styles";
 
 interface Device {
@@ -56,6 +62,8 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Remove auth-page class when dashboard loads
   useEffect(() => {
@@ -67,6 +75,14 @@ const Dashboard: React.FC = () => {
       try {
         const user = JSON.parse(userData);
         setUserRole(user.role);
+        setCurrentUser(user);
+        
+        // Check if user should see welcome banner (first time login detection)
+        // Show welcome banner if user doesn't have the "welcomed" flag in localStorage
+        const hasBeenWelcomed = localStorage.getItem(`welcomed_${user.id}`);
+        if (!hasBeenWelcomed && user.role === 'STANDARD_USER') {
+          setShowWelcomeBanner(true);
+        }
       } catch (error) {
         console.error("Error parsing user data:", error);
       }
@@ -194,6 +210,13 @@ const Dashboard: React.FC = () => {
         );
         throw new Error("Failed to update device status");
       }
+
+      // Notify other pages about device update
+      localStorage.setItem(`device_updated_${deviceId}`, Date.now().toString());
+      // Remove the item after a short delay to allow other pages to detect the change
+      setTimeout(() => {
+        localStorage.removeItem(`device_updated_${deviceId}`);
+      }, 1000);
     } catch (err) {
       console.error("Error toggling device status:", err);
       // The optimistic update has already been reverted above
@@ -239,6 +262,14 @@ const Dashboard: React.FC = () => {
       }
     } catch (err) {
       console.error("Error marking notification as read:", err);
+    }
+  };
+
+  const handleDismissWelcome = () => {
+    if (currentUser) {
+      // Mark user as welcomed so banner doesn't show again
+      localStorage.setItem(`welcomed_${currentUser.id}`, 'true');
+      setShowWelcomeBanner(false);
     }
   };
 
@@ -341,6 +372,24 @@ const Dashboard: React.FC = () => {
       </Header>
 
       <MainContent>
+        {/* Welcome Banner for new users */}
+        {showWelcomeBanner && currentUser && (
+          <WelcomeBanner>
+            <WelcomeBannerContent>
+              <WelcomeMessage>
+                <WelcomeTitle>Welcome to Home Control Hub, {currentUser.username}! 🎉</WelcomeTitle>
+                <WelcomeText>
+                  You can now manage and monitor all your smart devices from this dashboard. 
+                  Add your devices, check their status, and receive important notifications all in one place.
+                </WelcomeText>
+              </WelcomeMessage>
+              <DismissButton onClick={handleDismissWelcome}>
+                Got it, thanks!
+              </DismissButton>
+            </WelcomeBannerContent>
+          </WelcomeBanner>
+        )}
+
         {devices.length === 0 ? (
           <>
             <SectionHeader>
@@ -425,7 +474,7 @@ const Dashboard: React.FC = () => {
         )}
 
         {/* Notifications section - only for standard users */}
-        {!isAdmin && notifications.length > 0 && (
+        {!isAdmin && (
           <>
             <SectionHeader style={{ marginTop: '3rem' }}>
               <SectionTitle>Your notifications</SectionTitle>
@@ -442,7 +491,14 @@ const Dashboard: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <tbody>
-                {notifications.map((notification) => (
+                {notifications.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+                      No notifications yet. You'll see important updates about your devices here.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  notifications.map((notification) => (
                   <TableRow key={notification.id}>
                     <TableCell style={{ 
                       fontWeight: notification.read ? 'normal' : 'bold',
@@ -473,7 +529,8 @@ const Dashboard: React.FC = () => {
                       )}
                     </TableCell>
                   </TableRow>
-                ))}
+                  ))
+                )}
               </tbody>
             </DevicesTable>
           </>

@@ -100,6 +100,10 @@ export class Database {
     public get notification() {
         return this.prisma.notification;
     }
+
+    public get systemLog() {
+        return this.prisma.systemLog;
+    }
 }
 
 

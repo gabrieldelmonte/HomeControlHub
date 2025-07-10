@@ -428,3 +428,111 @@ export class NotificationRepository {
         }
     }
 }
+
+export class SystemLogRepository {
+    private db: Database;
+    private logger: Logger;
+
+    constructor() {
+        this.db = Database.getInstance();
+        this.logger = Logger.getInstance();
+    }
+
+    public async createDeviceLog(data: {
+        deviceId: string;
+        userId: string;
+        message: string;
+        type: 'INFO' | 'WARNING' | 'ERROR';
+        source: string;
+    }): Promise<any | null> {
+        try {
+            const log = await this.db.systemLog.create({
+                data: {
+                    deviceId: data.deviceId,
+                    userId: data.userId,
+                    message: data.message,
+                    type: data.type,
+                    source: data.source
+                }
+            });
+            return log;
+        } catch (error) {
+            this.logger.logError(`Error creating device log: ${error}`);
+            return null;
+        }
+    }
+
+    public async getDeviceLogs(deviceId: string, limit: number = 50): Promise<any[]> {
+        try {
+            const logs = await this.db.systemLog.findMany({
+                where: { deviceId },
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+                include: {
+                    user: {
+                        select: {
+                            username: true,
+                            email: true
+                        }
+                    },
+                    device: {
+                        select: {
+                            name: true
+                        }
+                    }
+                }
+            });
+            return logs;
+        } catch (error) {
+            this.logger.logError(`Error fetching device logs for device ${deviceId}: ${error}`);
+            return [];
+        }
+    }
+
+    public async getUserLogs(userId: string, limit: number = 50): Promise<any[]> {
+        try {
+            const logs = await this.db.systemLog.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+                include: {
+                    device: {
+                        select: {
+                            name: true
+                        }
+                    }
+                }
+            });
+            return logs;
+        } catch (error) {
+            this.logger.logError(`Error fetching user logs for user ${userId}: ${error}`);
+            return [];
+        }
+    }
+
+    public async getSystemLogs(limit: number = 100): Promise<any[]> {
+        try {
+            const logs = await this.db.systemLog.findMany({
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+                include: {
+                    user: {
+                        select: {
+                            username: true,
+                            email: true
+                        }
+                    },
+                    device: {
+                        select: {
+                            name: true
+                        }
+                    }
+                }
+            });
+            return logs;
+        } catch (error) {
+            this.logger.logError(`Error fetching system logs: ${error}`);
+            return [];
+        }
+    }
+}

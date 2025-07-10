@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaArrowLeft, FaEdit, FaSave, FaTimes, FaExclamationTriangle } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaSave, FaTimes, FaExclamationTriangle, FaSync } from "react-icons/fa";
 import {
   Container,
   Header,
@@ -55,9 +55,14 @@ interface DeviceData {
 
 interface LogEntry {
   id: string;
-  timestamp: string;
   message: string;
-  type: "info" | "warning" | "error";
+  type: "INFO" | "WARNING" | "ERROR";
+  source: string;
+  createdAt: string;
+  user?: {
+    username: string;
+    email: string;
+  };
 }
 
 // Helper function to format dates safely
@@ -95,9 +100,13 @@ const DeviceDetails: React.FC = () => {
   const [editData, setEditData] = useState<Partial<DeviceData>>({});
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [previousStatus, setPreviousStatus] = useState<boolean | null>(null);
+  const [logsInitialized, setLogsInitialized] = useState(false);
 
   useEffect(() => {
     // Get user role from localStorage
@@ -113,86 +122,156 @@ const DeviceDetails: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchDeviceData = async () => {
-      try {
+  const fetchDeviceLogs = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token || !deviceId) return;
+
+      const response = await fetch(`http://localhost:8080/api/v1/devices/${deviceId}/logs?limit=20`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const logs = await response.json();
+        // Transform backend logs to frontend format
+        const transformedLogs: LogEntry[] = logs.map((log: any) => ({
+          id: log.id,
+          message: log.message,
+          type: log.type,
+          source: log.source,
+          createdAt: log.createdAt,
+          user: log.user
+        }));
+        setLogs(transformedLogs);
+        setLogsInitialized(true);
+      }
+    } catch (error) {
+      console.error("Error fetching device logs:", error);
+    }
+  };
+
+  const fetchDeviceData = async (showLoadingSpinner: boolean = true, preserveLogs: boolean = false) => {
+    try {
+      if (showLoadingSpinner) {
         setLoading(true);
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
+      } else {
+        setRefreshing(true);
+      }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
 
-        // Fetch device details
-        const response = await fetch(`http://localhost:8080/api/v1/devices/${deviceId}`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+      // Fetch device details
+      const response = await fetch(`http://localhost:8080/api/v1/devices/${deviceId}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-        if (response.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          navigate("/login");
-          return;
-        }
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+        return;
+      }
 
-        if (response.status === 404) {
-          setError("Device not found");
-          return;
-        }
+      if (response.status === 404) {
+        setError("Device not found");
+        return;
+      }
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        const deviceData = await response.json();
-        
-        // Mock logs for now - in a real app, these would come from another API endpoint
-        const mockLogs: LogEntry[] = [
-          {
-            id: "1",
-            timestamp: new Date(Date.now() - 1000 * 60 * 15).toLocaleString(),
-            message: `Device status changed to ${deviceData.status ? 'ON' : 'OFF'}`,
-            type: "info"
-          },
-          {
-            id: "2",
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toLocaleString(),
-            message: "Device connected successfully",
-            type: "info"
-          },
-          {
-            id: "3",
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8).toLocaleString(),
-            message: "Connection timeout detected",
-            type: "warning"
-          },
-          {
-            id: "4",
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toLocaleString(),
-            message: "Device registered in system",
-            type: "info"
-          },
-        ];
-
-        setDevice(deviceData);
-        setEditData(deviceData);
-        setLogs(mockLogs);
-      } catch (err) {
-        console.error("Error fetching device data:", err);
+      const deviceData = await response.json();
+      
+      setDevice(deviceData);
+      setEditData(deviceData);
+      setPreviousStatus(deviceData.status);
+      
+      // Fetch logs from backend if this is the first load
+      if (!logsInitialized && !preserveLogs) {
+        await fetchDeviceLogs();
+      }
+      
+      // Update last updated timestamp
+      if (!showLoadingSpinner) {
+        setLastUpdated(new Date().toLocaleTimeString());
+      }
+    } catch (err) {
+      console.error("Error fetching device data:", err);
+      if (showLoadingSpinner) {
         setError("Failed to load device data");
-      } finally {
+      }
+    } finally {
+      if (showLoadingSpinner) {
         setLoading(false);
+      } else {
+        setRefreshing(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (deviceId) {
+      fetchDeviceData(); // First load - will initialize logs since preserveLogs defaults to false
+    }
+  }, [deviceId, navigate]);
+
+  // Add polling to refresh device data every 5 seconds (more responsive)
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (deviceId && !isEditing) {
+        fetchDeviceData(false, true); // Don't show loading spinner for background updates, preserve logs
+      }
+    }, 5000); // 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, [deviceId, isEditing]);
+
+  // Add focus event listener to refresh data when user returns to the page
+  useEffect(() => {
+    const handleFocus = () => {
+      if (deviceId && !isEditing) {
+        fetchDeviceData(false, true);
       }
     };
 
-    if (deviceId) {
-      fetchDeviceData();
-    }
-  }, [deviceId, navigate]);
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === `device_updated_${deviceId}` && deviceId && !isEditing) {
+        // Device was updated from another page, refresh immediately
+        setTimeout(() => fetchDeviceData(false, true), 100); // Small delay to ensure backend is updated
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('storage', handleStorageChange);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && deviceId && !isEditing) {
+        fetchDeviceData(false, true);
+      }
+    });
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('visibilitychange', handleFocus);
+    };
+  }, [deviceId, isEditing]);
+
+  const handleRefresh = () => {
+    fetchDeviceData(false, true); // false = don't show loading spinner, true = preserve logs
+    fetchDeviceLogs(); // Refresh logs from backend
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -242,12 +321,15 @@ const DeviceDetails: React.FC = () => {
       setDevice(updatedDevice);
       setIsEditing(false);
       
-      // Add log entry
+      // Add log entry with device name and user attribution
+      //const userInfo = currentUser ? currentUser.email || currentUser.username : 'Unknown User';
+      const userInfo = currentUser.username;
       const newLog: LogEntry = {
         id: Date.now().toString(),
-        timestamp: new Date().toLocaleString(),
-        message: "Device information updated",
-        type: "info"
+        message: `Device '${updatedDevice.name}' information updated by ${userInfo}`,
+        type: "INFO",
+        source: "DEVICE",
+        createdAt: new Date().toISOString()
       };
       setLogs(prev => [newLog, ...prev]);
     } catch (err) {
@@ -292,14 +374,22 @@ const DeviceDetails: React.FC = () => {
         throw new Error("Failed to update device status");
       }
       
-      // Add log entry
+      // Add log entry with user-friendly format matching Dashboard
+      const userInfo = currentUser.username;
       const newLog: LogEntry = {
         id: Date.now().toString(),
-        timestamp: new Date().toLocaleString(),
-        message: `Device status changed to ${newStatus ? 'ON' : 'OFF'}`,
-        type: "info"
+        message: `Device '${device.name}' status changed to ${newStatus ? 'ON' : 'OFF'} by ${userInfo}`,
+        type: "INFO",
+        source: "DEVICE",
+        createdAt: new Date().toISOString()
       };
       setLogs(prev => [newLog, ...prev]);
+
+      // Notify other pages about device update
+      localStorage.setItem(`device_updated_${deviceId}`, Date.now().toString());
+      setTimeout(() => {
+        localStorage.removeItem(`device_updated_${deviceId}`);
+      }, 1000);
     } catch (err) {
       console.error("Error toggling device status:", err);
       setError("Failed to toggle device status");
@@ -531,14 +621,43 @@ const DeviceDetails: React.FC = () => {
             </InfoCard>
 
             <LogsCard>
-              <CardTitle>Recent Activity</CardTitle>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <CardTitle>Recent Activity</CardTitle>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  {lastUpdated && (
+                    <span style={{ fontSize: '0.7rem', color: '#666' }}>
+                      Last updated: {lastUpdated}
+                    </span>
+                  )}
+                  <ActionButton onClick={handleRefresh} style={{ fontSize: '0.8rem', padding: '0.5rem' }} disabled={refreshing}>
+                    <FaSync style={{ 
+                      animation: refreshing ? 'spin 1s linear infinite' : 'none',
+                      marginRight: '0.5rem'
+                    }} /> 
+                    {refreshing ? 'Refreshing...' : 'Refresh'}
+                  </ActionButton>
+                </div>
+              </div>
+              <style>
+                {`
+                  @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                  }
+                `}
+              </style>
               <div style={{ maxHeight: "300px", overflowY: "auto" }}>
                 {logs.map(log => (
-                  <LogEntry key={log.id} type={log.type}>
-                    <LogTime>{log.timestamp}</LogTime>
+                  <LogEntry key={log.id} type={log.type.toLowerCase() as "info" | "warning" | "error"}>
+                    <LogTime>{formatDate(log.createdAt)}</LogTime>
                     <LogMessage>
-                      {log.type === "warning" && <FaExclamationTriangle />}
+                      {log.type === "WARNING" && <FaExclamationTriangle />}
                       {log.message}
+                      {log.user && (
+                        <span style={{ marginLeft: '0.5rem' }}>
+                          by {log.user.username}
+                        </span>
+                      )}
                     </LogMessage>
                   </LogEntry>
                 ))}

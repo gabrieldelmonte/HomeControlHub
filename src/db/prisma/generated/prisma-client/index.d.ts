@@ -1293,11 +1293,13 @@ export namespace Prisma {
   export type UserCountOutputType = {
     devices: number
     notifications: number
+    systemLogs: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     devices?: boolean | UserCountOutputTypeCountDevicesArgs
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+    systemLogs?: boolean | UserCountOutputTypeCountSystemLogsArgs
   }
 
   // Custom InputTypes
@@ -1325,6 +1327,13 @@ export namespace Prisma {
     where?: NotificationWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountSystemLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SystemLogWhereInput
+  }
+
 
   /**
    * Count Type DeviceCountOutputType
@@ -1333,11 +1342,13 @@ export namespace Prisma {
   export type DeviceCountOutputType = {
     commands: number
     automationRules: number
+    systemLogs: number
   }
 
   export type DeviceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     commands?: boolean | DeviceCountOutputTypeCountCommandsArgs
     automationRules?: boolean | DeviceCountOutputTypeCountAutomationRulesArgs
+    systemLogs?: boolean | DeviceCountOutputTypeCountSystemLogsArgs
   }
 
   // Custom InputTypes
@@ -1363,6 +1374,13 @@ export namespace Prisma {
    */
   export type DeviceCountOutputTypeCountAutomationRulesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AutomationRuleWhereInput
+  }
+
+  /**
+   * DeviceCountOutputType without action
+   */
+  export type DeviceCountOutputTypeCountSystemLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SystemLogWhereInput
   }
 
 
@@ -1552,6 +1570,7 @@ export namespace Prisma {
     updatedAt?: boolean
     devices?: boolean | User$devicesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
+    systemLogs?: boolean | User$systemLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1578,6 +1597,7 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     devices?: boolean | User$devicesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
+    systemLogs?: boolean | User$systemLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1587,6 +1607,7 @@ export namespace Prisma {
     objects: {
       devices: Prisma.$DevicePayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      systemLogs: Prisma.$SystemLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -1962,6 +1983,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     devices<T extends User$devicesArgs<ExtArgs> = {}>(args?: Subset<T, User$devicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findMany"> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
+    systemLogs<T extends User$systemLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$systemLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SystemLogPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2352,6 +2374,26 @@ export namespace Prisma {
   }
 
   /**
+   * User.systemLogs
+   */
+  export type User$systemLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SystemLog
+     */
+    select?: SystemLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
+    where?: SystemLogWhereInput
+    orderBy?: SystemLogOrderByWithRelationInput | SystemLogOrderByWithRelationInput[]
+    cursor?: SystemLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SystemLogScalarFieldEnum | SystemLogScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2581,6 +2623,7 @@ export namespace Prisma {
     owner?: boolean | UserDefaultArgs<ExtArgs>
     commands?: boolean | Device$commandsArgs<ExtArgs>
     automationRules?: boolean | Device$automationRulesArgs<ExtArgs>
+    systemLogs?: boolean | Device$systemLogsArgs<ExtArgs>
     _count?: boolean | DeviceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["device"]>
 
@@ -2617,6 +2660,7 @@ export namespace Prisma {
     owner?: boolean | UserDefaultArgs<ExtArgs>
     commands?: boolean | Device$commandsArgs<ExtArgs>
     automationRules?: boolean | Device$automationRulesArgs<ExtArgs>
+    systemLogs?: boolean | Device$systemLogsArgs<ExtArgs>
     _count?: boolean | DeviceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DeviceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2629,6 +2673,7 @@ export namespace Prisma {
       owner: Prisma.$UserPayload<ExtArgs>
       commands: Prisma.$CommandPayload<ExtArgs>[]
       automationRules: Prisma.$AutomationRulePayload<ExtArgs>[]
+      systemLogs: Prisma.$SystemLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3009,6 +3054,7 @@ export namespace Prisma {
     owner<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     commands<T extends Device$commandsArgs<ExtArgs> = {}>(args?: Subset<T, Device$commandsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommandPayload<ExtArgs>, T, "findMany"> | Null>
     automationRules<T extends Device$automationRulesArgs<ExtArgs> = {}>(args?: Subset<T, Device$automationRulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AutomationRulePayload<ExtArgs>, T, "findMany"> | Null>
+    systemLogs<T extends Device$systemLogsArgs<ExtArgs> = {}>(args?: Subset<T, Device$systemLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SystemLogPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3404,6 +3450,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AutomationRuleScalarFieldEnum | AutomationRuleScalarFieldEnum[]
+  }
+
+  /**
+   * Device.systemLogs
+   */
+  export type Device$systemLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SystemLog
+     */
+    select?: SystemLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
+    where?: SystemLogWhereInput
+    orderBy?: SystemLogOrderByWithRelationInput | SystemLogOrderByWithRelationInput[]
+    cursor?: SystemLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SystemLogScalarFieldEnum | SystemLogScalarFieldEnum[]
   }
 
   /**
@@ -6263,6 +6329,8 @@ export namespace Prisma {
     type: string | null
     message: string | null
     source: string | null
+    deviceId: string | null
+    userId: string | null
     createdAt: Date | null
   }
 
@@ -6271,6 +6339,8 @@ export namespace Prisma {
     type: string | null
     message: string | null
     source: string | null
+    deviceId: string | null
+    userId: string | null
     createdAt: Date | null
   }
 
@@ -6279,6 +6349,8 @@ export namespace Prisma {
     type: number
     message: number
     source: number
+    deviceId: number
+    userId: number
     createdAt: number
     _all: number
   }
@@ -6289,6 +6361,8 @@ export namespace Prisma {
     type?: true
     message?: true
     source?: true
+    deviceId?: true
+    userId?: true
     createdAt?: true
   }
 
@@ -6297,6 +6371,8 @@ export namespace Prisma {
     type?: true
     message?: true
     source?: true
+    deviceId?: true
+    userId?: true
     createdAt?: true
   }
 
@@ -6305,6 +6381,8 @@ export namespace Prisma {
     type?: true
     message?: true
     source?: true
+    deviceId?: true
+    userId?: true
     createdAt?: true
     _all?: true
   }
@@ -6386,6 +6464,8 @@ export namespace Prisma {
     type: string
     message: string
     source: string
+    deviceId: string | null
+    userId: string | null
     createdAt: Date
     _count: SystemLogCountAggregateOutputType | null
     _min: SystemLogMinAggregateOutputType | null
@@ -6411,7 +6491,11 @@ export namespace Prisma {
     type?: boolean
     message?: boolean
     source?: boolean
+    deviceId?: boolean
+    userId?: boolean
     createdAt?: boolean
+    device?: boolean | SystemLog$deviceArgs<ExtArgs>
+    user?: boolean | SystemLog$userArgs<ExtArgs>
   }, ExtArgs["result"]["systemLog"]>
 
   export type SystemLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -6419,7 +6503,11 @@ export namespace Prisma {
     type?: boolean
     message?: boolean
     source?: boolean
+    deviceId?: boolean
+    userId?: boolean
     createdAt?: boolean
+    device?: boolean | SystemLog$deviceArgs<ExtArgs>
+    user?: boolean | SystemLog$userArgs<ExtArgs>
   }, ExtArgs["result"]["systemLog"]>
 
   export type SystemLogSelectScalar = {
@@ -6427,18 +6515,33 @@ export namespace Prisma {
     type?: boolean
     message?: boolean
     source?: boolean
+    deviceId?: boolean
+    userId?: boolean
     createdAt?: boolean
   }
 
+  export type SystemLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    device?: boolean | SystemLog$deviceArgs<ExtArgs>
+    user?: boolean | SystemLog$userArgs<ExtArgs>
+  }
+  export type SystemLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    device?: boolean | SystemLog$deviceArgs<ExtArgs>
+    user?: boolean | SystemLog$userArgs<ExtArgs>
+  }
 
   export type $SystemLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "SystemLog"
-    objects: {}
+    objects: {
+      device: Prisma.$DevicePayload<ExtArgs> | null
+      user: Prisma.$UserPayload<ExtArgs> | null
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       type: string
       message: string
       source: string
+      deviceId: string | null
+      userId: string | null
       createdAt: Date
     }, ExtArgs["result"]["systemLog"]>
     composites: {}
@@ -6804,6 +6907,8 @@ export namespace Prisma {
    */
   export interface Prisma__SystemLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    device<T extends SystemLog$deviceArgs<ExtArgs> = {}>(args?: Subset<T, SystemLog$deviceArgs<ExtArgs>>): Prisma__DeviceClient<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    user<T extends SystemLog$userArgs<ExtArgs> = {}>(args?: Subset<T, SystemLog$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6837,6 +6942,8 @@ export namespace Prisma {
     readonly type: FieldRef<"SystemLog", 'String'>
     readonly message: FieldRef<"SystemLog", 'String'>
     readonly source: FieldRef<"SystemLog", 'String'>
+    readonly deviceId: FieldRef<"SystemLog", 'String'>
+    readonly userId: FieldRef<"SystemLog", 'String'>
     readonly createdAt: FieldRef<"SystemLog", 'DateTime'>
   }
     
@@ -6850,6 +6957,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the SystemLog
      */
     select?: SystemLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
     /**
      * Filter, which SystemLog to fetch.
      */
@@ -6865,6 +6976,10 @@ export namespace Prisma {
      */
     select?: SystemLogSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
+    /**
      * Filter, which SystemLog to fetch.
      */
     where: SystemLogWhereUniqueInput
@@ -6878,6 +6993,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the SystemLog
      */
     select?: SystemLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
     /**
      * Filter, which SystemLog to fetch.
      */
@@ -6923,6 +7042,10 @@ export namespace Prisma {
      */
     select?: SystemLogSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
+    /**
      * Filter, which SystemLog to fetch.
      */
     where?: SystemLogWhereInput
@@ -6967,6 +7090,10 @@ export namespace Prisma {
      */
     select?: SystemLogSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
+    /**
      * Filter, which SystemLogs to fetch.
      */
     where?: SystemLogWhereInput
@@ -7006,6 +7133,10 @@ export namespace Prisma {
      */
     select?: SystemLogSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
+    /**
      * The data needed to create a SystemLog.
      */
     data: XOR<SystemLogCreateInput, SystemLogUncheckedCreateInput>
@@ -7035,6 +7166,10 @@ export namespace Prisma {
      */
     data: SystemLogCreateManyInput | SystemLogCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -7045,6 +7180,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the SystemLog
      */
     select?: SystemLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
     /**
      * The data needed to update a SystemLog.
      */
@@ -7078,6 +7217,10 @@ export namespace Prisma {
      */
     select?: SystemLogSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
+    /**
      * The filter to search for the SystemLog to update in case it exists.
      */
     where: SystemLogWhereUniqueInput
@@ -7100,6 +7243,10 @@ export namespace Prisma {
      */
     select?: SystemLogSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
+    /**
      * Filter which SystemLog to delete.
      */
     where: SystemLogWhereUniqueInput
@@ -7116,6 +7263,36 @@ export namespace Prisma {
   }
 
   /**
+   * SystemLog.device
+   */
+  export type SystemLog$deviceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Device
+     */
+    select?: DeviceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeviceInclude<ExtArgs> | null
+    where?: DeviceWhereInput
+  }
+
+  /**
+   * SystemLog.user
+   */
+  export type SystemLog$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
    * SystemLog without action
    */
   export type SystemLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7123,6 +7300,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the SystemLog
      */
     select?: SystemLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SystemLogInclude<ExtArgs> | null
   }
 
 
@@ -7211,6 +7392,8 @@ export namespace Prisma {
     type: 'type',
     message: 'message',
     source: 'source',
+    deviceId: 'deviceId',
+    userId: 'userId',
     createdAt: 'createdAt'
   };
 
@@ -7348,6 +7531,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"User"> | Date | string
     devices?: DeviceListRelationFilter
     notifications?: NotificationListRelationFilter
+    systemLogs?: SystemLogListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -7360,6 +7544,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     devices?: DeviceOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
+    systemLogs?: SystemLogOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -7375,6 +7560,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"User"> | Date | string
     devices?: DeviceListRelationFilter
     notifications?: NotificationListRelationFilter
+    systemLogs?: SystemLogListRelationFilter
   }, "id" | "username" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -7421,6 +7607,7 @@ export namespace Prisma {
     owner?: XOR<UserRelationFilter, UserWhereInput>
     commands?: CommandListRelationFilter
     automationRules?: AutomationRuleListRelationFilter
+    systemLogs?: SystemLogListRelationFilter
   }
 
   export type DeviceOrderByWithRelationInput = {
@@ -7438,6 +7625,7 @@ export namespace Prisma {
     owner?: UserOrderByWithRelationInput
     commands?: CommandOrderByRelationAggregateInput
     automationRules?: AutomationRuleOrderByRelationAggregateInput
+    systemLogs?: SystemLogOrderByRelationAggregateInput
   }
 
   export type DeviceWhereUniqueInput = Prisma.AtLeast<{
@@ -7458,6 +7646,7 @@ export namespace Prisma {
     owner?: XOR<UserRelationFilter, UserWhereInput>
     commands?: CommandListRelationFilter
     automationRules?: AutomationRuleListRelationFilter
+    systemLogs?: SystemLogListRelationFilter
   }, "id" | "mqttTopic" | "aesKey">
 
   export type DeviceOrderByWithAggregationInput = {
@@ -7682,7 +7871,11 @@ export namespace Prisma {
     type?: StringFilter<"SystemLog"> | string
     message?: StringFilter<"SystemLog"> | string
     source?: StringFilter<"SystemLog"> | string
+    deviceId?: StringNullableFilter<"SystemLog"> | string | null
+    userId?: StringNullableFilter<"SystemLog"> | string | null
     createdAt?: DateTimeFilter<"SystemLog"> | Date | string
+    device?: XOR<DeviceNullableRelationFilter, DeviceWhereInput> | null
+    user?: XOR<UserNullableRelationFilter, UserWhereInput> | null
   }
 
   export type SystemLogOrderByWithRelationInput = {
@@ -7690,7 +7883,11 @@ export namespace Prisma {
     type?: SortOrder
     message?: SortOrder
     source?: SortOrder
+    deviceId?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    device?: DeviceOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
   }
 
   export type SystemLogWhereUniqueInput = Prisma.AtLeast<{
@@ -7701,7 +7898,11 @@ export namespace Prisma {
     type?: StringFilter<"SystemLog"> | string
     message?: StringFilter<"SystemLog"> | string
     source?: StringFilter<"SystemLog"> | string
+    deviceId?: StringNullableFilter<"SystemLog"> | string | null
+    userId?: StringNullableFilter<"SystemLog"> | string | null
     createdAt?: DateTimeFilter<"SystemLog"> | Date | string
+    device?: XOR<DeviceNullableRelationFilter, DeviceWhereInput> | null
+    user?: XOR<UserNullableRelationFilter, UserWhereInput> | null
   }, "id">
 
   export type SystemLogOrderByWithAggregationInput = {
@@ -7709,6 +7910,8 @@ export namespace Prisma {
     type?: SortOrder
     message?: SortOrder
     source?: SortOrder
+    deviceId?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: SystemLogCountOrderByAggregateInput
     _max?: SystemLogMaxOrderByAggregateInput
@@ -7723,6 +7926,8 @@ export namespace Prisma {
     type?: StringWithAggregatesFilter<"SystemLog"> | string
     message?: StringWithAggregatesFilter<"SystemLog"> | string
     source?: StringWithAggregatesFilter<"SystemLog"> | string
+    deviceId?: StringNullableWithAggregatesFilter<"SystemLog"> | string | null
+    userId?: StringNullableWithAggregatesFilter<"SystemLog"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"SystemLog"> | Date | string
   }
 
@@ -7736,6 +7941,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     devices?: DeviceCreateNestedManyWithoutOwnerInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    systemLogs?: SystemLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -7748,6 +7954,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     devices?: DeviceUncheckedCreateNestedManyWithoutOwnerInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    systemLogs?: SystemLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -7760,6 +7967,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     devices?: DeviceUpdateManyWithoutOwnerNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    systemLogs?: SystemLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -7772,6 +7980,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     devices?: DeviceUncheckedUpdateManyWithoutOwnerNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    systemLogs?: SystemLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -7818,6 +8027,7 @@ export namespace Prisma {
     owner: UserCreateNestedOneWithoutDevicesInput
     commands?: CommandCreateNestedManyWithoutDeviceInput
     automationRules?: AutomationRuleCreateNestedManyWithoutDeviceInput
+    systemLogs?: SystemLogCreateNestedManyWithoutDeviceInput
   }
 
   export type DeviceUncheckedCreateInput = {
@@ -7834,6 +8044,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     commands?: CommandUncheckedCreateNestedManyWithoutDeviceInput
     automationRules?: AutomationRuleUncheckedCreateNestedManyWithoutDeviceInput
+    systemLogs?: SystemLogUncheckedCreateNestedManyWithoutDeviceInput
   }
 
   export type DeviceUpdateInput = {
@@ -7850,6 +8061,7 @@ export namespace Prisma {
     owner?: UserUpdateOneRequiredWithoutDevicesNestedInput
     commands?: CommandUpdateManyWithoutDeviceNestedInput
     automationRules?: AutomationRuleUpdateManyWithoutDeviceNestedInput
+    systemLogs?: SystemLogUpdateManyWithoutDeviceNestedInput
   }
 
   export type DeviceUncheckedUpdateInput = {
@@ -7866,6 +8078,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     commands?: CommandUncheckedUpdateManyWithoutDeviceNestedInput
     automationRules?: AutomationRuleUncheckedUpdateManyWithoutDeviceNestedInput
+    systemLogs?: SystemLogUncheckedUpdateManyWithoutDeviceNestedInput
   }
 
   export type DeviceCreateManyInput = {
@@ -8101,6 +8314,8 @@ export namespace Prisma {
     message: string
     source: string
     createdAt?: Date | string
+    device?: DeviceCreateNestedOneWithoutSystemLogsInput
+    user?: UserCreateNestedOneWithoutSystemLogsInput
   }
 
   export type SystemLogUncheckedCreateInput = {
@@ -8108,6 +8323,8 @@ export namespace Prisma {
     type: string
     message: string
     source: string
+    deviceId?: string | null
+    userId?: string | null
     createdAt?: Date | string
   }
 
@@ -8117,6 +8334,8 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     source?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    device?: DeviceUpdateOneWithoutSystemLogsNestedInput
+    user?: UserUpdateOneWithoutSystemLogsNestedInput
   }
 
   export type SystemLogUncheckedUpdateInput = {
@@ -8124,6 +8343,8 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     source?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8132,6 +8353,8 @@ export namespace Prisma {
     type: string
     message: string
     source: string
+    deviceId?: string | null
+    userId?: string | null
     createdAt?: Date | string
   }
 
@@ -8148,6 +8371,8 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     source?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8196,11 +8421,21 @@ export namespace Prisma {
     none?: NotificationWhereInput
   }
 
+  export type SystemLogListRelationFilter = {
+    every?: SystemLogWhereInput
+    some?: SystemLogWhereInput
+    none?: SystemLogWhereInput
+  }
+
   export type DeviceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type NotificationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type SystemLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -8523,11 +8758,23 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type DeviceNullableRelationFilter = {
+    is?: DeviceWhereInput | null
+    isNot?: DeviceWhereInput | null
+  }
+
+  export type UserNullableRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
   export type SystemLogCountOrderByAggregateInput = {
     id?: SortOrder
     type?: SortOrder
     message?: SortOrder
     source?: SortOrder
+    deviceId?: SortOrder
+    userId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -8536,6 +8783,8 @@ export namespace Prisma {
     type?: SortOrder
     message?: SortOrder
     source?: SortOrder
+    deviceId?: SortOrder
+    userId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -8544,6 +8793,8 @@ export namespace Prisma {
     type?: SortOrder
     message?: SortOrder
     source?: SortOrder
+    deviceId?: SortOrder
+    userId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -8561,6 +8812,13 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type SystemLogCreateNestedManyWithoutUserInput = {
+    create?: XOR<SystemLogCreateWithoutUserInput, SystemLogUncheckedCreateWithoutUserInput> | SystemLogCreateWithoutUserInput[] | SystemLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SystemLogCreateOrConnectWithoutUserInput | SystemLogCreateOrConnectWithoutUserInput[]
+    createMany?: SystemLogCreateManyUserInputEnvelope
+    connect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+  }
+
   export type DeviceUncheckedCreateNestedManyWithoutOwnerInput = {
     create?: XOR<DeviceCreateWithoutOwnerInput, DeviceUncheckedCreateWithoutOwnerInput> | DeviceCreateWithoutOwnerInput[] | DeviceUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: DeviceCreateOrConnectWithoutOwnerInput | DeviceCreateOrConnectWithoutOwnerInput[]
@@ -8573,6 +8831,13 @@ export namespace Prisma {
     connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
     createMany?: NotificationCreateManyUserInputEnvelope
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
+  export type SystemLogUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<SystemLogCreateWithoutUserInput, SystemLogUncheckedCreateWithoutUserInput> | SystemLogCreateWithoutUserInput[] | SystemLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SystemLogCreateOrConnectWithoutUserInput | SystemLogCreateOrConnectWithoutUserInput[]
+    createMany?: SystemLogCreateManyUserInputEnvelope
+    connect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -8615,6 +8880,20 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type SystemLogUpdateManyWithoutUserNestedInput = {
+    create?: XOR<SystemLogCreateWithoutUserInput, SystemLogUncheckedCreateWithoutUserInput> | SystemLogCreateWithoutUserInput[] | SystemLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SystemLogCreateOrConnectWithoutUserInput | SystemLogCreateOrConnectWithoutUserInput[]
+    upsert?: SystemLogUpsertWithWhereUniqueWithoutUserInput | SystemLogUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: SystemLogCreateManyUserInputEnvelope
+    set?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    disconnect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    delete?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    connect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    update?: SystemLogUpdateWithWhereUniqueWithoutUserInput | SystemLogUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: SystemLogUpdateManyWithWhereWithoutUserInput | SystemLogUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: SystemLogScalarWhereInput | SystemLogScalarWhereInput[]
+  }
+
   export type DeviceUncheckedUpdateManyWithoutOwnerNestedInput = {
     create?: XOR<DeviceCreateWithoutOwnerInput, DeviceUncheckedCreateWithoutOwnerInput> | DeviceCreateWithoutOwnerInput[] | DeviceUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: DeviceCreateOrConnectWithoutOwnerInput | DeviceCreateOrConnectWithoutOwnerInput[]
@@ -8643,6 +8922,20 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type SystemLogUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<SystemLogCreateWithoutUserInput, SystemLogUncheckedCreateWithoutUserInput> | SystemLogCreateWithoutUserInput[] | SystemLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SystemLogCreateOrConnectWithoutUserInput | SystemLogCreateOrConnectWithoutUserInput[]
+    upsert?: SystemLogUpsertWithWhereUniqueWithoutUserInput | SystemLogUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: SystemLogCreateManyUserInputEnvelope
+    set?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    disconnect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    delete?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    connect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    update?: SystemLogUpdateWithWhereUniqueWithoutUserInput | SystemLogUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: SystemLogUpdateManyWithWhereWithoutUserInput | SystemLogUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: SystemLogScalarWhereInput | SystemLogScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutDevicesInput = {
     create?: XOR<UserCreateWithoutDevicesInput, UserUncheckedCreateWithoutDevicesInput>
     connectOrCreate?: UserCreateOrConnectWithoutDevicesInput
@@ -8663,6 +8956,13 @@ export namespace Prisma {
     connect?: AutomationRuleWhereUniqueInput | AutomationRuleWhereUniqueInput[]
   }
 
+  export type SystemLogCreateNestedManyWithoutDeviceInput = {
+    create?: XOR<SystemLogCreateWithoutDeviceInput, SystemLogUncheckedCreateWithoutDeviceInput> | SystemLogCreateWithoutDeviceInput[] | SystemLogUncheckedCreateWithoutDeviceInput[]
+    connectOrCreate?: SystemLogCreateOrConnectWithoutDeviceInput | SystemLogCreateOrConnectWithoutDeviceInput[]
+    createMany?: SystemLogCreateManyDeviceInputEnvelope
+    connect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+  }
+
   export type CommandUncheckedCreateNestedManyWithoutDeviceInput = {
     create?: XOR<CommandCreateWithoutDeviceInput, CommandUncheckedCreateWithoutDeviceInput> | CommandCreateWithoutDeviceInput[] | CommandUncheckedCreateWithoutDeviceInput[]
     connectOrCreate?: CommandCreateOrConnectWithoutDeviceInput | CommandCreateOrConnectWithoutDeviceInput[]
@@ -8675,6 +8975,13 @@ export namespace Prisma {
     connectOrCreate?: AutomationRuleCreateOrConnectWithoutDeviceInput | AutomationRuleCreateOrConnectWithoutDeviceInput[]
     createMany?: AutomationRuleCreateManyDeviceInputEnvelope
     connect?: AutomationRuleWhereUniqueInput | AutomationRuleWhereUniqueInput[]
+  }
+
+  export type SystemLogUncheckedCreateNestedManyWithoutDeviceInput = {
+    create?: XOR<SystemLogCreateWithoutDeviceInput, SystemLogUncheckedCreateWithoutDeviceInput> | SystemLogCreateWithoutDeviceInput[] | SystemLogUncheckedCreateWithoutDeviceInput[]
+    connectOrCreate?: SystemLogCreateOrConnectWithoutDeviceInput | SystemLogCreateOrConnectWithoutDeviceInput[]
+    createMany?: SystemLogCreateManyDeviceInputEnvelope
+    connect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -8721,6 +9028,20 @@ export namespace Prisma {
     deleteMany?: AutomationRuleScalarWhereInput | AutomationRuleScalarWhereInput[]
   }
 
+  export type SystemLogUpdateManyWithoutDeviceNestedInput = {
+    create?: XOR<SystemLogCreateWithoutDeviceInput, SystemLogUncheckedCreateWithoutDeviceInput> | SystemLogCreateWithoutDeviceInput[] | SystemLogUncheckedCreateWithoutDeviceInput[]
+    connectOrCreate?: SystemLogCreateOrConnectWithoutDeviceInput | SystemLogCreateOrConnectWithoutDeviceInput[]
+    upsert?: SystemLogUpsertWithWhereUniqueWithoutDeviceInput | SystemLogUpsertWithWhereUniqueWithoutDeviceInput[]
+    createMany?: SystemLogCreateManyDeviceInputEnvelope
+    set?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    disconnect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    delete?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    connect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    update?: SystemLogUpdateWithWhereUniqueWithoutDeviceInput | SystemLogUpdateWithWhereUniqueWithoutDeviceInput[]
+    updateMany?: SystemLogUpdateManyWithWhereWithoutDeviceInput | SystemLogUpdateManyWithWhereWithoutDeviceInput[]
+    deleteMany?: SystemLogScalarWhereInput | SystemLogScalarWhereInput[]
+  }
+
   export type CommandUncheckedUpdateManyWithoutDeviceNestedInput = {
     create?: XOR<CommandCreateWithoutDeviceInput, CommandUncheckedCreateWithoutDeviceInput> | CommandCreateWithoutDeviceInput[] | CommandUncheckedCreateWithoutDeviceInput[]
     connectOrCreate?: CommandCreateOrConnectWithoutDeviceInput | CommandCreateOrConnectWithoutDeviceInput[]
@@ -8747,6 +9068,20 @@ export namespace Prisma {
     update?: AutomationRuleUpdateWithWhereUniqueWithoutDeviceInput | AutomationRuleUpdateWithWhereUniqueWithoutDeviceInput[]
     updateMany?: AutomationRuleUpdateManyWithWhereWithoutDeviceInput | AutomationRuleUpdateManyWithWhereWithoutDeviceInput[]
     deleteMany?: AutomationRuleScalarWhereInput | AutomationRuleScalarWhereInput[]
+  }
+
+  export type SystemLogUncheckedUpdateManyWithoutDeviceNestedInput = {
+    create?: XOR<SystemLogCreateWithoutDeviceInput, SystemLogUncheckedCreateWithoutDeviceInput> | SystemLogCreateWithoutDeviceInput[] | SystemLogUncheckedCreateWithoutDeviceInput[]
+    connectOrCreate?: SystemLogCreateOrConnectWithoutDeviceInput | SystemLogCreateOrConnectWithoutDeviceInput[]
+    upsert?: SystemLogUpsertWithWhereUniqueWithoutDeviceInput | SystemLogUpsertWithWhereUniqueWithoutDeviceInput[]
+    createMany?: SystemLogCreateManyDeviceInputEnvelope
+    set?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    disconnect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    delete?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    connect?: SystemLogWhereUniqueInput | SystemLogWhereUniqueInput[]
+    update?: SystemLogUpdateWithWhereUniqueWithoutDeviceInput | SystemLogUpdateWithWhereUniqueWithoutDeviceInput[]
+    updateMany?: SystemLogUpdateManyWithWhereWithoutDeviceInput | SystemLogUpdateManyWithWhereWithoutDeviceInput[]
+    deleteMany?: SystemLogScalarWhereInput | SystemLogScalarWhereInput[]
   }
 
   export type DeviceCreateNestedOneWithoutCommandsInput = {
@@ -8789,6 +9124,38 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutNotificationsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type DeviceCreateNestedOneWithoutSystemLogsInput = {
+    create?: XOR<DeviceCreateWithoutSystemLogsInput, DeviceUncheckedCreateWithoutSystemLogsInput>
+    connectOrCreate?: DeviceCreateOrConnectWithoutSystemLogsInput
+    connect?: DeviceWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutSystemLogsInput = {
+    create?: XOR<UserCreateWithoutSystemLogsInput, UserUncheckedCreateWithoutSystemLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSystemLogsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type DeviceUpdateOneWithoutSystemLogsNestedInput = {
+    create?: XOR<DeviceCreateWithoutSystemLogsInput, DeviceUncheckedCreateWithoutSystemLogsInput>
+    connectOrCreate?: DeviceCreateOrConnectWithoutSystemLogsInput
+    upsert?: DeviceUpsertWithoutSystemLogsInput
+    disconnect?: DeviceWhereInput | boolean
+    delete?: DeviceWhereInput | boolean
+    connect?: DeviceWhereUniqueInput
+    update?: XOR<XOR<DeviceUpdateToOneWithWhereWithoutSystemLogsInput, DeviceUpdateWithoutSystemLogsInput>, DeviceUncheckedUpdateWithoutSystemLogsInput>
+  }
+
+  export type UserUpdateOneWithoutSystemLogsNestedInput = {
+    create?: XOR<UserCreateWithoutSystemLogsInput, UserUncheckedCreateWithoutSystemLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSystemLogsInput
+    upsert?: UserUpsertWithoutSystemLogsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSystemLogsInput, UserUpdateWithoutSystemLogsInput>, UserUncheckedUpdateWithoutSystemLogsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -8965,6 +9332,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     commands?: CommandCreateNestedManyWithoutDeviceInput
     automationRules?: AutomationRuleCreateNestedManyWithoutDeviceInput
+    systemLogs?: SystemLogCreateNestedManyWithoutDeviceInput
   }
 
   export type DeviceUncheckedCreateWithoutOwnerInput = {
@@ -8980,6 +9348,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     commands?: CommandUncheckedCreateNestedManyWithoutDeviceInput
     automationRules?: AutomationRuleUncheckedCreateNestedManyWithoutDeviceInput
+    systemLogs?: SystemLogUncheckedCreateNestedManyWithoutDeviceInput
   }
 
   export type DeviceCreateOrConnectWithoutOwnerInput = {
@@ -9015,6 +9384,34 @@ export namespace Prisma {
 
   export type NotificationCreateManyUserInputEnvelope = {
     data: NotificationCreateManyUserInput | NotificationCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type SystemLogCreateWithoutUserInput = {
+    id?: string
+    type: string
+    message: string
+    source: string
+    createdAt?: Date | string
+    device?: DeviceCreateNestedOneWithoutSystemLogsInput
+  }
+
+  export type SystemLogUncheckedCreateWithoutUserInput = {
+    id?: string
+    type: string
+    message: string
+    source: string
+    deviceId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type SystemLogCreateOrConnectWithoutUserInput = {
+    where: SystemLogWhereUniqueInput
+    create: XOR<SystemLogCreateWithoutUserInput, SystemLogUncheckedCreateWithoutUserInput>
+  }
+
+  export type SystemLogCreateManyUserInputEnvelope = {
+    data: SystemLogCreateManyUserInput | SystemLogCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -9079,6 +9476,35 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
   }
 
+  export type SystemLogUpsertWithWhereUniqueWithoutUserInput = {
+    where: SystemLogWhereUniqueInput
+    update: XOR<SystemLogUpdateWithoutUserInput, SystemLogUncheckedUpdateWithoutUserInput>
+    create: XOR<SystemLogCreateWithoutUserInput, SystemLogUncheckedCreateWithoutUserInput>
+  }
+
+  export type SystemLogUpdateWithWhereUniqueWithoutUserInput = {
+    where: SystemLogWhereUniqueInput
+    data: XOR<SystemLogUpdateWithoutUserInput, SystemLogUncheckedUpdateWithoutUserInput>
+  }
+
+  export type SystemLogUpdateManyWithWhereWithoutUserInput = {
+    where: SystemLogScalarWhereInput
+    data: XOR<SystemLogUpdateManyMutationInput, SystemLogUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type SystemLogScalarWhereInput = {
+    AND?: SystemLogScalarWhereInput | SystemLogScalarWhereInput[]
+    OR?: SystemLogScalarWhereInput[]
+    NOT?: SystemLogScalarWhereInput | SystemLogScalarWhereInput[]
+    id?: StringFilter<"SystemLog"> | string
+    type?: StringFilter<"SystemLog"> | string
+    message?: StringFilter<"SystemLog"> | string
+    source?: StringFilter<"SystemLog"> | string
+    deviceId?: StringNullableFilter<"SystemLog"> | string | null
+    userId?: StringNullableFilter<"SystemLog"> | string | null
+    createdAt?: DateTimeFilter<"SystemLog"> | Date | string
+  }
+
   export type UserCreateWithoutDevicesInput = {
     id?: string
     username: string
@@ -9088,6 +9514,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    systemLogs?: SystemLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDevicesInput = {
@@ -9099,6 +9526,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    systemLogs?: SystemLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDevicesInput = {
@@ -9158,6 +9586,34 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type SystemLogCreateWithoutDeviceInput = {
+    id?: string
+    type: string
+    message: string
+    source: string
+    createdAt?: Date | string
+    user?: UserCreateNestedOneWithoutSystemLogsInput
+  }
+
+  export type SystemLogUncheckedCreateWithoutDeviceInput = {
+    id?: string
+    type: string
+    message: string
+    source: string
+    userId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type SystemLogCreateOrConnectWithoutDeviceInput = {
+    where: SystemLogWhereUniqueInput
+    create: XOR<SystemLogCreateWithoutDeviceInput, SystemLogUncheckedCreateWithoutDeviceInput>
+  }
+
+  export type SystemLogCreateManyDeviceInputEnvelope = {
+    data: SystemLogCreateManyDeviceInput | SystemLogCreateManyDeviceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutDevicesInput = {
     update: XOR<UserUpdateWithoutDevicesInput, UserUncheckedUpdateWithoutDevicesInput>
     create: XOR<UserCreateWithoutDevicesInput, UserUncheckedCreateWithoutDevicesInput>
@@ -9178,6 +9634,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    systemLogs?: SystemLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDevicesInput = {
@@ -9189,6 +9646,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    systemLogs?: SystemLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CommandUpsertWithWhereUniqueWithoutDeviceInput = {
@@ -9247,6 +9705,22 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"AutomationRule"> | Date | string
   }
 
+  export type SystemLogUpsertWithWhereUniqueWithoutDeviceInput = {
+    where: SystemLogWhereUniqueInput
+    update: XOR<SystemLogUpdateWithoutDeviceInput, SystemLogUncheckedUpdateWithoutDeviceInput>
+    create: XOR<SystemLogCreateWithoutDeviceInput, SystemLogUncheckedCreateWithoutDeviceInput>
+  }
+
+  export type SystemLogUpdateWithWhereUniqueWithoutDeviceInput = {
+    where: SystemLogWhereUniqueInput
+    data: XOR<SystemLogUpdateWithoutDeviceInput, SystemLogUncheckedUpdateWithoutDeviceInput>
+  }
+
+  export type SystemLogUpdateManyWithWhereWithoutDeviceInput = {
+    where: SystemLogScalarWhereInput
+    data: XOR<SystemLogUpdateManyMutationInput, SystemLogUncheckedUpdateManyWithoutDeviceInput>
+  }
+
   export type DeviceCreateWithoutCommandsInput = {
     id?: string
     name: string
@@ -9260,6 +9734,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutDevicesInput
     automationRules?: AutomationRuleCreateNestedManyWithoutDeviceInput
+    systemLogs?: SystemLogCreateNestedManyWithoutDeviceInput
   }
 
   export type DeviceUncheckedCreateWithoutCommandsInput = {
@@ -9275,6 +9750,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     automationRules?: AutomationRuleUncheckedCreateNestedManyWithoutDeviceInput
+    systemLogs?: SystemLogUncheckedCreateNestedManyWithoutDeviceInput
   }
 
   export type DeviceCreateOrConnectWithoutCommandsInput = {
@@ -9306,6 +9782,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutDevicesNestedInput
     automationRules?: AutomationRuleUpdateManyWithoutDeviceNestedInput
+    systemLogs?: SystemLogUpdateManyWithoutDeviceNestedInput
   }
 
   export type DeviceUncheckedUpdateWithoutCommandsInput = {
@@ -9321,6 +9798,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     automationRules?: AutomationRuleUncheckedUpdateManyWithoutDeviceNestedInput
+    systemLogs?: SystemLogUncheckedUpdateManyWithoutDeviceNestedInput
   }
 
   export type DeviceCreateWithoutAutomationRulesInput = {
@@ -9336,6 +9814,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutDevicesInput
     commands?: CommandCreateNestedManyWithoutDeviceInput
+    systemLogs?: SystemLogCreateNestedManyWithoutDeviceInput
   }
 
   export type DeviceUncheckedCreateWithoutAutomationRulesInput = {
@@ -9351,6 +9830,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     commands?: CommandUncheckedCreateNestedManyWithoutDeviceInput
+    systemLogs?: SystemLogUncheckedCreateNestedManyWithoutDeviceInput
   }
 
   export type DeviceCreateOrConnectWithoutAutomationRulesInput = {
@@ -9382,6 +9862,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutDevicesNestedInput
     commands?: CommandUpdateManyWithoutDeviceNestedInput
+    systemLogs?: SystemLogUpdateManyWithoutDeviceNestedInput
   }
 
   export type DeviceUncheckedUpdateWithoutAutomationRulesInput = {
@@ -9397,6 +9878,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     commands?: CommandUncheckedUpdateManyWithoutDeviceNestedInput
+    systemLogs?: SystemLogUncheckedUpdateManyWithoutDeviceNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -9408,6 +9890,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     devices?: DeviceCreateNestedManyWithoutOwnerInput
+    systemLogs?: SystemLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -9419,6 +9902,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     devices?: DeviceUncheckedCreateNestedManyWithoutOwnerInput
+    systemLogs?: SystemLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -9446,6 +9930,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     devices?: DeviceUpdateManyWithoutOwnerNestedInput
+    systemLogs?: SystemLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -9457,6 +9942,151 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     devices?: DeviceUncheckedUpdateManyWithoutOwnerNestedInput
+    systemLogs?: SystemLogUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type DeviceCreateWithoutSystemLogsInput = {
+    id?: string
+    name: string
+    type: string
+    status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
+    aesKey: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutDevicesInput
+    commands?: CommandCreateNestedManyWithoutDeviceInput
+    automationRules?: AutomationRuleCreateNestedManyWithoutDeviceInput
+  }
+
+  export type DeviceUncheckedCreateWithoutSystemLogsInput = {
+    id?: string
+    name: string
+    type: string
+    status?: boolean
+    description?: string | null
+    location: string
+    mqttTopic: string
+    aesKey: string
+    userId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    commands?: CommandUncheckedCreateNestedManyWithoutDeviceInput
+    automationRules?: AutomationRuleUncheckedCreateNestedManyWithoutDeviceInput
+  }
+
+  export type DeviceCreateOrConnectWithoutSystemLogsInput = {
+    where: DeviceWhereUniqueInput
+    create: XOR<DeviceCreateWithoutSystemLogsInput, DeviceUncheckedCreateWithoutSystemLogsInput>
+  }
+
+  export type UserCreateWithoutSystemLogsInput = {
+    id?: string
+    username: string
+    email: string
+    passwordHash: string
+    role: $Enums.UserRole
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    devices?: DeviceCreateNestedManyWithoutOwnerInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutSystemLogsInput = {
+    id?: string
+    username: string
+    email: string
+    passwordHash: string
+    role: $Enums.UserRole
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    devices?: DeviceUncheckedCreateNestedManyWithoutOwnerInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutSystemLogsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutSystemLogsInput, UserUncheckedCreateWithoutSystemLogsInput>
+  }
+
+  export type DeviceUpsertWithoutSystemLogsInput = {
+    update: XOR<DeviceUpdateWithoutSystemLogsInput, DeviceUncheckedUpdateWithoutSystemLogsInput>
+    create: XOR<DeviceCreateWithoutSystemLogsInput, DeviceUncheckedCreateWithoutSystemLogsInput>
+    where?: DeviceWhereInput
+  }
+
+  export type DeviceUpdateToOneWithWhereWithoutSystemLogsInput = {
+    where?: DeviceWhereInput
+    data: XOR<DeviceUpdateWithoutSystemLogsInput, DeviceUncheckedUpdateWithoutSystemLogsInput>
+  }
+
+  export type DeviceUpdateWithoutSystemLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
+    aesKey?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutDevicesNestedInput
+    commands?: CommandUpdateManyWithoutDeviceNestedInput
+    automationRules?: AutomationRuleUpdateManyWithoutDeviceNestedInput
+  }
+
+  export type DeviceUncheckedUpdateWithoutSystemLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    status?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    mqttTopic?: StringFieldUpdateOperationsInput | string
+    aesKey?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    commands?: CommandUncheckedUpdateManyWithoutDeviceNestedInput
+    automationRules?: AutomationRuleUncheckedUpdateManyWithoutDeviceNestedInput
+  }
+
+  export type UserUpsertWithoutSystemLogsInput = {
+    update: XOR<UserUpdateWithoutSystemLogsInput, UserUncheckedUpdateWithoutSystemLogsInput>
+    create: XOR<UserCreateWithoutSystemLogsInput, UserUncheckedCreateWithoutSystemLogsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutSystemLogsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutSystemLogsInput, UserUncheckedUpdateWithoutSystemLogsInput>
+  }
+
+  export type UserUpdateWithoutSystemLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    devices?: DeviceUpdateManyWithoutOwnerNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutSystemLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    devices?: DeviceUncheckedUpdateManyWithoutOwnerNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type DeviceCreateManyOwnerInput = {
@@ -9480,6 +10110,15 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type SystemLogCreateManyUserInput = {
+    id?: string
+    type: string
+    message: string
+    source: string
+    deviceId?: string | null
+    createdAt?: Date | string
+  }
+
   export type DeviceUpdateWithoutOwnerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -9493,6 +10132,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     commands?: CommandUpdateManyWithoutDeviceNestedInput
     automationRules?: AutomationRuleUpdateManyWithoutDeviceNestedInput
+    systemLogs?: SystemLogUpdateManyWithoutDeviceNestedInput
   }
 
   export type DeviceUncheckedUpdateWithoutOwnerInput = {
@@ -9508,6 +10148,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     commands?: CommandUncheckedUpdateManyWithoutDeviceNestedInput
     automationRules?: AutomationRuleUncheckedUpdateManyWithoutDeviceNestedInput
+    systemLogs?: SystemLogUncheckedUpdateManyWithoutDeviceNestedInput
   }
 
   export type DeviceUncheckedUpdateManyWithoutOwnerInput = {
@@ -9547,6 +10188,33 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type SystemLogUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    device?: DeviceUpdateOneWithoutSystemLogsNestedInput
+  }
+
+  export type SystemLogUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SystemLogUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CommandCreateManyDeviceInput = {
     id?: string
     name: string
@@ -9560,6 +10228,15 @@ export namespace Prisma {
     triggerCondition: string
     action: JsonNullValueInput | InputJsonValue
     active?: boolean
+    createdAt?: Date | string
+  }
+
+  export type SystemLogCreateManyDeviceInput = {
+    id?: string
+    type: string
+    message: string
+    source: string
+    userId?: string | null
     createdAt?: Date | string
   }
 
@@ -9608,6 +10285,33 @@ export namespace Prisma {
     triggerCondition?: StringFieldUpdateOperationsInput | string
     action?: JsonNullValueInput | InputJsonValue
     active?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SystemLogUpdateWithoutDeviceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutSystemLogsNestedInput
+  }
+
+  export type SystemLogUncheckedUpdateWithoutDeviceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SystemLogUncheckedUpdateManyWithoutDeviceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

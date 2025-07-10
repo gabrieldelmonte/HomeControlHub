@@ -42,6 +42,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: on-failure
 
   mosquitto: # New Mosquitto service
     image: eclipse-mosquitto:latest
@@ -60,6 +61,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    restart: on-failure
 
 volumes:
   db_data:

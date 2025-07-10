@@ -17,7 +17,7 @@ import path from 'path';
 import { AuthController, DeviceController, UserController, NotificationController } from './controllers';
 import { AuthMiddleware, AttachContextMiddleware, RBACMiddleware } from './middlewares';
 import { Config, Database, Logger } from './infrastructure';
-import { UserRepository, DeviceRepository, NotificationRepository } from './repositories';
+import { UserRepository, DeviceRepository, NotificationRepository, SystemLogRepository } from './repositories';
 import { 
     AuthService, 
     MQTTConnection,
@@ -44,6 +44,7 @@ export class App {
         const userRepository = new UserRepository();
         const deviceRepository = new DeviceRepository();
         const notificationRepository = new NotificationRepository();
+        const systemLogRepository = new SystemLogRepository();
 
         const authService = new AuthService(userRepository);
         const encryptionService = new EncryptionService();
@@ -59,9 +60,9 @@ export class App {
         const attachContextMiddleware = new AttachContextMiddleware(userRepository, deviceRepository);
         const rbacMiddleware = new RBACMiddleware();
 
-        const authController = new AuthController(userRepository, authService);
+        const authController = new AuthController(userRepository, authService, notificationRepository);
         const userController = new UserController(userRepository, authService);
-        const deviceController = new DeviceController(deviceRepository, mqttService);
+        const deviceController = new DeviceController(deviceRepository, systemLogRepository, mqttService);
         const notificationController = new NotificationController(notificationRepository);
 
         this.server = new ServerInstance(

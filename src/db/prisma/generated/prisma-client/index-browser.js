@@ -178,6 +178,8 @@ exports.Prisma.SystemLogScalarFieldEnum = {
   type: 'type',
   message: 'message',
   source: 'source',
+  deviceId: 'deviceId',
+  userId: 'userId',
   createdAt: 'createdAt'
 };
 

@@ -6,7 +6,7 @@
     *
 */
 
-import { DeviceRepository, UserRepository, NotificationRepository } from './repositories';
+import { DeviceRepository, UserRepository, NotificationRepository, SystemLogRepository } from './repositories';
 import { AuthService, MQTTService, AuthTokenPayload, NotificationService } from './services';
 import { User, Device, Command } from './entities';
 import { UserRole_ENUM } from './enums';
@@ -16,11 +16,13 @@ import { Request, Response, NextFunction } from 'express';
 
 export class DeviceController {
     private deviceRepository: DeviceRepository;
+    private systemLogRepository: SystemLogRepository;
     private mqttService: MQTTService;
     private logger: Logger;
 
-    constructor(deviceRepository: DeviceRepository, mqttService: MQTTService) {
+    constructor(deviceRepository: DeviceRepository, systemLogRepository: SystemLogRepository, mqttService: MQTTService) {
         this.deviceRepository = deviceRepository;
+        this.systemLogRepository = systemLogRepository;
         this.mqttService = mqttService;
         this.logger = Logger.getInstance();
     }
@@ -56,6 +58,16 @@ export class DeviceController {
 
             if (newDevice) {
                 console.error("DEVICE_CONTROLLER_CREATE_DEVICE: Device added successfully"); // DEBUG
+                
+                // Log device creation
+                await this.systemLogRepository.createDeviceLog({
+                    deviceId: newDevice.id,
+                    userId: req.user.userId,
+                    message: `Device "${newDevice.name}" was created`,
+                    type: 'INFO',
+                    source: 'DEVICE'
+                });
+                
                 res.status(201).json(newDevice);
             } else {
                 console.error("DEVICE_CONTROLLER_CREATE_DEVICE: Failed to create device"); // DEBUG
@@ -139,6 +151,15 @@ export class DeviceController {
                 res.status(500).json({ message: 'Failed to update device status' });
                 return;
             }
+            
+            // Log device status change
+            await this.systemLogRepository.createDeviceLog({
+                deviceId: deviceId,
+                userId: req.user?.userId || 'system',
+                message: `Device "${existingDevice.name}" status changed to ${status ? 'ON' : 'OFF'}`,
+                type: 'INFO',
+                source: 'DEVICE'
+            });
             
             console.error("DEVICE_CONTROLLER_UPDATE_STATUS: Device status updated successfully"); // DEBUG
             res.status(200).json(updatedDevice);
@@ -267,6 +288,33 @@ export class DeviceController {
                 console.error("DEVICE_CONTROLLER_SEND_COMMAND: Passing error to next middleware"); // DEBUG
                 next(error);
             }
+        }
+    }
+
+    public async getDeviceLogs(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { deviceId } = req.params;
+            const limit = parseInt(req.query.limit as string) || 50;
+            
+            // Check if device exists and user has access
+            const device = await this.deviceRepository.findById(deviceId);
+            if (!device) {
+                res.status(404).json({ message: 'Device not found' });
+                return;
+            }
+            
+            // Check if user owns the device (unless admin)
+            if (req.user?.role !== UserRole_ENUM.ADMIN && device.ownerId !== req.user?.userId) {
+                res.status(403).json({ message: 'You can only view logs for your own devices' });
+                return;
+            }
+            
+            const logs = await this.systemLogRepository.getDeviceLogs(deviceId, limit);
+            res.status(200).json(logs);
+            
+        } catch (error) {
+            this.logger.logError(`Error in getDeviceLogs: ${error}`);
+            next(error);
         }
     }
 }
@@ -429,11 +477,13 @@ export class UserController {
 export class AuthController {
     private userRepository: UserRepository;
     private authService: AuthService;
+    private notificationRepository: NotificationRepository;
     private logger: Logger;
 
-    constructor(userRepository: UserRepository, authService: AuthService) {
+    constructor(userRepository: UserRepository, authService: AuthService, notificationRepository: NotificationRepository) {
         this.userRepository = userRepository;
         this.authService = authService;
+        this.notificationRepository = notificationRepository;
         this.logger = Logger.getInstance();
     }
 
@@ -492,6 +542,21 @@ export class AuthController {
 
             if (newUserEntity) {
                 console.error("AUTH_CONTROLLER_REGISTER: User registration successful"); // DEBUG
+                
+                // Create welcome notification for new users (but not for admins)
+                if (newUserEntity.role === 'STANDARD_USER') {
+                    try {
+                        await this.notificationRepository.create({
+                            message: 'Welcome to Home Control Hub! You can now manage and monitor all your smart devices from this dashboard.',
+                            type: 'WELCOME',
+                            userId: newUserEntity.id
+                        });
+                    } catch (notificationError) {
+                        console.error("AUTH_CONTROLLER_REGISTER: Failed to create welcome notification", notificationError);
+                        // Don't fail registration if notification creation fails
+                    }
+                }
+                
                 const userResponse = { 
                     id: newUserEntity.id, 
                     username: newUserEntity.username,

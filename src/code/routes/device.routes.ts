@@ -135,6 +135,60 @@ export function createDeviceRouter(
 
     /**
      * @swagger
+     * /devices/{deviceId}/logs:
+     *   get:
+     *     summary: Get device activity logs
+     *     tags: [Devices]
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: deviceId
+     *         required: true
+     *         schema:
+     *           type: string
+     *           format: uuid
+     *         description: Device ID
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *           default: 50
+     *         description: Maximum number of logs to return
+     *     responses:
+     *       200:
+     *         description: Device logs retrieved successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id: { type: string, format: uuid }
+     *                   message: { type: string }
+     *                   action: { type: string }
+     *                   level: { type: string, enum: [INFO, WARNING, ERROR] }
+     *                   timestamp: { type: string, format: date-time }
+     *                   user: 
+     *                     type: object
+     *                     properties:
+     *                       username: { type: string }
+     *                       email: { type: string }
+     *       403:
+     *         description: Access denied - can only view logs for own devices
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     *       404:
+     *         description: Device not found
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     */
+    router.get(
+        '/:deviceId/logs',
+        deviceController.getDeviceLogs.bind(deviceController)
+    );
+
+    /**
+     * @swagger
      * /devices/{deviceId}/command:
      *   post:
      *     summary: Send a command to a device

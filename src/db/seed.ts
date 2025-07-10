@@ -281,6 +281,91 @@ async function main() {
       ]
     });
 
+    // System Logs for device activities
+    await prisma.systemLog.createMany({
+      data: [
+        // Device creation logs
+        {
+          type: 'INFO',
+          message: `Device "${smartLight.name}" was created`,
+          source: 'DEVICE',
+          deviceId: smartLight.id,
+          userId: standardUser.id
+        },
+        {
+          type: 'INFO',
+          message: `Device "${thermostat.name}" was created`,
+          source: 'DEVICE',
+          deviceId: thermostat.id,
+          userId: standardUser.id
+        },
+        {
+          type: 'INFO',
+          message: `Device "${smartSwitch.name}" was created`,
+          source: 'DEVICE',
+          deviceId: smartSwitch.id,
+          userId: standardUser.id
+        },
+        {
+          type: 'INFO',
+          message: `Device "${smartPlug.name}" was created`,
+          source: 'DEVICE',
+          deviceId: smartPlug.id,
+          userId: standardUser.id
+        },
+        {
+          type: 'INFO',
+          message: `Device "${smartSensor.name}" was created`,
+          source: 'DEVICE',
+          deviceId: smartSensor.id,
+          userId: standardUser.id
+        },
+        {
+          type: 'INFO',
+          message: `Device "${smartCamera.name}" was created`,
+          source: 'DEVICE',
+          deviceId: smartCamera.id,
+          userId: standardUser.id
+        },
+        // Status change logs
+        {
+          type: 'INFO',
+          message: `Device "${smartLight.name}" status changed to ON`,
+          source: 'DEVICE',
+          deviceId: smartLight.id,
+          userId: standardUser.id
+        },
+        {
+          type: 'INFO',
+          message: `Device "${thermostat.name}" status changed to ON`,
+          source: 'DEVICE',
+          deviceId: thermostat.id,
+          userId: standardUser.id
+        },
+        {
+          type: 'INFO',
+          message: `Device "${smartSwitch.name}" status changed to OFF`,
+          source: 'DEVICE',
+          deviceId: smartSwitch.id,
+          userId: standardUser.id
+        },
+        {
+          type: 'WARNING',
+          message: `Device "${smartSensor.name}" connection timeout detected`,
+          source: 'DEVICE',
+          deviceId: smartSensor.id,
+          userId: null
+        },
+        {
+          type: 'INFO',
+          message: `Device "${smartCamera.name}" status changed to ON`,
+          source: 'DEVICE',
+          deviceId: smartCamera.id,
+          userId: standardUser.id
+        }
+      ]
+    });
+
     console.log('Seed concluído com sucesso!');
   } catch (error) {
     console.error('Erro durante o seed:', error);

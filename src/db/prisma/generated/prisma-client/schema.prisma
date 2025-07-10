@@ -33,6 +33,7 @@ model User {
   role          UserRole
   devices       Device[]
   notifications Notification[] // Relação adicionada aqui
+  systemLogs    SystemLog[] // Logs relacionados ao usuário
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -53,6 +54,7 @@ model Device {
   owner           User             @relation(fields: [userId], references: [id])
   commands        Command[]
   automationRules AutomationRule[]
+  systemLogs      SystemLog[] // Logs relacionados ao dispositivo
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
@@ -92,10 +94,15 @@ model Notification {
 
 model SystemLog {
   id        String   @id @default(uuid())
-  type      String // 'INFO' | 'ERROR'
+  type      String // 'INFO' | 'WARNING' | 'ERROR'
   message   String
-  source    String // 'DEVICE' | 'USER' | 'AUTH'
+  source    String // 'DEVICE' | 'USER' | 'AUTH' | 'SYSTEM'
+  deviceId  String? // Optional device reference for device-related logs
+  device    Device?  @relation(fields: [deviceId], references: [id])
+  userId    String? // Optional user reference for user-related logs
+  user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
 
   @@index([type, source])
+  @@index([deviceId, createdAt])
 }
