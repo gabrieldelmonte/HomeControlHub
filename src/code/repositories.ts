@@ -56,7 +56,9 @@ export class DeviceRepository {
                 newDevicePrisma.location,
                 newDevicePrisma.mqttTopic,
                 newDevicePrisma.aesKey, 
-                newDevicePrisma.userId, 
+                newDevicePrisma.userId,
+                newDevicePrisma.createdAt,
+                newDevicePrisma.updatedAt,
                 undefined, // mqttService is optional
                 newDevicePrisma.description || undefined
             );
@@ -80,7 +82,9 @@ export class DeviceRepository {
                 updatedDevicePrisma.location,
                 updatedDevicePrisma.mqttTopic,
                 updatedDevicePrisma.aesKey, 
-                updatedDevicePrisma.userId, 
+                updatedDevicePrisma.userId,
+                updatedDevicePrisma.createdAt,
+                updatedDevicePrisma.updatedAt,
                 undefined, // mqttService is optional
                 updatedDevicePrisma.description || undefined
             );
@@ -110,7 +114,9 @@ export class DeviceRepository {
                 updatedDevice.location,
                 updatedDevice.mqttTopic,
                 updatedDevice.aesKey, 
-                updatedDevice.userId, 
+                updatedDevice.userId,
+                updatedDevice.createdAt,
+                updatedDevice.updatedAt,
                 undefined, // mqttService is optional
                 updatedDevice.description || undefined
             );
@@ -143,7 +149,9 @@ export class DeviceRepository {
                 devicePrisma.location,
                 devicePrisma.mqttTopic,
                 devicePrisma.aesKey, 
-                devicePrisma.userId, 
+                devicePrisma.userId,
+                devicePrisma.createdAt,
+                devicePrisma.updatedAt,
                 undefined, // mqttService is optional
                 devicePrisma.description || undefined
             );
@@ -164,7 +172,9 @@ export class DeviceRepository {
                 d.location,
                 d.mqttTopic,
                 d.aesKey, 
-                d.userId, 
+                d.userId,
+                d.createdAt,
+                d.updatedAt,
                 undefined, // mqttService is optional
                 d.description || undefined
             ));
@@ -185,7 +195,9 @@ export class DeviceRepository {
                 d.location,
                 d.mqttTopic,
                 d.aesKey, 
-                d.userId, 
+                d.userId,
+                d.createdAt,
+                d.updatedAt,
                 undefined, // mqttService is optional
                 d.description || undefined
             ));

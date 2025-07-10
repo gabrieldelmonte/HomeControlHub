@@ -33,6 +33,8 @@ export class Device {
     public mqttTopic: string;
     public aesKey: string;
     public ownerId: string | null;
+    public createdAt: Date;
+    public updatedAt: Date;
     private mqttService?: MQTTService;
 
     constructor(
@@ -44,6 +46,8 @@ export class Device {
         mqttTopic: string,
         aesKey: string,
         ownerId: string | null,
+        createdAt: Date,
+        updatedAt: Date,
         mqttService?: MQTTService,
         description?: string
     ) {
@@ -55,6 +59,8 @@ export class Device {
         this.mqttTopic = mqttTopic;
         this.aesKey = aesKey;
         this.ownerId = ownerId;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.mqttService = mqttService;
         this.description = description;
     }
@@ -162,6 +168,8 @@ export class Device {
             initData.mqttTopic,
             initData.aesKey,
             currentUser.id, // Set ownerId directly
+            new Date(), // createdAt - placeholder, will be set by database
+            new Date(), // updatedAt - placeholder, will be set by database
             mqttService,
             initData.description
         );
@@ -190,6 +198,8 @@ export class Device {
             deviceFromRepo.mqttTopic,
             deviceFromRepo.aesKey,
             deviceFromRepo.ownerId || '',
+            deviceFromRepo.createdAt || new Date(), // Use actual createdAt or fallback
+            deviceFromRepo.updatedAt || new Date(), // Use actual updatedAt or fallback
             mqttService,
             deviceFromRepo.description
         );
