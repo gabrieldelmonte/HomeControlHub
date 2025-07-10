@@ -289,3 +289,228 @@ export const ErrorMessage = styled.div`
   font-weight: 600;
   margin-bottom: 2rem;
 `;
+
+// MQTT Terminal and Automation Rules styles
+export const MqttTerminalCard = styled(InfoCard)`
+  grid-column: 1 / -1;
+  background: white;
+  border: 2px solid #e1e5e9;
+`;
+
+export const TerminalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+`;
+
+export const TerminalTabs = styled.div`
+  display: flex;
+  gap: 1rem;
+`;
+
+export const TerminalTab = styled.button<{ active: boolean }>`
+  background: ${({ active }) => active ? 'linear-gradient(135deg, #ff7f50 0%, rgb(255, 157, 53) 50%, #40e0d0 100%)' : '#f8f9fa'};
+  color: ${({ active }) => active ? 'white' : '#666'};
+  border: 2px solid ${({ active }) => active ? 'transparent' : '#e1e5e9'};
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${({ active }) => active ? 'linear-gradient(135deg, #ff7f50 0%, rgb(255, 157, 53) 50%, #40e0d0 100%)' : '#e9ecef'};
+    border-color: ${({ active }) => active ? 'transparent' : '#adb5bd'};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+export const TerminalContent = styled.div`
+  background: white;
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
+  padding: 1.5rem;
+  min-height: 300px;
+`;
+
+export const CommandInput = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+`;
+
+export const CommandField = styled.input`
+  flex: 1;
+  background: white;
+  border: 2px solid #e1e5e9;
+  color: #333;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  &::placeholder {
+    color: #6c757d;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #ff7f50;
+    box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.1);
+  }
+`;
+
+export const SendButton = styled.button`
+  background: linear-gradient(135deg, #ff7f50 0%, rgb(255, 157, 53) 50%, #40e0d0 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  &:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+`;
+
+export const AutomationRules = styled.div`
+  margin-top: 2rem;
+`;
+
+export const RulesList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+`;
+
+export const RuleItem = styled.div`
+  background: #f8f9fa;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #adb5bd;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+export const RuleInfo = styled.div`
+  flex: 1;
+`;
+
+export const RuleName = styled.div`
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+`;
+
+export const RuleDetails = styled.div`
+  font-size: 0.85rem;
+  color: #666;
+`;
+
+export const DeleteRuleButton = styled.button`
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+export const CommandHistory = styled.div`
+  background: #f8f9fa;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 1rem;
+  max-height: 150px;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+`;
+
+export const CommandLine = styled.div<{ type?: 'sent' | 'received' | 'error' }>`
+  margin-bottom: 0.5rem;
+  color: ${({ type }) => 
+    type === 'sent' ? '#28a745' :
+    type === 'received' ? '#007bff' :
+    type === 'error' ? '#dc3545' :
+    '#333'
+  };
+  font-weight: 500;
+  
+  &::before {
+    content: ${({ type }) => 
+      type === 'sent' ? '"[SENT] "' :
+      type === 'received' ? '"[RECV] "' :
+      type === 'error' ? '"[ERROR] "' :
+      '""'
+    };
+    font-weight: bold;
+  }
+`;
+
+export const EmptyState = styled.div`
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 2rem;
+`;
+
+export const StatusIndicatorTerminal = styled.div<{ connected: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 600;
+  
+  &::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: ${({ connected }) => connected ? '#28a745' : '#dc3545'};
+    animation: ${({ connected }) => connected ? 'pulse 2s infinite' : 'none'};
+  }
+
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+`;

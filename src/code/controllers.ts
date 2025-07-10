@@ -6,7 +6,7 @@
     *
 */
 
-import { DeviceRepository, UserRepository, NotificationRepository, SystemLogRepository } from './repositories';
+import { DeviceRepository, UserRepository, NotificationRepository, SystemLogRepository, AutomationRuleRepository } from './repositories';
 import { AuthService, MQTTService, AuthTokenPayload, NotificationService } from './services';
 import { User, Device, Command } from './entities';
 import { UserRole_ENUM } from './enums';
@@ -265,7 +265,7 @@ export class DeviceController {
                 return;
             }
             if (req.user?.role !== UserRole_ENUM.ADMIN && req.device.ownerId !== req.user?.userId) {
-                console.error("DEVICE_CONTROLLER_SEND_COMMAND: User attempting to command unowned device"); // DEBUG
+                console.error("DEVICE_CONTROLLER_SEND_COMMAND: User attempting to command unowned device", req.user?.userId, req.device.ownerId); // DEBUG
                 this.logger.logWarn(`User ${req.user?.username} attempt to command unowned device ${deviceId}`);
                 res.status(403).json({ message: 'Forbidden: You do not own this device' });
                 return;
@@ -690,6 +690,177 @@ export class NotificationController {
         } catch (error) {
             console.error("NOTIFICATION_CONTROLLER_MARK_AS_READ: Caught error in try block", error); // DEBUG
             this.logger.logError(`Error in markAsRead ${req.params.notificationId}: ${error}`);
+            next(error);
+        }
+    }
+}
+
+export class AutomationController {
+    private automationRuleRepository: AutomationRuleRepository;
+    private deviceRepository: DeviceRepository;
+    private mqttService: MQTTService;
+    private logger: Logger;
+
+    constructor(automationRuleRepository: AutomationRuleRepository, deviceRepository: DeviceRepository, mqttService: MQTTService) {
+        this.automationRuleRepository = automationRuleRepository;
+        this.deviceRepository = deviceRepository;
+        this.mqttService = mqttService;
+        this.logger = Logger.getInstance();
+    }
+
+    public async createRule(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { name, triggerCondition, action } = req.body;
+            const { deviceId } = req.params;
+
+            if (!name || !triggerCondition || !action || !deviceId) {
+                res.status(400).json({ message: 'Missing required fields: name, triggerCondition, action, deviceId' });
+                return;
+            }
+
+            if (!req.user || !req.user.userId) {
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            // Verify device exists and user has access
+            const device = await this.deviceRepository.findById(deviceId);
+            if (!device) {
+                res.status(404).json({ message: 'Device not found' });
+                return;
+            }
+
+            // For non-admin users, check if they own the device
+            if (req.user.role !== 'ADMIN' && device.ownerId !== req.user.userId) {
+                res.status(403).json({ message: 'Access denied: You can only create rules for your own devices' });
+                return;
+            }
+
+            const newRule = await this.automationRuleRepository.create({
+                name,
+                triggerCondition,
+                action,
+                deviceId
+            });
+
+            if (newRule) {
+                res.status(201).json(newRule);
+            } else {
+                res.status(500).json({ message: 'Failed to create automation rule' });
+            }
+        } catch (error) {
+            this.logger.logError(`Error creating automation rule: ${error}`);
+            next(error);
+        }
+    }
+
+    public async getRulesByDevice(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { deviceId } = req.params;
+
+            if (!req.user || !req.user.userId) {
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            // Verify device exists and user has access
+            const device = await this.deviceRepository.findById(deviceId);
+            if (!device) {
+                res.status(404).json({ message: 'Device not found' });
+                return;
+            }
+
+            // For non-admin users, check if they own the device
+            if (req.user.role !== 'ADMIN' && device.ownerId !== req.user.userId) {
+                res.status(403).json({ message: 'Access denied: You can only view rules for your own devices' });
+                return;
+            }
+
+            const rules = await this.automationRuleRepository.findByDeviceId(deviceId);
+            res.json(rules);
+        } catch (error) {
+            this.logger.logError(`Error fetching automation rules: ${error}`);
+            next(error);
+        }
+    }
+
+    public async deleteRule(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { ruleId } = req.params;
+
+            if (!req.user || !req.user.userId) {
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            // Get the rule to check ownership
+            const rule = await this.automationRuleRepository.findById(ruleId);
+            if (!rule) {
+                res.status(404).json({ message: 'Automation rule not found' });
+                return;
+            }
+
+            // For non-admin users, check if they own the device
+            if (req.user.role !== 'ADMIN' && rule.device.ownerId !== req.user.userId) {
+                res.status(403).json({ message: 'Access denied: You can only delete rules for your own devices' });
+                return;
+            }
+
+            const deleted = await this.automationRuleRepository.delete(ruleId);
+            if (deleted) {
+                res.json({ message: 'Automation rule deleted successfully' });
+            } else {
+                res.status(500).json({ message: 'Failed to delete automation rule' });
+            }
+        } catch (error) {
+            this.logger.logError(`Error deleting automation rule: ${error}`);
+            next(error);
+        }
+    }
+
+    public async sendMQTTCommand(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { command } = req.body;
+            const { deviceId } = req.params;
+
+            if (!command || !deviceId) {
+                res.status(400).json({ message: 'Missing required fields: command, deviceId' });
+                return;
+            }
+
+            if (!req.user || !req.user.userId) {
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            // Verify device exists and user has access
+            const device = await this.deviceRepository.findById(deviceId);
+            if (!device) {
+                res.status(404).json({ message: 'Device not found' });
+                return;
+            }
+
+            // For non-admin users, check if they own the device
+            if (req.user.role !== 'ADMIN' && device.ownerId !== req.user.userId) {
+                res.status(403).json({ message: 'Access denied: You can only send commands to your own devices' });
+                return;
+            }
+
+            // Send MQTT command
+            const success = await this.mqttService.sendCommand(device, command);
+            
+            if (success) {
+                res.json({ 
+                    message: 'Command sent successfully',
+                    topic: device.mqttTopic,
+                    command: command,
+                    timestamp: new Date().toISOString()
+                });
+            } else {
+                res.status(500).json({ message: 'Failed to send MQTT command' });
+            }
+        } catch (error) {
+            this.logger.logError(`Error sending MQTT command: ${error}`);
             next(error);
         }
     }

@@ -104,6 +104,10 @@ export class Database {
     public get systemLog() {
         return this.prisma.systemLog;
     }
+
+    public get automationRule() {
+        return this.prisma.automationRule;
+    }
 }
 
 

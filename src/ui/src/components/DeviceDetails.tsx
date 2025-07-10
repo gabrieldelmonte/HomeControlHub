@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaArrowLeft, FaEdit, FaSave, FaTimes, FaExclamationTriangle, FaSync } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaSave, FaTimes, FaExclamationTriangle, FaSync, FaPaperPlane, FaTrash, FaPlus } from "react-icons/fa";
 import {
   Container,
   Header,
@@ -37,6 +37,25 @@ import {
   LogMessage,
   LoadingSpinner,
   ErrorMessage,
+  MqttTerminalCard,
+  TerminalHeader,
+  TerminalTabs,
+  TerminalTab,
+  TerminalContent,
+  CommandInput,
+  CommandField,
+  SendButton,
+  AutomationRules,
+  RulesList,
+  RuleItem,
+  RuleInfo,
+  RuleName,
+  RuleDetails,
+  DeleteRuleButton,
+  CommandHistory,
+  CommandLine,
+  EmptyState,
+  StatusIndicatorTerminal,
 } from "./styles/DeviceDetails.styles";
 
 interface DeviceData {
@@ -63,6 +82,22 @@ interface LogEntry {
     username: string;
     email: string;
   };
+}
+
+interface AutomationRule {
+  id: string;
+  name: string;
+  triggerCondition: string;
+  action: string;
+  deviceId: string;
+  createdAt: string;
+}
+
+interface CommandHistory {
+  id: string;
+  timestamp: string;
+  type: 'sent' | 'received' | 'error';
+  content: string;
 }
 
 // Helper function to format dates safely
@@ -107,6 +142,18 @@ const DeviceDetails: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [previousStatus, setPreviousStatus] = useState<boolean | null>(null);
   const [logsInitialized, setLogsInitialized] = useState(false);
+  
+  // MQTT Terminal state
+  const [activeTab, setActiveTab] = useState<'terminal' | 'rules'>('terminal');
+  const [commandName, setCommandName] = useState('');
+  const [commandPayload, setCommandPayload] = useState('');
+  const [commandHistory, setCommandHistory] = useState<CommandHistory[]>([]);
+  const [automationRules, setAutomationRules] = useState<AutomationRule[]>([]);
+  const [ruleName, setRuleName] = useState('');
+  const [ruleTrigger, setRuleTrigger] = useState('');
+  const [ruleAction, setRuleAction] = useState('');
+  const [sendingCommand, setSendingCommand] = useState(false);
+  const [savingRule, setSavingRule] = useState(false);
 
   useEffect(() => {
     // Get user role from localStorage
@@ -202,6 +249,9 @@ const DeviceDetails: React.FC = () => {
       if (!logsInitialized && !preserveLogs) {
         await fetchDeviceLogs();
       }
+      
+      // Fetch automation rules
+      await fetchAutomationRules();
       
       // Update last updated timestamp
       if (!showLoadingSpinner) {
@@ -402,6 +452,202 @@ const DeviceDetails: React.FC = () => {
 
   const handleInputEvent = (field: keyof DeviceData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     handleInputChange(field, e.target.value);
+  };
+
+  // MQTT Terminal and Automation Rules functions
+  const fetchAutomationRules = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token || !deviceId) return;
+
+      const response = await fetch(`http://localhost:8080/api/v1/automation/devices/${deviceId}/rules`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const rules = await response.json();
+        setAutomationRules(rules);
+      }
+    } catch (error) {
+      console.error("Error fetching automation rules:", error);
+    }
+  };
+
+  const sendMQTTCommand = async () => {
+    if (!commandName.trim() || !deviceId || sendingCommand) return;
+
+    setSendingCommand(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      let payload;
+      try {
+        payload = commandPayload.trim() ? JSON.parse(commandPayload) : {};
+      } catch (error) {
+        // If not valid JSON, treat as string
+        payload = { value: commandPayload };
+      }
+
+      const response = await fetch(`http://localhost:8080/api/v1/automation/devices/${deviceId}/commands`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          command: {
+            name: commandName,
+            payload: payload
+          }
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Add to command history
+        const newCommand: CommandHistory = {
+          id: Date.now().toString(),
+          timestamp: new Date().toISOString(),
+          type: 'sent',
+          content: `${commandName}: ${JSON.stringify(payload)}`
+        };
+        setCommandHistory(prev => [newCommand, ...prev.slice(0, 49)]); // Keep last 50 commands
+
+        // Clear input fields
+        setCommandName('');
+        setCommandPayload('');
+
+        // Add log entry
+        const userInfo = currentUser?.username || 'Unknown User';
+        const newLog: LogEntry = {
+          id: Date.now().toString(),
+          message: `MQTT command '${commandName}' sent to device '${device?.name}' by ${userInfo}`,
+          type: "INFO",
+          source: "MQTT",
+          createdAt: new Date().toISOString()
+        };
+        setLogs(prev => [newLog, ...prev]);
+      } else {
+        const error = await response.text();
+        throw new Error(error);
+      }
+    } catch (error) {
+      console.error("Error sending MQTT command:", error);
+      
+      // Add error to command history
+      const errorCommand: CommandHistory = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        type: 'error',
+        content: `Failed to send ${commandName}: ${error}`
+      };
+      setCommandHistory(prev => [errorCommand, ...prev.slice(0, 49)]);
+    } finally {
+      setSendingCommand(false);
+    }
+  };
+
+  const createAutomationRule = async () => {
+    if (!ruleName.trim() || !ruleTrigger.trim() || !ruleAction.trim() || !deviceId || savingRule) return;
+
+    setSavingRule(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8080/api/v1/automation/devices/${deviceId}/rules`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: ruleName,
+          triggerCondition: ruleTrigger,
+          action: ruleAction
+        }),
+      });
+
+      if (response.ok) {
+        const newRule = await response.json();
+        setAutomationRules(prev => [newRule, ...prev]);
+        
+        // Clear input fields
+        setRuleName('');
+        setRuleTrigger('');
+        setRuleAction('');
+
+        // Add log entry
+        const userInfo = currentUser?.username || 'Unknown User';
+        const newLog: LogEntry = {
+          id: Date.now().toString(),
+          message: `Automation rule '${newRule.name}' created for device '${device?.name}' by ${userInfo}`,
+          type: "INFO",
+          source: "AUTOMATION",
+          createdAt: new Date().toISOString()
+        };
+        setLogs(prev => [newLog, ...prev]);
+      } else {
+        const error = await response.text();
+        throw new Error(error);
+      }
+    } catch (error) {
+      console.error("Error creating automation rule:", error);
+      setError("Failed to create automation rule");
+    } finally {
+      setSavingRule(false);
+    }
+  };
+
+  const deleteAutomationRule = async (ruleId: string, ruleName: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8080/api/v1/automation/rules/${ruleId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        setAutomationRules(prev => prev.filter(rule => rule.id !== ruleId));
+
+        // Add log entry
+        const userInfo = currentUser?.username || 'Unknown User';
+        const newLog: LogEntry = {
+          id: Date.now().toString(),
+          message: `Automation rule '${ruleName}' deleted from device '${device?.name}' by ${userInfo}`,
+          type: "INFO",
+          source: "AUTOMATION",
+          createdAt: new Date().toISOString()
+        };
+        setLogs(prev => [newLog, ...prev]);
+      } else {
+        const error = await response.text();
+        throw new Error(error);
+      }
+    } catch (error) {
+      console.error("Error deleting automation rule:", error);
+      setError("Failed to delete automation rule");
+    }
   };
 
   if (loading) {
@@ -663,6 +909,122 @@ const DeviceDetails: React.FC = () => {
                 ))}
               </div>
             </LogsCard>
+
+            <MqttTerminalCard>
+              <CardTitle>
+                MQTT Terminal & Automation
+              </CardTitle>
+              <TerminalHeader>
+            <TerminalTabs>
+              <TerminalTab active={activeTab === 'terminal'} onClick={() => setActiveTab('terminal')}>
+                Terminal
+              </TerminalTab>
+              <TerminalTab active={activeTab === 'rules'} onClick={() => setActiveTab('rules')}>
+                Automation Rules {automationRules.length > 0 && `(${automationRules.length})`}
+              </TerminalTab>
+            </TerminalTabs>
+            <StatusIndicatorTerminal connected={device?.status || false}>
+              MQTT: {device?.status ? 'Connected' : 'Disconnected'}
+            </StatusIndicatorTerminal>
+          </TerminalHeader>
+          <TerminalContent>
+            {activeTab === 'terminal' ? (
+              <div>
+                <CommandInput>
+                  <CommandField
+                    value={commandName}
+                    onChange={(e) => setCommandName(e.target.value)}
+                    placeholder="Command Name (e.g., turnOn, setColor)"
+                    disabled={sendingCommand}
+                  />
+                  <CommandField
+                    value={commandPayload}
+                    onChange={(e) => setCommandPayload(e.target.value)}
+                    placeholder="Payload (JSON or string)"
+                    disabled={sendingCommand}
+                  />
+                  <SendButton onClick={sendMQTTCommand} disabled={sendingCommand}>
+                    <FaPaperPlane /> {sendingCommand ? 'Sending...' : 'Send Command'}
+                  </SendButton>
+                </CommandInput>
+                
+                <div style={{ marginTop: '1.5rem' }}>
+                  <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'rgba(255, 255, 255, 0.9)', fontWeight: 600 }}>Command History</span>
+                    <span style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
+                      Topic: {device?.mqttTopic}
+                    </span>
+                  </div>
+                  <CommandHistory>
+                    {commandHistory.length === 0 ? (
+                      <EmptyState>No commands sent yet. Start by sending a command above.</EmptyState>
+                    ) : (
+                      commandHistory.map((cmd) => (
+                        <CommandLine key={cmd.id} type={cmd.type}>
+                          {formatDate(cmd.timestamp)} - {cmd.content}
+                        </CommandLine>
+                      ))
+                    )}
+                  </CommandHistory>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <CardTitle>Automation Rules</CardTitle>
+                <AutomationRules>
+                  <RulesList>
+                    {automationRules.length === 0 ? (
+                      <EmptyState>No automation rules found.</EmptyState>
+                    ) : (
+                      automationRules.map((rule) => (
+                        <RuleItem key={rule.id}>
+                          <RuleInfo>
+                            <RuleName>{rule.name}</RuleName>
+                            <RuleDetails>{rule.triggerCondition} → {rule.action}</RuleDetails>
+                          </RuleInfo>
+                          <DeleteRuleButton onClick={() => deleteAutomationRule(rule.id, rule.name)}>
+                            <FaTrash />
+                          </DeleteRuleButton>
+                        </RuleItem>
+                      ))
+                    )}
+                  </RulesList>
+                  
+                  <div style={{ marginTop: '1.5rem' }}>
+                    <CardTitle>Create New Rule</CardTitle>
+                    <CommandInput>
+                      <CommandField
+                        value={ruleName}
+                        onChange={(e) => setRuleName(e.target.value)}
+                        placeholder="Rule Name"
+                        disabled={savingRule}
+                      />
+                    </CommandInput>
+                    <CommandInput>
+                      <CommandField
+                        value={ruleTrigger}
+                        onChange={(e) => setRuleTrigger(e.target.value)}
+                        placeholder="Trigger Condition (e.g., status == true)"
+                        disabled={savingRule}
+                      />
+                    </CommandInput>
+                    <CommandInput>
+                      <CommandField
+                        value={ruleAction}
+                        onChange={(e) => setRuleAction(e.target.value)}
+                        placeholder="Action (e.g., {command: 'turnOn', payload: {}})"
+                        disabled={savingRule}
+                      />
+                      <SendButton onClick={createAutomationRule} disabled={savingRule || !ruleName.trim() || !ruleTrigger.trim() || !ruleAction.trim()}>
+                        <FaPlus /> {savingRule ? 'Creating...' : 'Create Rule'}
+                      </SendButton>
+                    </CommandInput>
+                  </div>
+                </AutomationRules>
+              </div>
+            )}
+          </TerminalContent>
+        </MqttTerminalCard>
           </DetailsGrid>
         </DetailsContainer>
       </MainContent>

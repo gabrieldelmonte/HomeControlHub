@@ -536,3 +536,110 @@ export class SystemLogRepository {
         }
     }
 }
+
+export class AutomationRuleRepository {
+    private db: Database;
+    private logger: Logger;
+
+    constructor() {
+        this.db = Database.getInstance();
+        this.logger = Logger.getInstance();
+    }
+
+    public async create(ruleData: {
+        name: string;
+        triggerCondition: string;
+        action: any;
+        deviceId: string;
+    }): Promise<any | null> {
+        try {
+            const rule = await this.db.automationRule.create({
+                data: {
+                    name: ruleData.name,
+                    triggerCondition: ruleData.triggerCondition,
+                    action: ruleData.action,
+                    deviceId: ruleData.deviceId,
+                    active: true
+                }
+            });
+            return rule;
+        } catch (error) {
+            this.logger.logError(`Error creating automation rule: ${error}`);
+            return null;
+        }
+    }
+
+    public async findByDeviceId(deviceId: string): Promise<any[]> {
+        try {
+            const rules = await this.db.automationRule.findMany({
+                where: { deviceId },
+                orderBy: { createdAt: 'desc' }
+            });
+            return rules;
+        } catch (error) {
+            this.logger.logError(`Error finding automation rules for device ${deviceId}: ${error}`);
+            return [];
+        }
+    }
+
+    public async findById(id: string): Promise<any | null> {
+        try {
+            const rule = await this.db.automationRule.findUnique({
+                where: { id },
+                include: {
+                    device: true
+                }
+            });
+            return rule;
+        } catch (error) {
+            this.logger.logError(`Error finding automation rule ${id}: ${error}`);
+            return null;
+        }
+    }
+
+    public async update(id: string, updateData: {
+        name?: string;
+        triggerCondition?: string;
+        action?: any;
+        active?: boolean;
+    }): Promise<any | null> {
+        try {
+            const rule = await this.db.automationRule.update({
+                where: { id },
+                data: updateData
+            });
+            return rule;
+        } catch (error) {
+            this.logger.logError(`Error updating automation rule ${id}: ${error}`);
+            return null;
+        }
+    }
+
+    public async delete(id: string): Promise<boolean> {
+        try {
+            await this.db.automationRule.delete({
+                where: { id }
+            });
+            return true;
+        } catch (error) {
+            this.logger.logError(`Error deleting automation rule ${id}: ${error}`);
+            return false;
+        }
+    }
+
+    public async findActiveByDeviceId(deviceId: string): Promise<any[]> {
+        try {
+            const rules = await this.db.automationRule.findMany({
+                where: { 
+                    deviceId,
+                    active: true 
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+            return rules;
+        } catch (error) {
+            this.logger.logError(`Error finding active automation rules for device ${deviceId}: ${error}`);
+            return [];
+        }
+    }
+}

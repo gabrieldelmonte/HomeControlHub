@@ -14,10 +14,10 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import path from 'path';
 
-import { AuthController, DeviceController, UserController, NotificationController } from './controllers';
+import { AuthController, DeviceController, UserController, NotificationController, AutomationController } from './controllers';
 import { AuthMiddleware, AttachContextMiddleware, RBACMiddleware } from './middlewares';
 import { Config, Database, Logger } from './infrastructure';
-import { UserRepository, DeviceRepository, NotificationRepository, SystemLogRepository } from './repositories';
+import { UserRepository, DeviceRepository, NotificationRepository, SystemLogRepository, AutomationRuleRepository } from './repositories';
 import { 
     AuthService, 
     MQTTConnection,
@@ -45,6 +45,7 @@ export class App {
         const deviceRepository = new DeviceRepository();
         const notificationRepository = new NotificationRepository();
         const systemLogRepository = new SystemLogRepository();
+        const automationRuleRepository = new AutomationRuleRepository();
 
         const authService = new AuthService(userRepository);
         const encryptionService = new EncryptionService();
@@ -64,6 +65,7 @@ export class App {
         const userController = new UserController(userRepository, authService);
         const deviceController = new DeviceController(deviceRepository, systemLogRepository, mqttService);
         const notificationController = new NotificationController(notificationRepository);
+        const automationController = new AutomationController(automationRuleRepository, deviceRepository, mqttService);
 
         this.server = new ServerInstance(
             config,
@@ -73,6 +75,7 @@ export class App {
             userController,
             deviceController,
             notificationController,
+            automationController,
             authMiddleware,
             attachContextMiddleware,
             rbacMiddleware
@@ -105,6 +108,7 @@ class ServerInstance {
     private userController: UserController;
     private deviceController: DeviceController;
     private notificationController: NotificationController;
+    private automationController: AutomationController;
     private authMiddleware: AuthMiddleware;
     private attachContextMiddleware: AttachContextMiddleware;
     private rbacMiddleware: RBACMiddleware;
@@ -117,6 +121,7 @@ class ServerInstance {
         userController: UserController,
         deviceController: DeviceController,
         notificationController: NotificationController,
+        automationController: AutomationController,
         authMiddleware: AuthMiddleware,
         attachContextMiddleware: AttachContextMiddleware,
         rbacMiddleware: RBACMiddleware
@@ -129,6 +134,7 @@ class ServerInstance {
         this.userController = userController;
         this.deviceController = deviceController;
         this.notificationController = notificationController;
+        this.automationController = automationController;
         this.authMiddleware = authMiddleware;
         this.attachContextMiddleware = attachContextMiddleware;
         this.rbacMiddleware = rbacMiddleware;
@@ -159,6 +165,7 @@ class ServerInstance {
             userController: this.userController,
             deviceController: this.deviceController,
             notificationController: this.notificationController,
+            automationController: this.automationController,
             authMiddleware: this.authMiddleware,
             attachContextMiddleware: this.attachContextMiddleware,
             rbacMiddleware: this.rbacMiddleware

@@ -302,6 +302,28 @@ export class MQTTService {
         await this.mqttConnection.publish(topic, encryptedMessage);
         this.logger.logInfo(`Published command '${commandName}' to ${topic}`);
     }
+
+    public async sendCommand(device: Device, command: { name: string; payload: any }): Promise<boolean> {
+        try {
+            // Encrypt the command payload
+            const messageString = JSON.stringify(command.payload);
+            const encryptedMessage = this.encryptionService.encrypt(messageString, device.aesKey);
+
+            if (!encryptedMessage) {
+                this.logger.logError(`Failed to encrypt command for device ${device.id}`);
+                return false;
+            }
+
+            // Send command to the device's command topic
+            const commandTopic = `${device.mqttTopic}/command/${command.name}`;
+            await this.mqttConnection.publish(commandTopic, encryptedMessage);
+            this.logger.logInfo(`Sent command '${command.name}' to ${commandTopic} for device ${device.name}`);
+            return true;
+        } catch (error) {
+            this.logger.logError(`Error sending MQTT command to device ${device.name}: ${error}`);
+            return false;
+        }
+    }
 }
 
 export class EncryptionService {
