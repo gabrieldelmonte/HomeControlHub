@@ -24,7 +24,7 @@ services:
 
   db:
     image: postgres:latest
-    restart: always
+    restart: on-failure
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -42,12 +42,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: on-failure
 
   mosquitto: # New Mosquitto service
     image: eclipse-mosquitto:latest
     container_name: mosquitto_broker
-    restart: unless-stopped
+    restart: on-failure
     ports:
       - "1884:1883"   # Changed host port for MQTT
     volumes:
@@ -61,7 +60,6 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    restart: on-failure
 
 volumes:
   db_data:
