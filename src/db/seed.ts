@@ -176,34 +176,60 @@ async function main() {
     // Notificações
     await prisma.notification.createMany({
       data: [
+        // Welcome message for standard user
         {
-          message: 'Bem-vindo ao sistema Home Control Hub! Você pode visualizar todos os dispositivos do sistema.',
-          channel: 'APP',
-          userId: adminUser.id
+          message: 'Welcome to Home Control Hub! You can now manage and monitor all your smart devices from this dashboard.',
+          type: 'WELCOME',
+          userId: standardUser.id
         },
+        // Device added notifications for standard user
         {
-          message: 'Novo dispositivo "Luz Sala Principal" conectado',
-          channel: 'APP',
+          message: 'New device "Luz Sala Principal" has been successfully added to your home network.',
+          type: 'DEVICE_ADDED',
           userId: standardUser.id
         },
         {
-          message: 'Temperatura do quarto acima do normal (26°C)',
-          channel: 'EMAIL',
+          message: 'New device "Termostato Quarto" has been successfully added to your home network.',
+          type: 'DEVICE_ADDED',
           userId: standardUser.id
         },
         {
-          message: 'Movimento detectado na entrada principal',
-          channel: 'PUSH',
+          message: 'New device "Interruptor Cozinha" has been successfully added to your home network.',
+          type: 'DEVICE_ADDED',
           userId: standardUser.id
         },
         {
-          message: 'Sistema de automação ativado para todos os seus dispositivos',
-          channel: 'APP',
+          message: 'New device "Câmera Entrada" has been successfully added to your home network.',
+          type: 'DEVICE_ADDED',
+          userId: standardUser.id
+        },
+        // Critical notifications for standard user
+        {
+          message: 'CRITICAL: Temperature sensor in main room detected high temperature (28°C). Please check your HVAC system.',
+          type: 'CRITICAL',
           userId: standardUser.id
         },
         {
-          message: 'Relatório diário: 6 dispositivos ativos no sistema',
-          channel: 'EMAIL',
+          message: 'CRITICAL: Security camera "Câmera Entrada" detected unusual activity during nighttime hours.',
+          type: 'CRITICAL',
+          userId: standardUser.id
+        },
+        {
+          message: 'System maintenance scheduled for tonight at 2:00 AM. Your devices may be briefly unavailable.',
+          type: 'SYSTEM',
+          userId: standardUser.id
+        },
+        // Some read notifications
+        {
+          message: 'Your smart home automation system has been successfully configured.',
+          type: 'SYSTEM',
+          userId: standardUser.id,
+          read: true
+        },
+        // Admin notifications (but admin users don't see notifications on dashboard)
+        {
+          message: 'System Overview: 6 devices currently active across all users.',
+          type: 'ADMIN',
           userId: adminUser.id
         }
       ]

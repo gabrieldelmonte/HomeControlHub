@@ -6,8 +6,8 @@
     *
 */
 
-import { DeviceRepository, UserRepository } from './repositories';
-import { AuthService, MQTTService, AuthTokenPayload } from './services';
+import { DeviceRepository, UserRepository, NotificationRepository } from './repositories';
+import { AuthService, MQTTService, AuthTokenPayload, NotificationService } from './services';
 import { User, Device, Command } from './entities';
 import { UserRole_ENUM } from './enums';
 import { Logger } from './infrastructure';
@@ -551,6 +551,80 @@ export class AuthController {
         } catch (error) {
             console.error("AUTH_CONTROLLER_LOGIN: Caught error in try block", error); // DEBUG
             this.logger.logError(`Error in user login for ${req.body.email}: ${error}`);
+            next(error);
+        }
+    }
+}
+
+export class NotificationController {
+    private notificationRepository: NotificationRepository;
+    private logger: Logger;
+
+    constructor(notificationRepository: NotificationRepository) {
+        this.notificationRepository = notificationRepository;
+        this.logger = Logger.getInstance();
+    }
+
+    public async listNotifications(req: Request, res: Response, next: NextFunction): Promise<void> {
+        console.error("NOTIFICATION_CONTROLLER_LIST: Entry"); // DEBUG
+        try {
+            console.error("NOTIFICATION_CONTROLLER_LIST: Inside try block"); // DEBUG
+            const userId = req.user?.userId;
+            if (!userId) {
+                console.error("NOTIFICATION_CONTROLLER_LIST: Unauthorized: User not authenticated"); // DEBUG
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            const notifications = await this.notificationRepository.findByUserId(userId);
+            console.error(`NOTIFICATION_CONTROLLER_LIST: Notifications found: ${notifications.length}`); // DEBUG
+            res.status(200).json(notifications);
+        } catch (error) {
+            console.error("NOTIFICATION_CONTROLLER_LIST: Caught error in try block", error); // DEBUG
+            this.logger.logError(`Error in listNotifications: ${error}`);
+            next(error);
+        }
+    }
+
+    public async markAsRead(req: Request, res: Response, next: NextFunction): Promise<void> {
+        console.error("NOTIFICATION_CONTROLLER_MARK_AS_READ: Entry"); // DEBUG
+        try {
+            console.error("NOTIFICATION_CONTROLLER_MARK_AS_READ: Inside try block"); // DEBUG
+            const { notificationId } = req.params;
+            const userId = req.user?.userId;
+
+            if (!userId) {
+                console.error("NOTIFICATION_CONTROLLER_MARK_AS_READ: Unauthorized: User not authenticated"); // DEBUG
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            const notification = await this.notificationRepository.findById(notificationId);
+            if (!notification) {
+                console.error("NOTIFICATION_CONTROLLER_MARK_AS_READ: Notification not found"); // DEBUG
+                res.status(404).json({ message: 'Notification not found' });
+                return;
+            }
+
+            if (notification.userId !== userId) {
+                console.error("NOTIFICATION_CONTROLLER_MARK_AS_READ: User attempted to access unowned notification"); // DEBUG
+                this.logger.logWarn(`User ${req.user?.username} attempted to access unowned notification ${notificationId}`);
+                res.status(403).json({ message: 'Forbidden: You do not own this notification' });
+                return;
+            }
+
+            notification.isRead = true;
+            const success = await this.notificationRepository.markAsRead(notificationId, userId);
+            if (!success) {
+                console.error("NOTIFICATION_CONTROLLER_MARK_AS_READ: Failed to mark as read"); // DEBUG
+                res.status(500).json({ message: 'Failed to mark notification as read' });
+                return;
+            }
+            console.error("NOTIFICATION_CONTROLLER_MARK_AS_READ: Notification marked as read"); // DEBUG
+            res.status(200).json({ ...notification, read: true });
+        } catch (error) {
+            console.error("NOTIFICATION_CONTROLLER_MARK_AS_READ: Caught error in try block", error); // DEBUG
+            this.logger.logError(`Error in markAsRead ${req.params.notificationId}: ${error}`);
             next(error);
         }
     }

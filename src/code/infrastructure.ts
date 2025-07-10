@@ -96,6 +96,10 @@ export class Database {
     public get user() {
         return this.prisma.user;
     }
+
+    public get notification() {
+        return this.prisma.notification;
+    }
 }
 
 

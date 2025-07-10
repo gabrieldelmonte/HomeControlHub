@@ -167,7 +167,7 @@ exports.Prisma.AutomationRuleScalarFieldEnum = {
 exports.Prisma.NotificationScalarFieldEnum = {
   id: 'id',
   message: 'message',
-  channel: 'channel',
+  type: 'type',
   userId: 'userId',
   read: 'read',
   createdAt: 'createdAt'

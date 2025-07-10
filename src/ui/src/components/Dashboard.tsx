@@ -40,9 +40,19 @@ interface Device {
   updatedAt: string;
 }
 
+interface Notification {
+  id: string;
+  message: string;
+  type: string;
+  userId: string;
+  read: boolean;
+  createdAt: string;
+}
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [devices, setDevices] = useState<Device[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -65,7 +75,7 @@ const Dashboard: React.FC = () => {
 
   // Fetch user's devices
   useEffect(() => {
-    const fetchDevices = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -73,7 +83,8 @@ const Dashboard: React.FC = () => {
           return;
         }
 
-        const response = await fetch("http://localhost:8080/api/v1/devices", {
+        // Fetch devices
+        const devicesResponse = await fetch("http://localhost:8080/api/v1/devices", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -81,7 +92,7 @@ const Dashboard: React.FC = () => {
           },
         });
 
-        if (response.status === 401) {
+        if (devicesResponse.status === 401) {
           // Token is invalid, redirect to login
           localStorage.removeItem("token");
           localStorage.removeItem("user");
@@ -89,22 +100,40 @@ const Dashboard: React.FC = () => {
           return;
         }
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!devicesResponse.ok) {
+          throw new Error(`HTTP error! status: ${devicesResponse.status}`);
         }
 
-        const data = await response.json();
-        setDevices(data);
+        const devicesData = await devicesResponse.json();
+        setDevices(devicesData);
+
+        // Fetch notifications only for standard users
+        if (userRole === 'STANDARD_USER') {
+          const notificationsResponse = await fetch("http://localhost:8080/api/v1/notifications", {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (notificationsResponse.ok) {
+            const notificationsData = await notificationsResponse.json();
+            setNotifications(notificationsData);
+          }
+        }
       } catch (err) {
-        console.error("Error fetching devices:", err);
-        setError("Failed to load devices. Please try again.");
+        console.error("Error fetching data:", err);
+        setError("Failed to load data. Please try again.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDevices();
-  }, [navigate]);
+    if (userRole !== null) {
+      fetchData();
+    }
+  }, [navigate, userRole]);
 
   const isAdmin = userRole === 'ADMIN';
 
@@ -168,6 +197,82 @@ const Dashboard: React.FC = () => {
     } catch (err) {
       console.error("Error toggling device status:", err);
       // The optimistic update has already been reverted above
+    }
+  };
+
+  const handleMarkNotificationAsRead = async (notificationId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      // Optimistically update the UI
+      setNotifications((prevNotifications) =>
+        prevNotifications.map((notification) =>
+          notification.id === notificationId
+            ? { ...notification, read: true }
+            : notification
+        )
+      );
+
+      // Make API call to mark notification as read
+      const response = await fetch(`http://localhost:8080/api/v1/notifications/${notificationId}/read`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        // Revert the optimistic update on error
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((notification) =>
+            notification.id === notificationId
+              ? { ...notification, read: false }
+              : notification
+          )
+        );
+        throw new Error("Failed to mark notification as read");
+      }
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+    }
+  };
+
+  const formatNotificationType = (type: string): string => {
+    if (!type) return 'Unknown';
+    
+    switch (type) {
+      case 'DEVICE_ADDED':
+        return 'Device added';
+      case 'WELCOME':
+        return 'Welcome';
+      case 'CRITICAL':
+        return 'Critical';
+      case 'SYSTEM':
+        return 'System';
+      case 'ADMIN':
+        return 'Admin';
+      default:
+        return type.toLowerCase().replace(/_/g, ' ');
+    }
+  };
+
+  const formatNotificationDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) {
+      return "Just now";
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24);
+      return `${diffInDays}d ago`;
     }
   };
 
@@ -315,6 +420,61 @@ const Dashboard: React.FC = () => {
                 </TableRow>
               ))}
             </tbody>
+            </DevicesTable>
+          </>
+        )}
+
+        {/* Notifications section - only for standard users */}
+        {!isAdmin && notifications.length > 0 && (
+          <>
+            <SectionHeader style={{ marginTop: '3rem' }}>
+              <SectionTitle>Your notifications</SectionTitle>
+            </SectionHeader>
+
+            <DevicesTable>
+              <TableHeader>
+                <TableRow>
+                  <TableCell as="th">Message</TableCell>
+                  <TableCell as="th">Type</TableCell>
+                  <TableCell as="th">Time</TableCell>
+                  <TableCell as="th">Status</TableCell>
+                  <TableCell as="th">Actions</TableCell>
+                </TableRow>
+              </TableHeader>
+              <tbody>
+                {notifications.map((notification) => (
+                  <TableRow key={notification.id}>
+                    <TableCell style={{ 
+                      fontWeight: notification.read ? 'normal' : 'bold',
+                      color: notification.read ? '#666' : '#333'
+                    }}>
+                      {notification.message}
+                    </TableCell>
+                    <TableCell style={{ textTransform: 'capitalize' }}>
+                      {formatNotificationType(notification.type)}
+                    </TableCell>
+                    <TableCell>
+                      {formatNotificationDate(notification.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      <span style={{
+                        color: notification.read ? "#4CAF50" : "#ff9800",
+                        fontWeight: "bold",
+                        fontSize: "0.8rem"
+                      }}>
+                        {notification.read ? "READ" : "UNREAD"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {!notification.read && (
+                        <DetailsButton onClick={() => handleMarkNotificationAsRead(notification.id)}>
+                          Mark as Read
+                        </DetailsButton>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </tbody>
             </DevicesTable>
           </>
         )}

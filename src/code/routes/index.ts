@@ -1,15 +1,17 @@
 import { Router } from 'express';
-import { AuthController, UserController, DeviceController } from '../controllers';
+import { AuthController, UserController, DeviceController, NotificationController } from '../controllers';
 import { AuthMiddleware, AttachContextMiddleware, RBACMiddleware } from '../middlewares';
 
 import { createAuthRouter } from './auth.routes';
 import { createUserRouter } from './user.routes';
 import { createDeviceRouter } from './device.routes';
+import { createNotificationRouter } from './notification.routes';
 
 interface ApiRouterDependencies {
     authController: AuthController;
     userController: UserController;
     deviceController: DeviceController;
+    notificationController: NotificationController;
     authMiddleware: AuthMiddleware;
     attachContextMiddleware: AttachContextMiddleware;
     rbacMiddleware: RBACMiddleware;
@@ -30,10 +32,16 @@ export function createApiRouter(dependencies: ApiRouterDependencies): Router {
         dependencies.authMiddleware,
         dependencies.attachContextMiddleware
     );
+    const notificationRouter = createNotificationRouter(
+        dependencies.notificationController,
+        dependencies.authMiddleware,
+        dependencies.attachContextMiddleware
+    );
 
     apiRouter.use('/auth', authRouter);
     apiRouter.use('/users', userRouter);
     apiRouter.use('/devices', deviceRouter);
+    apiRouter.use('/notifications', notificationRouter);
 
     return apiRouter;
 }

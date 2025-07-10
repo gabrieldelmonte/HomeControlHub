@@ -345,3 +345,86 @@ export class UserRepository {
         }
     }
 }
+
+export class NotificationRepository {
+    private db: Database;
+    private logger: Logger;
+
+    constructor() {
+        this.db = Database.getInstance();
+        this.logger = Logger.getInstance();
+    }
+
+    public async findByUserId(userId: string): Promise<any[]> {
+        try {
+            const notifications = await this.db.notification.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' }
+            });
+            return notifications;
+        } catch (error) {
+            this.logger.logError(`Error finding notifications for user ${userId}: ${error}`);
+            return [];
+        }
+    }
+
+    public async findUnreadByUserId(userId: string): Promise<any[]> {
+        try {
+            const notifications = await this.db.notification.findMany({
+                where: { 
+                    userId,
+                    read: false 
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+            return notifications;
+        } catch (error) {
+            this.logger.logError(`Error finding unread notifications for user ${userId}: ${error}`);
+            return [];
+        }
+    }
+
+    public async markAsRead(notificationId: string, userId: string): Promise<boolean> {
+        try {
+            await this.db.notification.update({
+                where: { 
+                    id: notificationId,
+                    userId // Ensure user can only mark their own notifications as read
+                },
+                data: { read: true }
+            });
+            return true;
+        } catch (error) {
+            this.logger.logError(`Error marking notification ${notificationId} as read: ${error}`);
+            return false;
+        }
+    }
+
+    public async create(notificationData: {
+        message: string;
+        type: string;
+        userId: string;
+    }): Promise<any | null> {
+        try {
+            const notification = await this.db.notification.create({
+                data: notificationData
+            });
+            return notification;
+        } catch (error) {
+            this.logger.logError(`Error creating notification: ${error}`);
+            return null;
+        }
+    }
+
+    public async findById(id: string): Promise<any | null> {
+        try {
+            const notification = await this.db.notification.findUnique({ 
+                where: { id } 
+            });
+            return notification;
+        } catch (error) {
+            this.logger.logError(`Error finding notification by ID ${id}: ${error}`);
+            return null;
+        }
+    }
+}

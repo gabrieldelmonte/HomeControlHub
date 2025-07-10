@@ -5316,7 +5316,7 @@ export namespace Prisma {
   export type NotificationMinAggregateOutputType = {
     id: string | null
     message: string | null
-    channel: string | null
+    type: string | null
     userId: string | null
     read: boolean | null
     createdAt: Date | null
@@ -5325,7 +5325,7 @@ export namespace Prisma {
   export type NotificationMaxAggregateOutputType = {
     id: string | null
     message: string | null
-    channel: string | null
+    type: string | null
     userId: string | null
     read: boolean | null
     createdAt: Date | null
@@ -5334,7 +5334,7 @@ export namespace Prisma {
   export type NotificationCountAggregateOutputType = {
     id: number
     message: number
-    channel: number
+    type: number
     userId: number
     read: number
     createdAt: number
@@ -5345,7 +5345,7 @@ export namespace Prisma {
   export type NotificationMinAggregateInputType = {
     id?: true
     message?: true
-    channel?: true
+    type?: true
     userId?: true
     read?: true
     createdAt?: true
@@ -5354,7 +5354,7 @@ export namespace Prisma {
   export type NotificationMaxAggregateInputType = {
     id?: true
     message?: true
-    channel?: true
+    type?: true
     userId?: true
     read?: true
     createdAt?: true
@@ -5363,7 +5363,7 @@ export namespace Prisma {
   export type NotificationCountAggregateInputType = {
     id?: true
     message?: true
-    channel?: true
+    type?: true
     userId?: true
     read?: true
     createdAt?: true
@@ -5445,7 +5445,7 @@ export namespace Prisma {
   export type NotificationGroupByOutputType = {
     id: string
     message: string
-    channel: string
+    type: string
     userId: string
     read: boolean
     createdAt: Date
@@ -5471,7 +5471,7 @@ export namespace Prisma {
   export type NotificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     message?: boolean
-    channel?: boolean
+    type?: boolean
     userId?: boolean
     read?: boolean
     createdAt?: boolean
@@ -5481,7 +5481,7 @@ export namespace Prisma {
   export type NotificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     message?: boolean
-    channel?: boolean
+    type?: boolean
     userId?: boolean
     read?: boolean
     createdAt?: boolean
@@ -5491,7 +5491,7 @@ export namespace Prisma {
   export type NotificationSelectScalar = {
     id?: boolean
     message?: boolean
-    channel?: boolean
+    type?: boolean
     userId?: boolean
     read?: boolean
     createdAt?: boolean
@@ -5512,7 +5512,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       message: string
-      channel: string
+      type: string
       userId: string
       read: boolean
       createdAt: Date
@@ -5912,7 +5912,7 @@ export namespace Prisma {
   interface NotificationFieldRefs {
     readonly id: FieldRef<"Notification", 'String'>
     readonly message: FieldRef<"Notification", 'String'>
-    readonly channel: FieldRef<"Notification", 'String'>
+    readonly type: FieldRef<"Notification", 'String'>
     readonly userId: FieldRef<"Notification", 'String'>
     readonly read: FieldRef<"Notification", 'Boolean'>
     readonly createdAt: FieldRef<"Notification", 'DateTime'>
@@ -7197,7 +7197,7 @@ export namespace Prisma {
   export const NotificationScalarFieldEnum: {
     id: 'id',
     message: 'message',
-    channel: 'channel',
+    type: 'type',
     userId: 'userId',
     read: 'read',
     createdAt: 'createdAt'
@@ -7620,7 +7620,7 @@ export namespace Prisma {
     NOT?: NotificationWhereInput | NotificationWhereInput[]
     id?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
-    channel?: StringFilter<"Notification"> | string
+    type?: StringFilter<"Notification"> | string
     userId?: StringFilter<"Notification"> | string
     read?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
@@ -7630,7 +7630,7 @@ export namespace Prisma {
   export type NotificationOrderByWithRelationInput = {
     id?: SortOrder
     message?: SortOrder
-    channel?: SortOrder
+    type?: SortOrder
     userId?: SortOrder
     read?: SortOrder
     createdAt?: SortOrder
@@ -7643,7 +7643,7 @@ export namespace Prisma {
     OR?: NotificationWhereInput[]
     NOT?: NotificationWhereInput | NotificationWhereInput[]
     message?: StringFilter<"Notification"> | string
-    channel?: StringFilter<"Notification"> | string
+    type?: StringFilter<"Notification"> | string
     userId?: StringFilter<"Notification"> | string
     read?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
@@ -7653,7 +7653,7 @@ export namespace Prisma {
   export type NotificationOrderByWithAggregationInput = {
     id?: SortOrder
     message?: SortOrder
-    channel?: SortOrder
+    type?: SortOrder
     userId?: SortOrder
     read?: SortOrder
     createdAt?: SortOrder
@@ -7668,7 +7668,7 @@ export namespace Prisma {
     NOT?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Notification"> | string
     message?: StringWithAggregatesFilter<"Notification"> | string
-    channel?: StringWithAggregatesFilter<"Notification"> | string
+    type?: StringWithAggregatesFilter<"Notification"> | string
     userId?: StringWithAggregatesFilter<"Notification"> | string
     read?: BoolWithAggregatesFilter<"Notification"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
@@ -8036,7 +8036,7 @@ export namespace Prisma {
   export type NotificationCreateInput = {
     id?: string
     message: string
-    channel: string
+    type: string
     read?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutNotificationsInput
@@ -8045,7 +8045,7 @@ export namespace Prisma {
   export type NotificationUncheckedCreateInput = {
     id?: string
     message: string
-    channel: string
+    type: string
     userId: string
     read?: boolean
     createdAt?: Date | string
@@ -8054,7 +8054,7 @@ export namespace Prisma {
   export type NotificationUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
-    channel?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
@@ -8063,7 +8063,7 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
-    channel?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8072,7 +8072,7 @@ export namespace Prisma {
   export type NotificationCreateManyInput = {
     id?: string
     message: string
-    channel: string
+    type: string
     userId: string
     read?: boolean
     createdAt?: Date | string
@@ -8081,7 +8081,7 @@ export namespace Prisma {
   export type NotificationUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
-    channel?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -8089,7 +8089,7 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
-    channel?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8499,7 +8499,7 @@ export namespace Prisma {
   export type NotificationCountOrderByAggregateInput = {
     id?: SortOrder
     message?: SortOrder
-    channel?: SortOrder
+    type?: SortOrder
     userId?: SortOrder
     read?: SortOrder
     createdAt?: SortOrder
@@ -8508,7 +8508,7 @@ export namespace Prisma {
   export type NotificationMaxOrderByAggregateInput = {
     id?: SortOrder
     message?: SortOrder
-    channel?: SortOrder
+    type?: SortOrder
     userId?: SortOrder
     read?: SortOrder
     createdAt?: SortOrder
@@ -8517,7 +8517,7 @@ export namespace Prisma {
   export type NotificationMinOrderByAggregateInput = {
     id?: SortOrder
     message?: SortOrder
-    channel?: SortOrder
+    type?: SortOrder
     userId?: SortOrder
     read?: SortOrder
     createdAt?: SortOrder
@@ -8995,7 +8995,7 @@ export namespace Prisma {
   export type NotificationCreateWithoutUserInput = {
     id?: string
     message: string
-    channel: string
+    type: string
     read?: boolean
     createdAt?: Date | string
   }
@@ -9003,7 +9003,7 @@ export namespace Prisma {
   export type NotificationUncheckedCreateWithoutUserInput = {
     id?: string
     message: string
-    channel: string
+    type: string
     read?: boolean
     createdAt?: Date | string
   }
@@ -9073,7 +9073,7 @@ export namespace Prisma {
     NOT?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
     id?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
-    channel?: StringFilter<"Notification"> | string
+    type?: StringFilter<"Notification"> | string
     userId?: StringFilter<"Notification"> | string
     read?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
@@ -9475,7 +9475,7 @@ export namespace Prisma {
   export type NotificationCreateManyUserInput = {
     id?: string
     message: string
-    channel: string
+    type: string
     read?: boolean
     createdAt?: Date | string
   }
@@ -9526,7 +9526,7 @@ export namespace Prisma {
   export type NotificationUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
-    channel?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -9534,7 +9534,7 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
-    channel?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -9542,7 +9542,7 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
-    channel?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
