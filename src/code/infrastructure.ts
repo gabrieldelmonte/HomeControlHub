@@ -108,6 +108,10 @@ export class Database {
     public get automationRule() {
         return this.prisma.automationRule;
     }
+
+    public get supportTicket() {
+        return this.prisma.supportTicket;
+    }
 }
 
 

@@ -27,6 +27,20 @@ enum UserRole {
   GUEST
 }
 
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
 model User {
   id             String          @id @default(uuid())
   username       String          @unique
@@ -36,6 +50,7 @@ model User {
   devices        Device[]
   notifications  Notification[]  // Relação adicionada aqui
   systemLogs     SystemLog[]     // Logs relacionados ao usuário
+  supportTickets SupportTicket[] // Support tickets created by user
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
@@ -92,6 +107,25 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id])
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model SupportTicket {
+  id          String        @id @default(uuid())
+  subject     String
+  message     String
+  status      TicketStatus  @default(OPEN)
+  priority    TicketPriority @default(MEDIUM)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  attachments String[]      @default([]) // Array of file paths/names
+  adminNotes  String?       // Notes from admin/support team
+  resolvedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([status, priority])
+  @@index([createdAt])
 }
 
 model SystemLog {

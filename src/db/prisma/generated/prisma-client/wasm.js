@@ -173,6 +173,20 @@ exports.Prisma.NotificationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.SupportTicketScalarFieldEnum = {
+  id: 'id',
+  subject: 'subject',
+  message: 'message',
+  status: 'status',
+  priority: 'priority',
+  userId: 'userId',
+  attachments: 'attachments',
+  adminNotes: 'adminNotes',
+  resolvedAt: 'resolvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SystemLogScalarFieldEnum = {
   id: 'id',
   type: 'type',
@@ -213,12 +227,27 @@ exports.UserRole = exports.$Enums.UserRole = {
   GUEST: 'GUEST'
 };
 
+exports.TicketStatus = exports.$Enums.TicketStatus = {
+  OPEN: 'OPEN',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED'
+};
+
+exports.TicketPriority = exports.$Enums.TicketPriority = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Device: 'Device',
   Command: 'Command',
   AutomationRule: 'AutomationRule',
   Notification: 'Notification',
+  SupportTicket: 'SupportTicket',
   SystemLog: 'SystemLog'
 };
 

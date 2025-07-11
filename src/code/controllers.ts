@@ -6,7 +6,7 @@
     *
 */
 
-import { DeviceRepository, UserRepository, NotificationRepository, SystemLogRepository, AutomationRuleRepository } from './repositories';
+import { DeviceRepository, UserRepository, NotificationRepository, SystemLogRepository, AutomationRuleRepository, SupportTicketRepository } from './repositories';
 import { AuthService, MQTTService, AuthTokenPayload, NotificationService } from './services';
 import { User, Device, Command } from './entities';
 import { UserRole_ENUM } from './enums';
@@ -375,11 +375,15 @@ export class DeviceController {
 export class UserController {
     private userRepository: UserRepository;
     private authService: AuthService;
+    private deviceRepository: DeviceRepository;
+    private mqttService: MQTTService;
     private logger: Logger;
 
-    constructor(userRepository: UserRepository, authService: AuthService) {
+    constructor(userRepository: UserRepository, authService: AuthService, deviceRepository: DeviceRepository, mqttService: MQTTService) {
         this.userRepository = userRepository;
-        this.authService = authService; 
+        this.authService = authService;
+        this.deviceRepository = deviceRepository;
+        this.mqttService = mqttService;
         this.logger = Logger.getInstance();
     }
 
@@ -522,6 +526,43 @@ export class UserController {
             res.status(200).json(userProfile);
         } catch (error) {
             this.logger.logError(`Error in updateProfile for user ${req.user?.userId}: ${error}`);
+            next(error);
+        }
+    }
+
+    public async deleteProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            if (!req.fullUser) {
+                res.status(401).json({ message: 'Unauthorized or user data not available' });
+                return;
+            }
+
+            const userId = req.fullUser.id;
+            const username = req.fullUser.username;
+
+            // Get all user's devices to unsubscribe from MQTT topics
+            const userDevices = await this.deviceRepository.findByOwnerId(userId);
+            
+            // Unsubscribe from MQTT topics for all user's devices
+            for (const device of userDevices) {
+                try {
+                    await this.mqttService.unsubscribeFromDeviceTopics(device);
+                    this.logger.logInfo(`Unsubscribed from MQTT topics for device: ${device.name}`);
+                } catch (error) {
+                    this.logger.logError(`Failed to unsubscribe from MQTT topics for device ${device.name}: ${error}`);
+                }
+            }
+
+            // Delete the user (this will cascade delete devices, automation rules, etc.)
+            const success = await this.userRepository.delete(userId);
+            if (success) {
+                this.logger.logInfo(`User account deleted: ${username}`);
+                res.status(204).send();
+            } else {
+                res.status(500).json({ message: 'Failed to delete user account' });
+            }
+        } catch (error) {
+            this.logger.logError(`Error in deleteProfile for user ${req.user?.userId}: ${error}`);
             next(error);
         }
     }
@@ -914,6 +955,190 @@ export class AutomationController {
             }
         } catch (error) {
             this.logger.logError(`Error sending MQTT command: ${error}`);
+            next(error);
+        }
+    }
+}
+
+export class SupportController {
+    private supportTicketRepository: SupportTicketRepository;
+    private logger: Logger;
+
+    constructor(supportTicketRepository: SupportTicketRepository) {
+        this.supportTicketRepository = supportTicketRepository;
+        this.logger = Logger.getInstance();
+    }
+
+    public async createTicket(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            if (!req.user || !req.user.userId) {
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            const { subject, message, priority, attachments } = req.body;
+            
+            if (!subject || !message) {
+                res.status(400).json({ message: 'Subject and message are required' });
+                return;
+            }
+
+            const ticket = await this.supportTicketRepository.create({
+                subject,
+                message,
+                priority: priority || 'MEDIUM',
+                attachments: attachments || [],
+                userId: req.user.userId,
+            });
+
+            if (ticket) {
+                res.status(201).json(ticket);
+            } else {
+                res.status(500).json({ message: 'Failed to create support ticket' });
+            }
+        } catch (error) {
+            this.logger.logError(`Error creating support ticket: ${error}`);
+            next(error);
+        }
+    }
+
+    public async getUserTickets(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            if (!req.user || !req.user.userId) {
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            const tickets = await this.supportTicketRepository.findByUserId(req.user.userId);
+            res.status(200).json(tickets);
+        } catch (error) {
+            this.logger.logError(`Error fetching user tickets: ${error}`);
+            next(error);
+        }
+    }
+
+    public async getAllTickets(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            if (!req.user || req.user.role !== UserRole_ENUM.ADMIN) {
+                res.status(403).json({ message: 'Forbidden: Admin access required' });
+                return;
+            }
+
+            const tickets = await this.supportTicketRepository.findAll();
+            res.status(200).json(tickets);
+        } catch (error) {
+            this.logger.logError(`Error fetching all tickets: ${error}`);
+            next(error);
+        }
+    }
+
+    public async getTicketById(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            
+            if (!req.user || !req.user.userId) {
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            const ticket = await this.supportTicketRepository.findById(ticketId);
+            if (!ticket) {
+                res.status(404).json({ message: 'Support ticket not found' });
+                return;
+            }
+
+            // Check if user owns the ticket or is admin
+            if (req.user.role !== UserRole_ENUM.ADMIN && ticket.userId !== req.user.userId) {
+                res.status(403).json({ message: 'Forbidden: You can only view your own tickets' });
+                return;
+            }
+
+            res.status(200).json(ticket);
+        } catch (error) {
+            this.logger.logError(`Error fetching ticket by ID: ${error}`);
+            next(error);
+        }
+    }
+
+    public async updateTicket(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            
+            if (!req.user || !req.user.userId) {
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            const ticket = await this.supportTicketRepository.findById(ticketId);
+            if (!ticket) {
+                res.status(404).json({ message: 'Support ticket not found' });
+                return;
+            }
+
+            // Check if user owns the ticket or is admin
+            if (req.user.role !== UserRole_ENUM.ADMIN && ticket.userId !== req.user.userId) {
+                res.status(403).json({ message: 'Forbidden: You can only update your own tickets' });
+                return;
+            }
+
+            const updateData = req.body;
+            const updatedTicket = await this.supportTicketRepository.update(ticketId, updateData);
+
+            if (updatedTicket) {
+                res.status(200).json(updatedTicket);
+            } else {
+                res.status(500).json({ message: 'Failed to update support ticket' });
+            }
+        } catch (error) {
+            this.logger.logError(`Error updating support ticket: ${error}`);
+            next(error);
+        }
+    }
+
+    public async deleteTicket(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { ticketId } = req.params;
+            
+            if (!req.user || !req.user.userId) {
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            const ticket = await this.supportTicketRepository.findById(ticketId);
+            if (!ticket) {
+                res.status(404).json({ message: 'Support ticket not found' });
+                return;
+            }
+
+            // Check if user owns the ticket or is admin
+            if (req.user.role !== UserRole_ENUM.ADMIN && ticket.userId !== req.user.userId) {
+                res.status(403).json({ message: 'Forbidden: You can only delete your own tickets' });
+                return;
+            }
+
+            const success = await this.supportTicketRepository.delete(ticketId);
+            if (success) {
+                res.status(204).send();
+            } else {
+                res.status(500).json({ message: 'Failed to delete support ticket' });
+            }
+        } catch (error) {
+            this.logger.logError(`Error deleting support ticket: ${error}`);
+            next(error);
+        }
+    }
+
+    public async getTicketStats(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            if (!req.user || req.user.role !== UserRole_ENUM.ADMIN) {
+                res.status(403).json({ message: 'Forbidden: Admin access required' });
+                return;
+            }
+
+            const stats = await this.supportTicketRepository.getTicketStats();
+            res.status(200).json(stats);
+        } catch (error) {
+            this.logger.logError(`Error fetching ticket stats: ${error}`);
             next(error);
         }
     }

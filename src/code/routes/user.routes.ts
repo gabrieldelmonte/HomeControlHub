@@ -89,6 +89,29 @@ export function createUserRouter(
 
     /**
      * @swagger
+     * /users/profile:
+     *   delete:
+     *     summary: Delete the currently authenticated user's account
+     *     tags: [Users]
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       204:
+     *         description: User account deleted successfully (No Content)
+     *       401:
+     *         description: Unauthorized or user data not available
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     *       500:
+     *         description: Failed to delete user account
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     */
+    router.delete(
+        '/profile',
+        userController.deleteProfile.bind(userController)
+    );
+
+    /**
+     * @swagger
      * /users:
      *   get:
      *     summary: List all users (Admin only)

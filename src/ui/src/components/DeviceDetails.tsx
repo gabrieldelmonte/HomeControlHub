@@ -464,7 +464,7 @@ const DeviceDetails: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token || !deviceId) return;
 
-      const response = await fetch(`http://localhost:8080/api/v1/automation/devices/${deviceId}/rules`, {
+      const response = await fetch(`http://localhost:8080/api/v1/automation/${deviceId}/rules`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -475,9 +475,13 @@ const DeviceDetails: React.FC = () => {
       if (response.ok) {
         const rules = await response.json();
         setAutomationRules(rules);
+      } else {
+        console.error("Failed to fetch automation rules:", response.status);
+        setAutomationRules([]);
       }
     } catch (error) {
       console.error("Error fetching automation rules:", error);
+      setAutomationRules([]);
     }
   };
 
@@ -1067,18 +1071,41 @@ const DeviceDetails: React.FC = () => {
                     value={commandName}
                     onChange={(e) => setCommandName(e.target.value)}
                     placeholder="Command Name (e.g., turnOn, setColor)"
-                    disabled={sendingCommand}
+                    disabled={sendingCommand || userRole === 'ADMIN'}
                   />
                   <CommandField
                     value={commandPayload}
                     onChange={(e) => setCommandPayload(e.target.value)}
                     placeholder="Payload (JSON or string)"
-                    disabled={sendingCommand}
+                    disabled={sendingCommand || userRole === 'ADMIN'}
                   />
-                  <SendButton onClick={sendMQTTCommand} disabled={sendingCommand}>
-                    <FaPaperPlane /> {sendingCommand ? 'Sending...' : 'Send Command'}
+                  <SendButton 
+                    onClick={sendMQTTCommand} 
+                    disabled={sendingCommand || userRole === 'ADMIN'}
+                    style={userRole === 'ADMIN' ? { 
+                      background: '#6c757d', 
+                      cursor: 'not-allowed',
+                      opacity: 0.6 
+                    } : {}}
+                  >
+                    <FaPaperPlane /> 
+                    {userRole === 'ADMIN' ? 'View Only' : (sendingCommand ? 'Sending...' : 'Send Command')}
                   </SendButton>
                 </CommandInput>
+                
+                {userRole === 'ADMIN' && (
+                  <div style={{ 
+                    marginTop: '1rem', 
+                    padding: '0.75rem', 
+                    background: '#e3f2fd', 
+                    borderRadius: '6px',
+                    border: '1px solid #2196f3',
+                    color: '#1976d2',
+                    fontSize: '0.9rem'
+                  }}>
+                    <strong>Admin View:</strong> You can view the MQTT terminal and command history, but cannot send commands to devices.
+                  </div>
+                )}
                 
                 <div style={{ marginTop: '1.5rem' }}>
                   <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1114,44 +1141,62 @@ const DeviceDetails: React.FC = () => {
                             <RuleName>{rule.name}</RuleName>
                             <RuleDetails>{rule.triggerCondition} → {rule.action}</RuleDetails>
                           </RuleInfo>
-                          <DeleteRuleButton onClick={() => deleteAutomationRule(rule.id, rule.name)}>
-                            <FaTrash />
-                          </DeleteRuleButton>
+                          {userRole !== 'ADMIN' && (
+                            <DeleteRuleButton onClick={() => deleteAutomationRule(rule.id, rule.name)}>
+                              <FaTrash />
+                            </DeleteRuleButton>
+                          )}
                         </RuleItem>
                       ))
                     )}
                   </RulesList>
                   
-                  <div style={{ marginTop: '1.5rem' }}>
-                    <CardTitle>Create New Rule</CardTitle>
-                    <CommandInput>
-                      <CommandField
-                        value={ruleName}
-                        onChange={(e) => setRuleName(e.target.value)}
-                        placeholder="Rule Name"
-                        disabled={savingRule}
-                      />
-                    </CommandInput>
-                    <CommandInput>
-                      <CommandField
-                        value={ruleTrigger}
-                        onChange={(e) => setRuleTrigger(e.target.value)}
-                        placeholder="Trigger Condition (e.g., status == true)"
-                        disabled={savingRule}
-                      />
-                    </CommandInput>
-                    <CommandInput>
-                      <CommandField
-                        value={ruleAction}
-                        onChange={(e) => setRuleAction(e.target.value)}
-                        placeholder="Action (e.g., {command: 'turnOn', payload: {}})"
-                        disabled={savingRule}
-                      />
-                      <SendButton onClick={createAutomationRule} disabled={savingRule || !ruleName.trim() || !ruleTrigger.trim() || !ruleAction.trim()}>
-                        <FaPlus /> {savingRule ? 'Creating...' : 'Create Rule'}
-                      </SendButton>
-                    </CommandInput>
-                  </div>
+                  {userRole !== 'ADMIN' && (
+                    <div style={{ marginTop: '1.5rem' }}>
+                      <CardTitle>Create New Rule</CardTitle>
+                      <CommandInput>
+                        <CommandField
+                          value={ruleName}
+                          onChange={(e) => setRuleName(e.target.value)}
+                          placeholder="Rule Name"
+                          disabled={savingRule}
+                        />
+                      </CommandInput>
+                      <CommandInput>
+                        <CommandField
+                          value={ruleTrigger}
+                          onChange={(e) => setRuleTrigger(e.target.value)}
+                          placeholder="Trigger Condition (e.g., status == true)"
+                          disabled={savingRule}
+                        />
+                      </CommandInput>
+                      <CommandInput>
+                        <CommandField
+                          value={ruleAction}
+                          onChange={(e) => setRuleAction(e.target.value)}
+                          placeholder="Action (e.g., {command: 'turnOn', payload: {}})"
+                          disabled={savingRule}
+                        />
+                        <SendButton onClick={createAutomationRule} disabled={savingRule || !ruleName.trim() || !ruleTrigger.trim() || !ruleAction.trim()}>
+                          <FaPlus /> {savingRule ? 'Creating...' : 'Create Rule'}
+                        </SendButton>
+                      </CommandInput>
+                    </div>
+                  )}
+                  
+                  {userRole === 'ADMIN' && (
+                    <div style={{ 
+                      marginTop: '1.5rem', 
+                      padding: '0.75rem', 
+                      background: '#e3f2fd', 
+                      borderRadius: '6px',
+                      border: '1px solid #2196f3',
+                      color: '#1976d2',
+                      fontSize: '0.9rem'
+                    }}>
+                      <strong>Admin View:</strong> You can view automation rules but cannot create or delete them.
+                    </div>
+                  )}
                 </AutomationRules>
               </div>
             )}

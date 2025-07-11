@@ -7,9 +7,9 @@
 */
 
 import { Database, Logger } from './infrastructure';
-import { Device, User } from './entities';
-import { UserRole_ENUM } from './enums'; // Assuming UserRole_ENUM is needed for default user creation or queries
-import { Prisma } from '../db/prisma/generated/prisma-client'; // Import Prisma namespace for types
+import { Device, User, SupportTicket, CreateSupportTicketData, UpdateSupportTicketData } from './entities';
+import { UserRole_ENUM } from './enums';
+import { Prisma } from '../db/prisma/generated/prisma-client';
 
 // Assuming Prisma generates types like UserCreateInput, DeviceCreateInput, etc.
 // If not, we might need to define interfaces for input data.
@@ -640,6 +640,154 @@ export class AutomationRuleRepository {
         } catch (error) {
             this.logger.logError(`Error finding active automation rules for device ${deviceId}: ${error}`);
             return [];
+        }
+    }
+}
+
+export class SupportTicketRepository {
+    private db: Database;
+    private logger: Logger;
+
+    constructor() {
+        this.db = Database.getInstance();
+        this.logger = Logger.getInstance();
+    }
+
+    async create(data: CreateSupportTicketData & { userId: string }): Promise<SupportTicket | null> {
+        try {
+            const ticket = await this.db.supportTicket.create({
+                data: {
+                    subject: data.subject,
+                    message: data.message,
+                    priority: data.priority || 'MEDIUM',
+                    userId: data.userId,
+                    attachments: data.attachments || [],
+                },
+            });
+            return ticket as SupportTicket;
+        } catch (error) {
+            this.logger.logError(`Error creating support ticket: ${error}`);
+            return null;
+        }
+    }
+
+    async findById(id: string): Promise<SupportTicket | null> {
+        try {
+            const ticket = await this.db.supportTicket.findUnique({
+                where: { id },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            email: true,
+                        }
+                    }
+                }
+            });
+            return ticket as SupportTicket;
+        } catch (error) {
+            this.logger.logError(`Error finding support ticket by ID: ${error}`);
+            return null;
+        }
+    }
+
+    async findByUserId(userId: string): Promise<SupportTicket[]> {
+        try {
+            const tickets = await this.db.supportTicket.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' },
+            });
+            return tickets as SupportTicket[];
+        } catch (error) {
+            this.logger.logError(`Error finding support tickets by user ID: ${error}`);
+            return [];
+        }
+    }
+
+    async findAll(): Promise<SupportTicket[]> {
+        try {
+            const tickets = await this.db.supportTicket.findMany({
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            email: true,
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' },
+            });
+            return tickets as SupportTicket[];
+        } catch (error) {
+            this.logger.logError(`Error finding all support tickets: ${error}`);
+            return [];
+        }
+    }
+
+    async update(id: string, data: UpdateSupportTicketData): Promise<SupportTicket | null> {
+        try {
+            const ticket = await this.db.supportTicket.update({
+                where: { id },
+                data: {
+                    ...data,
+                    resolvedAt: data.status === 'RESOLVED' && !data.resolvedAt ? new Date() : data.resolvedAt,
+                },
+            });
+            return ticket as SupportTicket;
+        } catch (error) {
+            this.logger.logError(`Error updating support ticket: ${error}`);
+            return null;
+        }
+    }
+
+    async delete(id: string): Promise<boolean> {
+        try {
+            await this.db.supportTicket.delete({
+                where: { id },
+            });
+            return true;
+        } catch (error) {
+            this.logger.logError(`Error deleting support ticket: ${error}`);
+            return false;
+        }
+    }
+
+    async findByStatus(status: SupportTicket['status']): Promise<SupportTicket[]> {
+        try {
+            const tickets = await this.db.supportTicket.findMany({
+                where: { status },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            email: true,
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' },
+            });
+            return tickets as SupportTicket[];
+        } catch (error) {
+            this.logger.logError(`Error finding support tickets by status: ${error}`);
+            return [];
+        }
+    }
+
+    async getTicketStats(): Promise<{ open: number; inProgress: number; resolved: number; closed: number }> {
+        try {
+            const [open, inProgress, resolved, closed] = await Promise.all([
+                this.db.supportTicket.count({ where: { status: 'OPEN' } }),
+                this.db.supportTicket.count({ where: { status: 'IN_PROGRESS' } }),
+                this.db.supportTicket.count({ where: { status: 'RESOLVED' } }),
+                this.db.supportTicket.count({ where: { status: 'CLOSED' } }),
+            ]);
+            return { open, inProgress, resolved, closed };
+        } catch (error) {
+            this.logger.logError(`Error getting ticket stats: ${error}`);
+            return { open: 0, inProgress: 0, resolved: 0, closed: 0 };
         }
     }
 }

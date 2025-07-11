@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaTrash, FaExclamationTriangle } from "react-icons/fa";
 import {
   Container,
   Header,
@@ -56,6 +56,12 @@ const Profile: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [saving, setSaving] = useState(false);
+  
+  // Delete account state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showFinalDeleteConfirm, setShowFinalDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
 
   // Fetch user profile on component mount
   useEffect(() => {
@@ -224,6 +230,62 @@ const Profile: React.FC = () => {
     setEdit({ ...edit, password: "", confirmPassword: "" });
     setShowPassword(false);
     setShowConfirmPassword(false);
+  };
+
+  const handleDeleteAccount = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setShowFinalDeleteConfirm(false);
+    setDeleteConfirmationText("");
+  };
+
+  const handleConfirmDelete = () => {
+    setShowDeleteConfirm(false);
+    setShowFinalDeleteConfirm(true);
+  };
+
+  const handleFinalDelete = async () => {
+    if (deleteConfirmationText !== user?.username) {
+      setError("Username confirmation does not match. Please try again.");
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch("http://localhost:8080/api/v1/users/profile", {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        // Clear local storage and redirect to login
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to delete account");
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      setError("Failed to delete account. Please try again.");
+    } finally {
+      setDeleting(false);
+      setShowFinalDeleteConfirm(false);
+      setDeleteConfirmationText("");
+    }
   };
 
   // Show loading state
@@ -468,6 +530,205 @@ const Profile: React.FC = () => {
             </Button>
           </ButtonContainer>
         </ProfileForm>
+
+        {/* Danger Zone Section */}
+        <div style={{ 
+          marginTop: '3rem', 
+          padding: '2rem', 
+          background: '#fff5f5', 
+          border: '2px solid #fed7d7', 
+          borderRadius: '12px' 
+        }}>
+          <h3 style={{ 
+            color: '#c53030', 
+            margin: '0 0 1rem 0', 
+            fontSize: '1.3rem', 
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <FaExclamationTriangle /> Danger Zone
+          </h3>
+          <p style={{ 
+            color: '#744210', 
+            margin: '0 0 1.5rem 0', 
+            fontSize: '0.95rem',
+            lineHeight: '1.5'
+          }}>
+            Once you delete your account, there is no going back. Please be certain.
+          </p>
+          <Button 
+            type="button" 
+            onClick={handleDeleteAccount}
+            style={{
+              background: '#dc3545',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            <FaTrash /> Delete Account
+          </Button>
+        </div>
+
+        {/* First Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '2rem',
+              borderRadius: '8px',
+              maxWidth: '500px',
+              width: '90%',
+              textAlign: 'center'
+            }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <FaExclamationTriangle style={{ color: '#dc3545', fontSize: '3rem', marginBottom: '1rem' }} />
+                <h3 style={{ margin: '0 0 1rem 0', color: '#333' }}>Delete Account</h3>
+                <p style={{ margin: '0 0 1rem 0', color: '#666' }}>
+                  Are you sure you want to delete your account <strong>{user?.username}</strong>?
+                </p>
+                <p style={{ margin: '0 0 1rem 0', color: '#666', fontSize: '0.9rem' }}>
+                  This action will:
+                </p>
+                <ul style={{ 
+                  margin: '0 0 1rem 0', 
+                  paddingLeft: '1.5rem', 
+                  textAlign: 'left',
+                  color: '#666',
+                  fontSize: '0.9rem'
+                }}>
+                  <li>Permanently delete your account</li>
+                  <li>Delete all your devices and their data</li>
+                  <li>Remove all automation rules</li>
+                  <li>Delete all device logs and history</li>
+                  <li>Unsubscribe from all MQTT topics</li>
+                </ul>
+                <p style={{ margin: '0', color: '#dc3545', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                  This action cannot be undone!
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <Button 
+                  onClick={handleCancelDelete} 
+                  style={{ 
+                    background: '#28a745',
+                    minWidth: '100px'
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleConfirmDelete} 
+                  style={{ 
+                    background: '#dc3545',
+                    minWidth: '100px'
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Final Delete Confirmation Modal */}
+        {showFinalDeleteConfirm && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '2rem',
+              borderRadius: '8px',
+              maxWidth: '500px',
+              width: '90%',
+              textAlign: 'center'
+            }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <FaExclamationTriangle style={{ color: '#dc3545', fontSize: '3rem', marginBottom: '1rem' }} />
+                <h3 style={{ margin: '0 0 1rem 0', color: '#333' }}>Final Confirmation</h3>
+                <p style={{ margin: '0 0 1rem 0', color: '#666' }}>
+                  This is your final warning. To confirm account deletion, please type your username:
+                </p>
+                <p style={{ margin: '0 0 1rem 0', color: '#666', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                  <strong>{user?.username}</strong>
+                </p>
+                <Input
+                  type="text"
+                  value={deleteConfirmationText}
+                  onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                  placeholder="Type your username to confirm"
+                  style={{
+                    width: '100%',
+                    marginBottom: '1rem',
+                    borderColor: deleteConfirmationText && deleteConfirmationText !== user?.username ? '#dc3545' : undefined
+                  }}
+                />
+                {deleteConfirmationText && deleteConfirmationText !== user?.username && (
+                  <p style={{ color: '#dc3545', fontSize: '0.9rem', margin: '0 0 1rem 0' }}>
+                    Username does not match
+                  </p>
+                )}
+                <p style={{ margin: '0', color: '#dc3545', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                  This will permanently delete your account and all associated data!
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <Button 
+                  onClick={handleCancelDelete} 
+                  style={{ 
+                    background: '#28a745',
+                    minWidth: '100px'
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleFinalDelete} 
+                  disabled={deleteConfirmationText !== user?.username || deleting}
+                  style={{ 
+                    background: '#dc3545',
+                    minWidth: '100px',
+                    opacity: deleteConfirmationText !== user?.username || deleting ? 0.6 : 1,
+                    cursor: deleteConfirmationText !== user?.username || deleting ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {deleting ? 'Deleting...' : 'Delete Account'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </MainContent>
     </Container>
   );

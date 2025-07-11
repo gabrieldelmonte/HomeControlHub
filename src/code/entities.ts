@@ -296,3 +296,33 @@ export class User {
         return userRepository.findByEmail(email);
     }
 }
+
+export interface SupportTicket {
+    id: string;
+    subject: string;
+    message: string;
+    status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+    priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+    userId: string;
+    attachments: string[];
+    adminNotes?: string;
+    resolvedAt?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface CreateSupportTicketData {
+    subject: string;
+    message: string;
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+    attachments?: string[];
+}
+
+export interface UpdateSupportTicketData {
+    subject?: string;
+    message?: string;
+    status?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+    adminNotes?: string;
+    resolvedAt?: Date;
+}

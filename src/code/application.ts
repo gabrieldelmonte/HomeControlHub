@@ -14,10 +14,10 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import path from 'path';
 
-import { AuthController, DeviceController, UserController, NotificationController, AutomationController } from './controllers';
+import { AuthController, DeviceController, UserController, NotificationController, AutomationController, SupportController } from './controllers';
 import { AuthMiddleware, AttachContextMiddleware, RBACMiddleware } from './middlewares';
 import { Config, Database, Logger } from './infrastructure';
-import { UserRepository, DeviceRepository, NotificationRepository, SystemLogRepository, AutomationRuleRepository } from './repositories';
+import { UserRepository, DeviceRepository, NotificationRepository, SystemLogRepository, AutomationRuleRepository, SupportTicketRepository } from './repositories';
 import { 
     AuthService, 
     MQTTConnection,
@@ -46,6 +46,7 @@ export class App {
         const notificationRepository = new NotificationRepository();
         const systemLogRepository = new SystemLogRepository();
         const automationRuleRepository = new AutomationRuleRepository();
+        const supportTicketRepository = new SupportTicketRepository();
 
         const authService = new AuthService(userRepository);
         const encryptionService = new EncryptionService();
@@ -62,10 +63,11 @@ export class App {
         const rbacMiddleware = new RBACMiddleware();
 
         const authController = new AuthController(userRepository, authService, notificationRepository);
-        const userController = new UserController(userRepository, authService);
+        const userController = new UserController(userRepository, authService, deviceRepository, mqttService);
         const deviceController = new DeviceController(deviceRepository, systemLogRepository, mqttService);
         const notificationController = new NotificationController(notificationRepository);
         const automationController = new AutomationController(automationRuleRepository, deviceRepository, mqttService);
+        const supportController = new SupportController(supportTicketRepository);
 
         this.server = new ServerInstance(
             config,
@@ -76,6 +78,7 @@ export class App {
             deviceController,
             notificationController,
             automationController,
+            supportController,
             authMiddleware,
             attachContextMiddleware,
             rbacMiddleware
@@ -109,6 +112,7 @@ class ServerInstance {
     private deviceController: DeviceController;
     private notificationController: NotificationController;
     private automationController: AutomationController;
+    private supportController: SupportController;
     private authMiddleware: AuthMiddleware;
     private attachContextMiddleware: AttachContextMiddleware;
     private rbacMiddleware: RBACMiddleware;
@@ -122,6 +126,7 @@ class ServerInstance {
         deviceController: DeviceController,
         notificationController: NotificationController,
         automationController: AutomationController,
+        supportController: SupportController,
         authMiddleware: AuthMiddleware,
         attachContextMiddleware: AttachContextMiddleware,
         rbacMiddleware: RBACMiddleware
@@ -135,6 +140,7 @@ class ServerInstance {
         this.deviceController = deviceController;
         this.notificationController = notificationController;
         this.automationController = automationController;
+        this.supportController = supportController;
         this.authMiddleware = authMiddleware;
         this.attachContextMiddleware = attachContextMiddleware;
         this.rbacMiddleware = rbacMiddleware;
@@ -166,6 +172,7 @@ class ServerInstance {
             deviceController: this.deviceController,
             notificationController: this.notificationController,
             automationController: this.automationController,
+            supportController: this.supportController,
             authMiddleware: this.authMiddleware,
             attachContextMiddleware: this.attachContextMiddleware,
             rbacMiddleware: this.rbacMiddleware
