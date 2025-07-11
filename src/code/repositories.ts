@@ -668,13 +668,12 @@ export class SupportTicketRepository {
             // Handle file attachments if provided
             if (data.fileAttachments && data.fileAttachments.length > 0) {
                 const attachmentPromises = data.fileAttachments.map(async (file) => {
-                    const buffer = Buffer.from(await file.arrayBuffer());
                     return this.db.supportTicketAttachment.create({
                         data: {
-                            filename: file.name,
-                            contentType: file.type,
+                            filename: file.originalname,
+                            contentType: file.mimetype,
                             fileSize: file.size,
-                            fileData: buffer,
+                            fileData: file.buffer,
                             ticketId: ticket.id,
                         },
                     });

@@ -976,7 +976,8 @@ export class SupportController {
                 return;
             }
 
-            const { subject, message, priority, attachments } = req.body;
+            const { subject, message, priority } = req.body;
+            const fileAttachments = (req as any).files as Express.Multer.File[];
             
             if (!subject || !message) {
                 res.status(400).json({ message: 'Subject and message are required' });
@@ -987,7 +988,8 @@ export class SupportController {
                 subject,
                 message,
                 priority: priority || 'MEDIUM',
-                attachments: attachments || [],
+                attachments: [], // Legacy attachments array (empty for new tickets)
+                fileAttachments: fileAttachments || [], // Binary file attachments
                 userId: req.user.userId,
             });
 
@@ -1139,6 +1141,47 @@ export class SupportController {
             res.status(200).json(stats);
         } catch (error) {
             this.logger.logError(`Error fetching ticket stats: ${error}`);
+            next(error);
+        }
+    }
+
+    public async downloadAttachment(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { attachmentId } = req.params;
+            
+            if (!req.user || !req.user.userId) {
+                res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+                return;
+            }
+
+            const attachment = await this.supportTicketRepository.getAttachment(attachmentId);
+            if (!attachment) {
+                res.status(404).json({ message: 'Attachment not found' });
+                return;
+            }
+
+            // Get the ticket to check ownership
+            const ticket = await this.supportTicketRepository.findById(attachment.ticketId);
+            if (!ticket) {
+                res.status(404).json({ message: 'Support ticket not found' });
+                return;
+            }
+
+            // Check if user owns the ticket or is admin
+            if (req.user.role !== UserRole_ENUM.ADMIN && ticket.userId !== req.user.userId) {
+                res.status(403).json({ message: 'Forbidden: You can only download attachments from your own tickets' });
+                return;
+            }
+
+            // Set appropriate headers for file download
+            res.setHeader('Content-Type', attachment.contentType);
+            res.setHeader('Content-Disposition', `attachment; filename="${attachment.filename}"`);
+            res.setHeader('Content-Length', attachment.fileSize.toString());
+
+            // Send the file data
+            res.send(attachment.fileData);
+        } catch (error) {
+            this.logger.logError(`Error downloading attachment: ${error}`);
             next(error);
         }
     }

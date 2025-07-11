@@ -65,6 +65,7 @@ interface SupportTicket {
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   userId: string;
   attachments: string[];
+  attachments2?: SupportTicketAttachment[];
   adminNotes?: string;
   resolvedAt?: string;
   createdAt: string;
@@ -74,6 +75,14 @@ interface SupportTicket {
     username: string;
     email: string;
   };
+}
+
+interface SupportTicketAttachment {
+  id: string;
+  filename: string;
+  contentType: string;
+  fileSize: number;
+  createdAt: string;
 }
 
 interface User {
@@ -102,6 +111,7 @@ const Support: React.FC = () => {
   const [updatingTicket, setUpdatingTicket] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [showFileViewer, setShowFileViewer] = useState(false);
+  const [selectedAttachment, setSelectedAttachment] = useState<SupportTicketAttachment | null>(null);
   const navigate = useNavigate();
 
   // Fetch user info and tickets on component mount
@@ -218,32 +228,27 @@ const Support: React.FC = () => {
         return;
       }
 
-      // Process file attachments
-      const attachmentNames: string[] = [];
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('subject', finalSubject);
+      formData.append('message', message.trim());
+      formData.append('priority', priority);
+
+      // Add files to FormData
       if (files && files.length > 0) {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
-          // In a real implementation, you would upload the file to a server
-          // For now, we'll just store the filename and size
-          const fileInfo = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-          attachmentNames.push(fileInfo);
+          formData.append('fileAttachments', file);
         }
       }
-
-      const ticketData = {
-        subject: finalSubject,
-        message: message.trim(),
-        priority,
-        attachments: attachmentNames,
-      };
 
       const response = await fetch("http://localhost:8080/api/v1/support/tickets", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
+          // Don't set Content-Type for FormData, let the browser set it with boundary
         },
-        body: JSON.stringify(ticketData),
+        body: formData,
       });
 
       if (response.status === 401) {
@@ -331,6 +336,51 @@ const Support: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
+  };
+
+  const downloadAttachment = async (attachmentId: string, filename: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8080/api/v1/support/attachments/${attachmentId}/download`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Get the blob from the response
+      const blob = await response.blob();
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: any) {
+      console.error("Error downloading attachment:", err);
+      alert("Failed to download file. Please try again.");
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -550,7 +600,7 @@ const Support: React.FC = () => {
                   <TicketMessage>{ticket.message}</TicketMessage>
                   
                   {/* File Attachments */}
-                  {ticket.attachments && ticket.attachments.length > 0 && (
+                  {(ticket.attachments && ticket.attachments.length > 0) || (ticket.attachments2 && ticket.attachments2.length > 0) ? (
                     <div style={{ 
                       marginTop: '0.5rem', 
                       padding: '0.5rem', 
@@ -558,16 +608,17 @@ const Support: React.FC = () => {
                       borderRadius: '4px',
                       fontSize: '0.9rem'
                     }}>
-                      <strong>Attachments ({ticket.attachments.length}):</strong>
+                      <strong>Attachments ({(ticket.attachments?.length || 0) + (ticket.attachments2?.length || 0)}):</strong>
                       <div style={{ 
                         display: 'flex', 
                         flexWrap: 'wrap', 
                         gap: '0.5rem', 
                         marginTop: '0.25rem' 
                       }}>
-                        {ticket.attachments.map((attachment, index) => (
+                        {/* Legacy string attachments */}
+                        {ticket.attachments && ticket.attachments.map((attachment, index) => (
                           <span
-                            key={index}
+                            key={`legacy-${index}`}
                             style={{
                               padding: '0.25rem 0.5rem',
                               background: '#e3f2fd',
@@ -598,9 +649,44 @@ const Support: React.FC = () => {
                             📎 {attachment}
                           </span>
                         ))}
+                        
+                        {/* Binary attachments */}
+                        {ticket.attachments2 && ticket.attachments2.map((attachment) => (
+                          <span
+                            key={attachment.id}
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              background: '#e8f5e8',
+                              borderRadius: '12px',
+                              fontSize: '0.8rem',
+                              color: '#2e7d32',
+                              border: '1px solid #c8e6c9',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              transition: 'all 0.2s'
+                            }}
+                            onClick={() => {
+                              setSelectedAttachment(attachment);
+                              setShowFileViewer(true);
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#c8e6c9';
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = '#e8f5e8';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                            title={`Click to download ${attachment.filename} (${(attachment.fileSize / 1024).toFixed(1)} KB)`}
+                          >
+                            💾 {attachment.filename} ({(attachment.fileSize / 1024).toFixed(1)} KB)
+                          </span>
+                        ))}
                       </div>
                     </div>
-                  )}
+                  ) : null}
                   
                   {/* Admin Notes */}
                   {ticket.adminNotes && (
@@ -699,7 +785,7 @@ const Support: React.FC = () => {
       </MainContent>
 
       {/* File Viewer Modal */}
-      {showFileViewer && selectedFile && (
+      {showFileViewer && (selectedFile || selectedAttachment) && (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -734,6 +820,7 @@ const Support: React.FC = () => {
                 onClick={() => {
                   setShowFileViewer(false);
                   setSelectedFile(null);
+                  setSelectedAttachment(null);
                 }}
                 style={{
                   background: 'none',
@@ -764,15 +851,20 @@ const Support: React.FC = () => {
                 marginBottom: '1rem'
               }}>
                 <div style={{ marginBottom: '0.5rem' }}>
-                  <strong>Filename:</strong> {selectedFile.split(' (')[0]}
+                  <strong>Filename:</strong> {selectedFile ? selectedFile.split(' (')[0] : selectedAttachment?.filename}
                 </div>
-                {selectedFile.includes('(') && (
+                {selectedFile && selectedFile.includes('(') && (
                   <div style={{ marginBottom: '0.5rem' }}>
                     <strong>Size:</strong> {selectedFile.split('(')[1].split(')')[0]}
                   </div>
                 )}
+                {selectedAttachment && (
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <strong>Size:</strong> {(selectedAttachment.fileSize / 1024).toFixed(1)} KB
+                  </div>
+                )}
                 <div>
-                  <strong>Type:</strong> {selectedFile.split('.').pop()?.toUpperCase() || 'Unknown'}
+                  <strong>Type:</strong> {selectedFile ? (selectedFile.split('.').pop()?.toUpperCase() || 'Unknown') : (selectedAttachment?.contentType.split('/')[1].toUpperCase() || 'Unknown')}
                 </div>
               </div>
               
@@ -787,8 +879,17 @@ const Support: React.FC = () => {
                   fontSize: '0.9rem',
                   lineHeight: '1.4'
                 }}>
-                  <strong>Note:</strong> In a production environment, this would display the actual file content or provide a download link. 
-                  Currently showing file metadata only.
+                  {selectedAttachment ? (
+                    <>
+                      <strong>Binary Attachment:</strong> This is a real file stored in the database. 
+                      You can download it using the button below.
+                    </>
+                  ) : (
+                    <>
+                      <strong>Legacy Attachment:</strong> This is a legacy text-based attachment. 
+                      In a production environment, this would display the actual file content or provide a download link.
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -802,6 +903,7 @@ const Support: React.FC = () => {
                 onClick={() => {
                   setShowFileViewer(false);
                   setSelectedFile(null);
+                  setSelectedAttachment(null);
                 }}
                 style={{
                   padding: '0.5rem 1rem',
@@ -814,22 +916,21 @@ const Support: React.FC = () => {
               >
                 Close
               </button>
-              <button
-                onClick={() => {
-                  // In a real implementation, this would download the file
-                  alert('Download functionality would be implemented here in a production environment.');
-                }}
-                style={{
-                  padding: '0.5rem 1rem',
-                  border: 'none',
-                  borderRadius: '4px',
-                  background: '#28a745',
-                  color: 'white',
-                  cursor: 'pointer'
-                }}
-              >
-                Download File
-              </button>
+              {selectedAttachment && (
+                <button
+                  onClick={() => downloadAttachment(selectedAttachment.id, selectedAttachment.filename)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    borderRadius: '4px',
+                    background: '#28a745',
+                    color: 'white',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Download File
+                </button>
+              )}
             </div>
           </div>
         </div>

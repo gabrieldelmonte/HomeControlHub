@@ -327,7 +327,7 @@ export interface CreateSupportTicketData {
     message: string;
     priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
     attachments?: string[];
-    fileAttachments?: File[];
+    fileAttachments?: Express.Multer.File[];
 }
 
 export interface UpdateSupportTicketData {

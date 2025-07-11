@@ -1,7 +1,36 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { SupportController } from '../controllers';
 import { AuthMiddleware, AttachContextMiddleware, RBACMiddleware } from '../middlewares';
 import { UserRole_ENUM } from '../enums';
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow common file types
+    const allowedMimes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'application/pdf',
+      'text/plain',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only images, PDFs, text files, and Office documents are allowed.'));
+    }
+  }
+});
 
 /**
  * @swagger
@@ -69,6 +98,7 @@ export function createSupportRouter(
      */
     router.post(
         '/tickets',
+        upload.array('fileAttachments', 5), // Allow up to 5 files
         supportController.createTicket.bind(supportController)
     );
 
@@ -251,6 +281,45 @@ export function createSupportRouter(
     router.delete(
         '/tickets/:ticketId',
         supportController.deleteTicket.bind(supportController)
+    );
+
+    /**
+     * @swagger
+     * /support/attachments/{attachmentId}/download:
+     *   get:
+     *     summary: Download a support ticket attachment
+     *     tags: [Support]
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: attachmentId
+     *         required: true
+     *         schema:
+     *           type: string
+     *           format: uuid
+     *         description: The ID of the attachment to download
+     *     responses:
+     *       200:
+     *         description: File download
+     *         content:
+     *           application/octet-stream:
+     *             schema:
+     *               type: string
+     *               format: binary
+     *       401:
+     *         description: Unauthorized
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     *       403:
+     *         description: Forbidden - You can only download attachments from your own tickets
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     *       404:
+     *         description: Attachment not found
+     *         content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+     */
+    router.get(
+        '/attachments/:attachmentId/download',
+        supportController.downloadAttachment.bind(supportController)
     );
 
     /**
