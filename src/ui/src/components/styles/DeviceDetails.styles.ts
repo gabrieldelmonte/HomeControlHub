@@ -68,13 +68,15 @@ export const StatusBadge = styled.span<{ status: "On" | "Off" }>`
     props.status === "On" ? "#28a745" : "#dc3545"};
 `;
 
-export const ActionButton = styled.button<{ variant?: "success" | "cancel" }>`
+export const ActionButton = styled.button<{ variant?: "success" | "cancel" | "danger" }>`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   background: ${({ variant }) => 
     variant === "success" ? "#28a745" :
-    variant === "cancel" ? "#dc3545" :
+    variant === "cancel" ? "#28a745" :
+    variant === "danger" ? "#dc3545" :
     "linear-gradient(135deg, #ff7f50 0%, rgb(255, 157, 53) 50%, #40e0d0 100%)"
   };
   color: white;
@@ -85,10 +87,19 @@ export const ActionButton = styled.button<{ variant?: "success" | "cancel" }>`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  text-align: center;
+  min-width: fit-content;
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 `;
 

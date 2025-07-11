@@ -154,6 +154,10 @@ const DeviceDetails: React.FC = () => {
   const [ruleAction, setRuleAction] = useState('');
   const [sendingCommand, setSendingCommand] = useState(false);
   const [savingRule, setSavingRule] = useState(false);
+  
+  // Delete confirmation state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     // Get user role from localStorage
@@ -650,6 +654,60 @@ const DeviceDetails: React.FC = () => {
     }
   };
 
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!device) return;
+    
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8080/api/v1/devices/${device.id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        // Add log entry for the deletion
+        const userInfo = currentUser?.username || 'Unknown User';
+        const newLog: LogEntry = {
+          id: Date.now().toString(),
+          message: `Device "${device.name}" was deleted by ${userInfo}`,
+          type: "INFO",
+          source: "DEVICE",
+          createdAt: new Date().toISOString()
+        };
+        setLogs(prev => [newLog, ...prev]);
+        
+        // Navigate back to dashboard
+        navigate("/dashboard");
+      } else {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to delete device");
+      }
+    } catch (error) {
+      console.error("Error deleting device:", error);
+      setError("Failed to delete device. Please try again.");
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
   if (loading) {
     return (
       <Container>
@@ -733,9 +791,14 @@ const DeviceDetails: React.FC = () => {
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <StatusBadge status={device.status ? "On" : "Off"}>{device.status ? "On" : "Off"}</StatusBadge>
             {!isEditing && userRole !== 'ADMIN' ? (
-              <ActionButton onClick={handleEdit}>
-                <FaEdit /> Edit
-              </ActionButton>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <ActionButton onClick={handleEdit}>
+                  <FaEdit /> Edit
+                </ActionButton>
+                <ActionButton onClick={handleDelete} variant="danger" disabled={deleting}>
+                  <FaTrash /> {deleting ? 'Deleting...' : 'Delete'}
+                </ActionButton>
+              </div>
             ) : isEditing ? (
               <div style={{ display: "flex", gap: "0.5rem" }}>
                 <ActionButton onClick={handleSave} variant="success">
@@ -752,6 +815,75 @@ const DeviceDetails: React.FC = () => {
             )}
           </div>
         </DeviceHeader>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '2rem',
+              borderRadius: '8px',
+              maxWidth: '400px',
+              width: '90%',
+              textAlign: 'center'
+            }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <FaExclamationTriangle style={{ color: '#f44336', fontSize: '3rem', marginBottom: '1rem' }} />
+                <h3 style={{ margin: '0 0 1rem 0', color: '#333' }}>Delete Device</h3>
+                <p style={{ margin: '0 0 1rem 0', color: '#666' }}>
+                  Are you sure you want to delete <strong>{device?.name}</strong>?
+                </p>
+                <p style={{ margin: '0 0 1rem 0', color: '#666', fontSize: '0.9rem' }}>
+                  This action will:
+                </p>
+                <ul style={{ 
+                  margin: '0 0 1rem 0', 
+                  paddingLeft: '1.5rem', 
+                  textAlign: 'left',
+                  color: '#666',
+                  fontSize: '0.9rem'
+                }}>
+                  <li>Permanently remove the device from your account</li>
+                  <li>Unsubscribe from all MQTT topics for this device</li>
+                  <li>Delete all associated automation rules</li>
+                  <li>Remove all device logs and history</li>
+                </ul>
+                <p style={{ margin: '0', color: '#f44336', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                  This action cannot be undone!
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <ActionButton 
+                  onClick={handleCancelDelete} 
+                  variant="cancel"
+                  disabled={deleting}
+                  style={{ minWidth: '100px' }}
+                >
+                  Cancel
+                </ActionButton>
+                <ActionButton 
+                  onClick={handleConfirmDelete} 
+                  variant="danger"
+                  disabled={deleting}
+                  style={{ minWidth: '100px' }}
+                >
+                  {deleting ? 'Deleting...' : 'Delete Device'}
+                </ActionButton>
+              </div>
+            </div>
+          </div>
+        )}
 
         <DetailsContainer>
           <DetailsGrid>
