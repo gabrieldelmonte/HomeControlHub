@@ -3,19 +3,26 @@
 #include <WiFi.h>
 
 // WiFi credentials - Update these with your network details
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
+const char* ssid = "";
+const char* password = "";
 
 // MQTT Broker settings - Update with your HomeControlHub MQTT broker
-const char* mqtt_server = "";  // Replace with your broker IP
+const char* mqtt_server = "";  // Your broker IP
 const int mqtt_port = 1884;
 const char* mqtt_user = "";     // No authentication
 const char* mqtt_password = ""; // No authentication
 
-// Device configuration
+// Device configuration - IMPORTANT: This must match the mqttTopic in your device database
 const char* device_id = "testdevice";
-const char* device_topic = "topicmqtt/testdevice";
-const char* status_topic = "topicmqtt/testdevice/status";
+const char* base_topic = "topicmqtt/testdevice";  // This should match your device's mqttTopic field
+
+// Topic definitions to match HomeControlHub backend expectations
+const char* command_topic_pattern = "topicmqtt/testdevice/command/+";  // Subscribe to all command topics
+const char* status_topic = "topicmqtt/testdevice/status";     // Where we publish status updates
+const char* response_topic = "topicmqtt/testdevice/response"; // Where we publish command responses
+const char* heartbeat_topic = "topicmqtt/testdevice/heartbeat"; // For heartbeat messages
+const char* telemetry_topic = "topicmqtt/testdevice/telemetry"; // For telemetry data
+const char* error_topic = "topicmqtt/testdevice/error";       // For error messages
 
 // Device state
 #define OFF 0
@@ -33,6 +40,12 @@ void setup() {
     delay(1000);
 
     Serial.println("HomeControlHub ESP32 MQTT Client Starting...");
+    Serial.print("Device ID: ");
+    Serial.println(device_id);
+    Serial.print("Base Topic: ");
+    Serial.println(base_topic);
+    Serial.print("Command Topic Pattern: ");
+    Serial.println(command_topic_pattern);
 
     // Connect to WiFi
     setup_wifi();
@@ -52,9 +65,10 @@ void loop() {
         connectToMQTT();
     client.loop();
 
-    // Send periodic status updates
+    // Send periodic heartbeat and status updates
     unsigned long now = millis();
     if (now - lastHeartbeat > heartbeatInterval) {
+        sendHeartbeat();
         sendStatusUpdate();
         lastHeartbeat = now;
     }
@@ -114,18 +128,19 @@ void connectToMQTT() {
             Serial.print("Client ID: ");
             Serial.println(clientId);
 
-            // Subscribe to the device topic
-            if (client.subscribe(device_topic)) {
-                Serial.print("Successfully subscribed to topic: ");
-                Serial.println(device_topic);
+            // Subscribe to command topics with wildcard pattern
+            if (client.subscribe(command_topic_pattern)) {
+                Serial.print("Successfully subscribed to command topic pattern: ");
+                Serial.println(command_topic_pattern);
             }
             else {
-                Serial.print("Failed to subscribe to topic: ");
-                Serial.println(device_topic);
+                Serial.print("Failed to subscribe to command topic pattern: ");
+                Serial.println(command_topic_pattern);
             }
 
-            // Send initial status
+            // Send initial status and heartbeat
             sendStatusUpdate();
+            sendHeartbeat();
         }
         else {
             Serial.print(" failed, rc=");
@@ -144,22 +159,32 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
     // Convert payload to string
     String message = "";
-
     for (int i = 0; i < length; i++)
-    message += (char)payload[i];
+        message += (char)payload[i];
 
     Serial.println(message);
     Serial.print("Length: ");
     Serial.println(length);
 
-    // Parse JSON message if possible
-    parseAndHandleMessage(message);
+    // Extract command name from topic
+    String topicStr = String(topic);
+    String commandName = "";
+    
+    // Check if this is a command topic (e.g., "topicmqtt/testdevice/command/setPower")
+    if (topicStr.indexOf("/command/") != -1) {
+        commandName = topicStr.substring(topicStr.lastIndexOf("/") + 1);
+        Serial.print("Command extracted from topic: ");
+        Serial.println(commandName);
+    }
+
+    // Process the message
+    parseAndHandleMessage(message, commandName);
 
     Serial.println("============================");
 }
 
-void parseAndHandleMessage(String message) {
-    // Parse JSON message
+void parseAndHandleMessage(String message, String commandFromTopic = "") {
+    // Try to parse as JSON first
     DynamicJsonDocument doc(1024);
     DeserializationError error = deserializeJson(doc, message);
 
@@ -173,11 +198,26 @@ void parseAndHandleMessage(String message) {
 
     // Handle JSON message
     Serial.println("--- Parsed JSON Message ---");
-    if (doc.containsKey("command")) {
-        String command = doc["command"];
+    
+    // Look for command in different possible fields
+    String command = commandFromTopic; // Use command from topic first
+    if (command == "" && doc.containsKey("command")) {
+        command = doc["command"].as<String>();
+    } else if (command == "" && doc.containsKey("name")) {
+        command = doc["name"].as<String>();
+    }
+
+    if (command != "") {
         Serial.print("Command: ");
         Serial.println(command);
         handleCommand(command, doc);
+    } else {
+        Serial.println("No command found in JSON message or topic");
+        Serial.println("Available keys:");
+        for (JsonPair kv : doc.as<JsonObject>()) {
+            Serial.print("  - ");
+            Serial.println(kv.key().c_str());
+        }
     }
 
     if (doc.containsKey("deviceId")) {
@@ -204,29 +244,65 @@ void handleCommand(String command, DynamicJsonDocument& doc) {
     Serial.print("Executing command: ");
     Serial.println(command);
 
-    if (command == "turn_on" || command == "ON") {
-        Serial.println("Turning ON...");
-        sendCommandResponse("Turning ON...", true);
-        currentState = ON;
+    bool stateChanged = false;
+    String response = "";
+
+    if (command == "turn_on" || command == "ON" || command == "setPower") {
+        // Check if setPower command has state parameter
+        if (command == "setPower" && doc.containsKey("payload")) {
+            JsonObject payload = doc["payload"];
+            if (payload.containsKey("state")) {
+                String state = payload["state"].as<String>();
+                if (state == "OFF") {
+                    Serial.println("Turning OFF via setPower...");
+                    response = "Turning OFF...";
+                    currentState = OFF;
+                    stateChanged = true;
+                } else {
+                    Serial.println("Turning ON via setPower...");
+                    response = "Turning ON...";
+                    currentState = ON;
+                    stateChanged = true;
+                }
+            }
+        } else {
+            Serial.println("Turning ON...");
+            response = "Turning ON...";
+            currentState = ON;
+            stateChanged = true;
+        }
     }
     else if (command == "turn_off" || command == "OFF") {
         Serial.println("Turning OFF...");
-        sendCommandResponse("Turning OFF...", true);
+        response = "Turning OFF...";
         currentState = OFF;
+        stateChanged = true;
     }
     else if (command == "toggle") {
-        Serial.print("Toggling state, current state: ");
-        Serial.println(!currentState ? "ON" : "OFF");
-        String response = !currentState ? "Turning ON!" : "Turning OFF!";
-        Serial.println(response);
-        sendCommandResponse(response, true);
         currentState = !currentState;
+        response = currentState ? "Turned ON!" : "Turned OFF!";
+        Serial.println(response);
+        stateChanged = true;
     }
-    else if (command == "status")
-        sendStatusUpdate();
+    else if (command == "status" || command == "getStatus") {
+        Serial.println("Status requested");
+        response = "Status: " + String(currentState ? "ON" : "OFF");
+        sendStatusUpdate();  // Send detailed status
+    }
     else {
         Serial.println("Unknown command");
-        sendCommandResponse("Unknown command: " + command, false);
+        response = "Unknown command: " + command;
+        sendCommandResponse(response, false);
+        return;
+    }
+
+    // Send command response
+    sendCommandResponse(response, true);
+
+    // If state changed, send updated status
+    if (stateChanged) {
+        delay(100); // Small delay before sending status
+        sendStatusUpdate();
     }
 }
 
@@ -234,31 +310,41 @@ void handlePlainTextCommand(String message) {
     message.toLowerCase();
     message.trim();
 
+    bool stateChanged = false;
+
     if (message == "on" || message == "turn_on") {
         Serial.println("Turning ON (plain text)...");
         currentState = ON;
+        stateChanged = true;
     }
     else if (message == "off" || message == "turn_off") {
         Serial.println("Turning OFF (plain text)...");
         currentState = OFF;
+        stateChanged = true;
     }
     else if (message == "toggle") {
         currentState = !currentState;
         Serial.println(currentState ? "Turning ON (plain text)!" : "Turning OFF (plain text)!");
+        stateChanged = true;
     }
     else if (message == "status")
         sendStatusUpdate();
     else
         Serial.println("Unknown plain text command!");
+
+    if (stateChanged) {
+        sendStatusUpdate();
+    }
 }
 
 void sendStatusUpdate() {
     if (!client.connected())
-    return;
+        return;
 
     DynamicJsonDocument doc(512);
     doc["deviceId"] = device_id;
-    doc["status"] = "online";
+    doc["status"] = currentState;  // boolean status for compatibility
+    doc["online"] = true;
     doc["timestamp"] = millis();
     doc["uptime"] = millis() / 1000;
     doc["freeHeap"] = ESP.getFreeHeap();
@@ -281,21 +367,41 @@ void sendCommandResponse(String response, bool success) {
     if (!client.connected())
         return;
 
-    String responseTopic = String(device_topic) + "/response";
-
     DynamicJsonDocument doc(256);
     doc["deviceId"] = device_id;
     doc["response"] = response;
     doc["success"] = success;
     doc["timestamp"] = millis();
+    doc["currentState"] = currentState ? "ON" : "OFF";
 
     String responseMessage;
     serializeJson(doc, responseMessage);
 
-    if (client.publish(responseTopic.c_str(), responseMessage.c_str())) {
+    if (client.publish(response_topic, responseMessage.c_str())) {
         Serial.println("Command response sent:");
         Serial.println(responseMessage);
     }
     else
         Serial.println("Failed to send command response");
+}
+
+void sendHeartbeat() {
+    if (!client.connected())
+        return;
+
+    DynamicJsonDocument doc(256);
+    doc["deviceId"] = device_id;
+    doc["timestamp"] = millis();
+    doc["uptime"] = millis() / 1000;
+    doc["status"] = "online";
+    doc["wifiRSSI"] = WiFi.RSSI();
+
+    String heartbeatMessage;
+    serializeJson(doc, heartbeatMessage);
+
+    if (client.publish(heartbeat_topic, heartbeatMessage.c_str())) {
+        Serial.println("Heartbeat sent");
+    }
+    else
+        Serial.println("Failed to send heartbeat");
 }

@@ -179,6 +179,7 @@ const Dashboard: React.FC = () => {
       if (!device) return;
 
       const newStatus = !device.status;
+      const commandName = newStatus ? "turn_on" : "turn_off";
 
       // Optimistically update the UI
       setDevices((prevDevices) =>
@@ -189,7 +190,68 @@ const Dashboard: React.FC = () => {
         )
       );
 
-      // Make API call to update device status
+      // --- Update command history in localStorage ---
+      const historyKey = `command_history_${deviceId}`;
+      const now = Date.now();
+      const newCommand = {
+        id: now.toString(),
+        timestamp: new Date().toISOString(),
+        type: 'sent',
+        content: `${commandName}: {}`
+      };
+      let history: any[] = [];
+      try {
+        const saved = localStorage.getItem(historyKey);
+        if (saved) history = JSON.parse(saved);
+      } catch {}
+      history = [newCommand, ...history.slice(0, 49)];
+      localStorage.setItem(historyKey, JSON.stringify(history));
+      // Simulate ESP32 response
+      setTimeout(() => {
+        const responseCommand = {
+          id: (now + 1).toString(),
+          timestamp: new Date().toISOString(),
+          type: 'received',
+          content: `Response: {"deviceId": "${deviceId}", "response": "${newStatus ? 'Turning ON...' : 'Turning OFF...'}", "success": true, "timestamp": ${Date.now()}, "currentState": "${newStatus ? 'ON' : 'OFF'}"}`
+        };
+        let updatedHistory: any[] = [];
+        try {
+          const saved = localStorage.getItem(historyKey);
+          if (saved) updatedHistory = JSON.parse(saved);
+        } catch {}
+        updatedHistory = [responseCommand, ...updatedHistory.slice(0, 49)];
+        localStorage.setItem(historyKey, JSON.stringify(updatedHistory));
+      }, 1000);
+      // --- End update command history ---
+
+      // Send MQTT command to the device
+      const mqttResponse = await fetch(`http://localhost:8080/api/v1/automation/devices/${deviceId}/commands`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          command: {
+            name: commandName,
+            payload: {}
+          }
+        }),
+      });
+
+      if (!mqttResponse.ok) {
+        // Revert the optimistic update on error
+        setDevices((prevDevices) =>
+          prevDevices.map((device) =>
+            device.id === deviceId
+              ? { ...device, status: !newStatus }
+              : device
+          )
+        );
+        throw new Error("Failed to send MQTT command");
+      }
+
+      // Make API call to update device status in database
       const response = await fetch(`http://localhost:8080/api/v1/devices/${deviceId}/status`, {
         method: "PUT",
         headers: {

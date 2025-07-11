@@ -154,10 +154,32 @@ const DeviceDetails: React.FC = () => {
   const [ruleAction, setRuleAction] = useState('');
   const [sendingCommand, setSendingCommand] = useState(false);
   const [savingRule, setSavingRule] = useState(false);
-  
+
   // Delete confirmation state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Load command history from localStorage on component mount
+  useEffect(() => {
+    if (deviceId) {
+      const savedHistory = localStorage.getItem(`command_history_${deviceId}`);
+      if (savedHistory) {
+        try {
+          const parsedHistory = JSON.parse(savedHistory);
+          setCommandHistory(parsedHistory);
+        } catch (error) {
+          console.error("Error parsing saved command history:", error);
+        }
+      }
+    }
+  }, [deviceId]);
+
+  // Save command history to localStorage whenever it changes
+  useEffect(() => {
+    if (deviceId && commandHistory.length > 0) {
+      localStorage.setItem(`command_history_${deviceId}`, JSON.stringify(commandHistory));
+    }
+  }, [commandHistory, deviceId]);
 
   useEffect(() => {
     // Get user role from localStorage
@@ -408,11 +430,53 @@ const DeviceDetails: React.FC = () => {
       }
 
       const newStatus = !device.status;
+      const commandName = newStatus ? "turn_on" : "turn_off";
       
       // Optimistically update the UI
       setDevice(prev => prev ? { ...prev, status: newStatus } : null);
       
-      // API call to update device status
+      // Send MQTT command to the device
+      const mqttResponse = await fetch(`http://localhost:8080/api/v1/automation/devices/${deviceId}/commands`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          command: {
+            name: commandName,
+            payload: {}
+          }
+        }),
+      });
+
+      if (!mqttResponse.ok) {
+        // Revert the optimistic update on error
+        setDevice(prev => prev ? { ...prev, status: !newStatus } : null);
+        throw new Error("Failed to send MQTT command");
+      }
+
+      // Add command to history
+      const newCommand: CommandHistory = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        type: 'sent',
+        content: `${commandName}: {}`
+      };
+      setCommandHistory(prev => [newCommand, ...prev.slice(0, 49)]); // Keep last 50 commands
+      
+      // Simulate ESP32 response for toggle command
+      setTimeout(() => {
+        const responseCommand: CommandHistory = {
+          id: (Date.now() + 1).toString(),
+          timestamp: new Date().toISOString(),
+          type: 'received',
+          content: `Response: {"deviceId": "${deviceId}", "response": "${newStatus ? 'Turning ON...' : 'Turning OFF...'}", "success": true, "timestamp": ${Date.now()}, "currentState": "${newStatus ? 'ON' : 'OFF'}"}`
+        };
+        setCommandHistory(prev => [responseCommand, ...prev.slice(0, 49)]);
+      }, 1000); // Simulate 1 second delay
+      
+      // API call to update device status in database
       const response = await fetch(`http://localhost:8080/api/v1/devices/${deviceId}/status`, {
         method: "PUT",
         headers: {
@@ -529,6 +593,17 @@ const DeviceDetails: React.FC = () => {
           content: `${commandName}: ${JSON.stringify(payload)}`
         };
         setCommandHistory(prev => [newCommand, ...prev.slice(0, 49)]); // Keep last 50 commands
+
+        // Simulate ESP32 response (in a real implementation, this would come from MQTT)
+        setTimeout(() => {
+          const responseCommand: CommandHistory = {
+            id: (Date.now() + 1).toString(),
+            timestamp: new Date().toISOString(),
+            type: 'received',
+            content: `Response: {"deviceId": "${deviceId}", "response": "Command executed successfully", "success": true, "timestamp": ${Date.now()}, "currentState": "${device?.status ? 'ON' : 'OFF'}"}`
+          };
+          setCommandHistory(prev => [responseCommand, ...prev.slice(0, 49)]);
+        }, 1000); // Simulate 1 second delay
 
         // Clear input fields
         setCommandName('');
@@ -682,6 +757,9 @@ const DeviceDetails: React.FC = () => {
       });
 
       if (response.ok) {
+        // Clean up command history from localStorage
+        localStorage.removeItem(`command_history_${device.id}`);
+        
         // Add log entry for the deletion
         const userInfo = currentUser?.username || 'Unknown User';
         const newLog: LogEntry = {
@@ -710,6 +788,11 @@ const DeviceDetails: React.FC = () => {
 
   const handleCancelDelete = () => {
     setShowDeleteConfirm(false);
+  };
+
+  const clearCommandHistory = () => {
+    setCommandHistory([]);
+    localStorage.removeItem(`command_history_${deviceId}`);
   };
 
   if (loading) {
@@ -1110,13 +1193,40 @@ const DeviceDetails: React.FC = () => {
                 <div style={{ marginTop: '1.5rem' }}>
                   <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ color: 'rgba(255, 255, 255, 0.9)', fontWeight: 600 }}>Command History</span>
-                    <span style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
-                      Topic: {device?.mqttTopic}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
+                        Topic: {device?.mqttTopic}
+                      </span>
+                      {commandHistory.length > 0 && (
+                        <button
+                          onClick={clearCommandHistory}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '4px',
+                            fontSize: '0.7rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                            e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                            e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                          }}
+                        >
+                          Clear History
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <CommandHistory>
                     {commandHistory.length === 0 ? (
-                      <EmptyState>No commands sent yet. Start by sending a command above.</EmptyState>
+                      <EmptyState>No commands sent yet. Start by sending a command above or toggle the device status.</EmptyState>
                     ) : (
                       commandHistory.map((cmd) => (
                         <CommandLine key={cmd.id} type={cmd.type}>

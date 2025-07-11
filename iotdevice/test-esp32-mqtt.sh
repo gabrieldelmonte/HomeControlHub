@@ -1,17 +1,7 @@
 #!/bin/bash
 
 # ESP32 MQTT Integration Test Script
-# This script tests the MQTT communication with an ESP32 device
-
-echo "🚀 ESP32 MQTT Integration Test for HomeControlHub"
-echo "=================================================="
-
-# Configuration
-MQTT_HOST="localhost"
-MQTT_PORT="1883"
-DEVICE_TOPIC="topicmqtt/testdevice"
-STATUS_TOPIC="topicmqtt/testdevice/status"
-RESPONSE_TOPIC="topicmqtt/testdevice/response"
+# Updated for HomeControlHub topic structure
 
 # Colors for output
 RED='\033[0;31m'
@@ -20,33 +10,51 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Function to check if mosquitto clients are installed
+# Configuration - Update these values
+MQTT_HOST="localhost"
+MQTT_PORT="1884"
+DEVICE_TOPIC="topicmqtt/testdevice"
+STATUS_TOPIC="$DEVICE_TOPIC/status"
+RESPONSE_TOPIC="$DEVICE_TOPIC/response"
+
+# PIDs for monitoring processes
+STATUS_PID=""
+RESPONSE_PID=""
+
+echo -e "${BLUE}🏠 HomeControlHub ESP32 MQTT Integration Test${NC}"
+echo "=================================================="
+echo ""
+
+# Function to check if mosquitto-clients is installed
 check_mosquitto_clients() {
     if ! command -v mosquitto_pub &> /dev/null; then
-        echo -e "${RED}❌ mosquitto_pub not found${NC}"
-        echo "Please install mosquitto clients:"
+        echo -e "${RED}❌ mosquitto-clients not found${NC}"
+        echo "Please install mosquitto-clients:"
         echo "  Ubuntu/Debian: sudo apt install mosquitto-clients"
         echo "  macOS: brew install mosquitto"
         exit 1
     fi
-    echo -e "${GREEN}✅ mosquitto clients are installed${NC}"
+    echo -e "${GREEN}✅ mosquitto-clients found${NC}"
 }
 
-# Function to check if MQTT broker is running
+# Function to check MQTT broker connectivity
 check_mqtt_broker() {
     echo -e "${BLUE}🔍 Checking MQTT broker connectivity...${NC}"
     
+    # Test basic connectivity
     if mosquitto_pub -h $MQTT_HOST -p $MQTT_PORT -t "test/connection" -m "test" 2>/dev/null; then
         echo -e "${GREEN}✅ MQTT broker is accessible${NC}"
     else
-        echo -e "${RED}❌ Cannot connect to MQTT broker at $MQTT_HOST:$MQTT_PORT${NC}"
-        echo "Make sure your HomeControlHub Docker containers are running:"
-        echo "  cd src/docker/compose && docker-compose up -d"
+        echo -e "${RED}❌ Cannot connect to MQTT broker${NC}"
+        echo "Please ensure:"
+        echo "  1. HomeControlHub is running"
+        echo "  2. Mosquitto container is started"
+        echo "  3. MQTT broker is accessible on $MQTT_HOST:$MQTT_PORT"
         exit 1
     fi
 }
 
-# Function to monitor topics in background
+# Function to start monitoring
 start_monitoring() {
     echo -e "${BLUE}📡 Starting topic monitoring...${NC}"
     
@@ -72,14 +80,15 @@ stop_monitoring() {
 
 # Function to send command and wait for response
 send_command() {
-    local cmd="$1"
-    local description="$2"
+    local command_topic="$1"
+    local message="$2"
+    local description="$3"
     
     echo -e "${YELLOW}📤 Sending command: $description${NC}"
-    echo "   Topic: $DEVICE_TOPIC"
-    echo "   Message: $cmd"
+    echo "   Topic: $command_topic"
+    echo "   Message: $message"
     
-    mosquitto_pub -h $MQTT_HOST -p $MQTT_PORT -t "$DEVICE_TOPIC" -m "$cmd"
+    mosquitto_pub -h $MQTT_HOST -p $MQTT_PORT -t "$command_topic" -m "$message"
     
     echo "   Waiting for response..."
     sleep 3
@@ -101,83 +110,72 @@ check_status_updates() {
     echo -e "${BLUE}📊 Checking for status updates...${NC}"
     
     if [ -f /tmp/esp32_status.log ]; then
-        local status_count=$(wc -l < /tmp/esp32_status.log 2>/dev/null || echo "0")
-        if [ "$status_count" -gt 0 ]; then
-            echo -e "${GREEN}✅ Received $status_count status update(s)${NC}"
+        local status_count=$(wc -l < /tmp/esp32_status.log)
+        if [ $status_count -gt 0 ]; then
+            echo -e "${GREEN}✅ Found $status_count status update(s)${NC}"
             echo "Latest status:"
-            tail -n 1 /tmp/esp32_status.log | jq . 2>/dev/null || tail -n 1 /tmp/esp32_status.log
+            tail -n 1 /tmp/esp32_status.log
         else
             echo -e "${YELLOW}⚠️  No status updates received yet${NC}"
-            echo "ESP32 should send status updates every 30 seconds when connected"
         fi
     else
-        echo -e "${RED}❌ Status log file not found${NC}"
+        echo -e "${YELLOW}⚠️  No status log file found${NC}"
     fi
     echo ""
 }
 
-# Function to run interactive mode
+# Function for interactive mode
 interactive_mode() {
     echo -e "${BLUE}🎮 Interactive Mode${NC}"
-    echo "Available commands:"
-    echo "  1) Turn Device ON"
-    echo "  2) Turn Device OFF" 
-    echo "  3) Toggle Device"
-    echo "  4) Request Status"
-    echo "  5) Send Custom JSON"
-    echo "  6) Send Plain Text"
-    echo "  q) Quit"
+    echo "Type commands to send to your ESP32:"
+    echo "  on     - Turn device ON"
+    echo "  off    - Turn device OFF"
+    echo "  toggle - Toggle device state"
+    echo "  status - Request device status"
+    echo "  quit   - Exit interactive mode"
     echo ""
     
     while true; do
-        echo -n -e "${YELLOW}Enter command (1-6, q): ${NC}"
-        read choice
+        echo -n -e "${YELLOW}ESP32> ${NC}"
+        read -r user_command
         
-        case $choice in
-            1)
-                send_command '{"command":"turn_on","deviceId":"testdevice","timestamp":"'$(date -Iseconds)'"}' "Turn Device ON"
+        case $user_command in
+            "on")
+                send_command "$DEVICE_TOPIC/command/setPower" '{"state": "ON"}' "Turn ON"
                 ;;
-            2)
-                send_command '{"command":"turn_off","deviceId":"testdevice","timestamp":"'$(date -Iseconds)'"}' "Turn Device OFF"
+            "off")
+                send_command "$DEVICE_TOPIC/command/setPower" '{"state": "OFF"}' "Turn OFF"
                 ;;
-            3)
-                send_command '{"command":"toggle","deviceId":"testdevice","timestamp":"'$(date -Iseconds)'"}' "Toggle Device"
+            "toggle")
+                send_command "$DEVICE_TOPIC/command/toggle" '{}' "Toggle"
                 ;;
-            4)
-                send_command '{"command":"status","deviceId":"testdevice","timestamp":"'$(date -Iseconds)'"}' "Request Status"
+            "status")
+                send_command "$DEVICE_TOPIC/command/getStatus" '{}' "Get Status"
                 ;;
-            5)
-                echo -n "Enter JSON command: "
-                read json_cmd
-                send_command "$json_cmd" "Custom JSON"
-                ;;
-            6)
-                echo -n "Enter plain text command: "
-                read text_cmd
-                send_command "$text_cmd" "Plain text"
-                ;;
-            q)
+            "quit"|"exit")
+                echo "Exiting interactive mode..."
                 break
                 ;;
             *)
-                echo -e "${RED}Invalid choice. Please enter 1-6 or q.${NC}"
+                echo "Unknown command. Type 'quit' to exit."
                 ;;
         esac
     done
 }
 
-# Cleanup function
+# Function to clean up on exit
 cleanup() {
-    echo -e "\n${BLUE}🧹 Cleaning up...${NC}"
+    echo ""
+    echo -e "${BLUE}🧹 Cleaning up...${NC}"
     stop_monitoring
     rm -f /tmp/esp32_status.log /tmp/esp32_responses.log
     echo -e "${GREEN}✅ Cleanup complete${NC}"
 }
 
-# Trap for cleanup
+# Set up cleanup on script exit
 trap cleanup EXIT
 
-# Main execution
+# Main function
 main() {
     echo "This script will test MQTT communication with your ESP32 device."
     echo "Make sure your ESP32 is flashed with esp_mqtt_subscriber.ino and connected."
@@ -201,14 +199,17 @@ main() {
     echo "Sending test commands to your ESP32..."
     echo ""
     
-    # Test 1: Plain text command
-    send_command "on" "Turn Device ON (plain text)"
+    # Test 1: Turn device ON
+    send_command "$DEVICE_TOPIC/command/setPower" '{"state": "ON"}' "Turn Device ON"
     
-    # Test 2: JSON command
-    send_command '{"command":"turn_off","deviceId":"testdevice","timestamp":"'$(date -Iseconds)'"}' "Turn Device OFF (JSON)"
+    # Test 2: Turn device OFF
+    send_command "$DEVICE_TOPIC/command/setPower" '{"state": "OFF"}' "Turn Device OFF"
     
-    # Test 3: Status request
-    send_command '{"command":"status","deviceId":"testdevice","timestamp":"'$(date -Iseconds)'"}' "Request device status"
+    # Test 3: Toggle device
+    send_command "$DEVICE_TOPIC/command/toggle" '{}' "Toggle Device"
+    
+    # Test 4: Status request
+    send_command "$DEVICE_TOPIC/command/getStatus" '{}' "Request device status"
     
     # Check status updates again
     check_status_updates
