@@ -30,6 +30,7 @@ import {
   ButtonContainer,
   PasswordDisplay,
 } from "./styles/Profile.styles";
+import { ActionButton } from "./styles/DeviceDetails.styles";
 import { useNavigate } from "react-router-dom";
 
 interface UserProfile {
@@ -629,24 +630,22 @@ const Profile: React.FC = () => {
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                <Button 
+                <ActionButton 
                   onClick={handleCancelDelete} 
-                  style={{ 
-                    background: '#28a745',
-                    minWidth: '100px'
-                  }}
+                  variant="cancel"
+                  disabled={deleting}
+                  style={{ minWidth: '100px' }}
                 >
                   Cancel
-                </Button>
-                <Button 
+                </ActionButton>
+                <ActionButton 
                   onClick={handleConfirmDelete} 
-                  style={{ 
-                    background: '#dc3545',
-                    minWidth: '100px'
-                  }}
+                  variant="danger"
+                  disabled={deleting}
+                  style={{ minWidth: '100px' }}
                 >
                   Continue
-                </Button>
+                </ActionButton>
               </div>
             </div>
           </div>
@@ -704,27 +703,22 @@ const Profile: React.FC = () => {
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                <Button 
+                <ActionButton 
                   onClick={handleCancelDelete} 
-                  style={{ 
-                    background: '#28a745',
-                    minWidth: '100px'
-                  }}
+                  variant="cancel"
+                  disabled={deleting}
+                  style={{ minWidth: '100px' }}
                 >
                   Cancel
-                </Button>
-                <Button 
+                </ActionButton>
+                <ActionButton 
                   onClick={handleFinalDelete} 
+                  variant="danger"
                   disabled={deleteConfirmationText !== user?.username || deleting}
-                  style={{ 
-                    background: '#dc3545',
-                    minWidth: '100px',
-                    opacity: deleteConfirmationText !== user?.username || deleting ? 0.6 : 1,
-                    cursor: deleteConfirmationText !== user?.username || deleting ? 'not-allowed' : 'pointer'
-                  }}
+                  style={{ minWidth: '100px', opacity: deleteConfirmationText !== user?.username || deleting ? 0.6 : 1, cursor: deleteConfirmationText !== user?.username || deleting ? 'not-allowed' : 'pointer' }}
                 >
                   {deleting ? 'Deleting...' : 'Delete Account'}
-                </Button>
+                </ActionButton>
               </div>
             </div>
           </div>
