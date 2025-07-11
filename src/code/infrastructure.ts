@@ -112,6 +112,10 @@ export class Database {
     public get supportTicket() {
         return this.prisma.supportTicket;
     }
+
+    public get supportTicketAttachment() {
+        return this.prisma.supportTicketAttachment;
+    }
 }
 
 

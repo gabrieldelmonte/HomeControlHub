@@ -187,6 +187,16 @@ exports.Prisma.SupportTicketScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.SupportTicketAttachmentScalarFieldEnum = {
+  id: 'id',
+  filename: 'filename',
+  contentType: 'contentType',
+  fileSize: 'fileSize',
+  fileData: 'fileData',
+  ticketId: 'ticketId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SystemLogScalarFieldEnum = {
   id: 'id',
   type: 'type',
@@ -248,6 +258,7 @@ exports.Prisma.ModelName = {
   AutomationRule: 'AutomationRule',
   Notification: 'Notification',
   SupportTicket: 'SupportTicket',
+  SupportTicketAttachment: 'SupportTicketAttachment',
   SystemLog: 'SystemLog'
 };
 

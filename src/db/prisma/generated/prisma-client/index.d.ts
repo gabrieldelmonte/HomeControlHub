@@ -44,6 +44,11 @@ export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
  */
 export type SupportTicket = $Result.DefaultSelection<Prisma.$SupportTicketPayload>
 /**
+ * Model SupportTicketAttachment
+ * 
+ */
+export type SupportTicketAttachment = $Result.DefaultSelection<Prisma.$SupportTicketAttachmentPayload>
+/**
  * Model SystemLog
  * 
  */
@@ -277,6 +282,16 @@ export class PrismaClient<
     * ```
     */
   get supportTicket(): Prisma.SupportTicketDelegate<ExtArgs>;
+
+  /**
+   * `prisma.supportTicketAttachment`: Exposes CRUD operations for the **SupportTicketAttachment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SupportTicketAttachments
+    * const supportTicketAttachments = await prisma.supportTicketAttachment.findMany()
+    * ```
+    */
+  get supportTicketAttachment(): Prisma.SupportTicketAttachmentDelegate<ExtArgs>;
 
   /**
    * `prisma.systemLog`: Exposes CRUD operations for the **SystemLog** model.
@@ -734,6 +749,7 @@ export namespace Prisma {
     AutomationRule: 'AutomationRule',
     Notification: 'Notification',
     SupportTicket: 'SupportTicket',
+    SupportTicketAttachment: 'SupportTicketAttachment',
     SystemLog: 'SystemLog'
   };
 
@@ -750,7 +766,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "device" | "command" | "automationRule" | "notification" | "supportTicket" | "systemLog"
+      modelProps: "user" | "device" | "command" | "automationRule" | "notification" | "supportTicket" | "supportTicketAttachment" | "systemLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1174,6 +1190,76 @@ export namespace Prisma {
           }
         }
       }
+      SupportTicketAttachment: {
+        payload: Prisma.$SupportTicketAttachmentPayload<ExtArgs>
+        fields: Prisma.SupportTicketAttachmentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SupportTicketAttachmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportTicketAttachmentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SupportTicketAttachmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportTicketAttachmentPayload>
+          }
+          findFirst: {
+            args: Prisma.SupportTicketAttachmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportTicketAttachmentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SupportTicketAttachmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportTicketAttachmentPayload>
+          }
+          findMany: {
+            args: Prisma.SupportTicketAttachmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportTicketAttachmentPayload>[]
+          }
+          create: {
+            args: Prisma.SupportTicketAttachmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportTicketAttachmentPayload>
+          }
+          createMany: {
+            args: Prisma.SupportTicketAttachmentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SupportTicketAttachmentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportTicketAttachmentPayload>[]
+          }
+          delete: {
+            args: Prisma.SupportTicketAttachmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportTicketAttachmentPayload>
+          }
+          update: {
+            args: Prisma.SupportTicketAttachmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportTicketAttachmentPayload>
+          }
+          deleteMany: {
+            args: Prisma.SupportTicketAttachmentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SupportTicketAttachmentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.SupportTicketAttachmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportTicketAttachmentPayload>
+          }
+          aggregate: {
+            args: Prisma.SupportTicketAttachmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSupportTicketAttachment>
+          }
+          groupBy: {
+            args: Prisma.SupportTicketAttachmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SupportTicketAttachmentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SupportTicketAttachmentCountArgs<ExtArgs>
+            result: $Utils.Optional<SupportTicketAttachmentCountAggregateOutputType> | number
+          }
+        }
+      }
       SystemLog: {
         payload: Prisma.$SystemLogPayload<ExtArgs>
         fields: Prisma.SystemLogFieldRefs
@@ -1504,6 +1590,37 @@ export namespace Prisma {
    */
   export type DeviceCountOutputTypeCountSystemLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SystemLogWhereInput
+  }
+
+
+  /**
+   * Count Type SupportTicketCountOutputType
+   */
+
+  export type SupportTicketCountOutputType = {
+    attachments2: number
+  }
+
+  export type SupportTicketCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    attachments2?: boolean | SupportTicketCountOutputTypeCountAttachments2Args
+  }
+
+  // Custom InputTypes
+  /**
+   * SupportTicketCountOutputType without action
+   */
+  export type SupportTicketCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketCountOutputType
+     */
+    select?: SupportTicketCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * SupportTicketCountOutputType without action
+   */
+  export type SupportTicketCountOutputTypeCountAttachments2Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SupportTicketAttachmentWhereInput
   }
 
 
@@ -6670,6 +6787,8 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    attachments2?: boolean | SupportTicket$attachments2Args<ExtArgs>
+    _count?: boolean | SupportTicketCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["supportTicket"]>
 
   export type SupportTicketSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -6703,6 +6822,8 @@ export namespace Prisma {
 
   export type SupportTicketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    attachments2?: boolean | SupportTicket$attachments2Args<ExtArgs>
+    _count?: boolean | SupportTicketCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SupportTicketIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -6712,6 +6833,7 @@ export namespace Prisma {
     name: "SupportTicket"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      attachments2: Prisma.$SupportTicketAttachmentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7090,6 +7212,7 @@ export namespace Prisma {
   export interface Prisma__SupportTicketClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    attachments2<T extends SupportTicket$attachments2Args<ExtArgs> = {}>(args?: Subset<T, SupportTicket$attachments2Args<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7448,6 +7571,26 @@ export namespace Prisma {
   }
 
   /**
+   * SupportTicket.attachments2
+   */
+  export type SupportTicket$attachments2Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
+    where?: SupportTicketAttachmentWhereInput
+    orderBy?: SupportTicketAttachmentOrderByWithRelationInput | SupportTicketAttachmentOrderByWithRelationInput[]
+    cursor?: SupportTicketAttachmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SupportTicketAttachmentScalarFieldEnum | SupportTicketAttachmentScalarFieldEnum[]
+  }
+
+  /**
    * SupportTicket without action
    */
   export type SupportTicketDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7459,6 +7602,997 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: SupportTicketInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model SupportTicketAttachment
+   */
+
+  export type AggregateSupportTicketAttachment = {
+    _count: SupportTicketAttachmentCountAggregateOutputType | null
+    _avg: SupportTicketAttachmentAvgAggregateOutputType | null
+    _sum: SupportTicketAttachmentSumAggregateOutputType | null
+    _min: SupportTicketAttachmentMinAggregateOutputType | null
+    _max: SupportTicketAttachmentMaxAggregateOutputType | null
+  }
+
+  export type SupportTicketAttachmentAvgAggregateOutputType = {
+    fileSize: number | null
+  }
+
+  export type SupportTicketAttachmentSumAggregateOutputType = {
+    fileSize: number | null
+  }
+
+  export type SupportTicketAttachmentMinAggregateOutputType = {
+    id: string | null
+    filename: string | null
+    contentType: string | null
+    fileSize: number | null
+    fileData: Buffer | null
+    ticketId: string | null
+    createdAt: Date | null
+  }
+
+  export type SupportTicketAttachmentMaxAggregateOutputType = {
+    id: string | null
+    filename: string | null
+    contentType: string | null
+    fileSize: number | null
+    fileData: Buffer | null
+    ticketId: string | null
+    createdAt: Date | null
+  }
+
+  export type SupportTicketAttachmentCountAggregateOutputType = {
+    id: number
+    filename: number
+    contentType: number
+    fileSize: number
+    fileData: number
+    ticketId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type SupportTicketAttachmentAvgAggregateInputType = {
+    fileSize?: true
+  }
+
+  export type SupportTicketAttachmentSumAggregateInputType = {
+    fileSize?: true
+  }
+
+  export type SupportTicketAttachmentMinAggregateInputType = {
+    id?: true
+    filename?: true
+    contentType?: true
+    fileSize?: true
+    fileData?: true
+    ticketId?: true
+    createdAt?: true
+  }
+
+  export type SupportTicketAttachmentMaxAggregateInputType = {
+    id?: true
+    filename?: true
+    contentType?: true
+    fileSize?: true
+    fileData?: true
+    ticketId?: true
+    createdAt?: true
+  }
+
+  export type SupportTicketAttachmentCountAggregateInputType = {
+    id?: true
+    filename?: true
+    contentType?: true
+    fileSize?: true
+    fileData?: true
+    ticketId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type SupportTicketAttachmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SupportTicketAttachment to aggregate.
+     */
+    where?: SupportTicketAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SupportTicketAttachments to fetch.
+     */
+    orderBy?: SupportTicketAttachmentOrderByWithRelationInput | SupportTicketAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SupportTicketAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SupportTicketAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SupportTicketAttachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SupportTicketAttachments
+    **/
+    _count?: true | SupportTicketAttachmentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SupportTicketAttachmentAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SupportTicketAttachmentSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SupportTicketAttachmentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SupportTicketAttachmentMaxAggregateInputType
+  }
+
+  export type GetSupportTicketAttachmentAggregateType<T extends SupportTicketAttachmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateSupportTicketAttachment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSupportTicketAttachment[P]>
+      : GetScalarType<T[P], AggregateSupportTicketAttachment[P]>
+  }
+
+
+
+
+  export type SupportTicketAttachmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SupportTicketAttachmentWhereInput
+    orderBy?: SupportTicketAttachmentOrderByWithAggregationInput | SupportTicketAttachmentOrderByWithAggregationInput[]
+    by: SupportTicketAttachmentScalarFieldEnum[] | SupportTicketAttachmentScalarFieldEnum
+    having?: SupportTicketAttachmentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SupportTicketAttachmentCountAggregateInputType | true
+    _avg?: SupportTicketAttachmentAvgAggregateInputType
+    _sum?: SupportTicketAttachmentSumAggregateInputType
+    _min?: SupportTicketAttachmentMinAggregateInputType
+    _max?: SupportTicketAttachmentMaxAggregateInputType
+  }
+
+  export type SupportTicketAttachmentGroupByOutputType = {
+    id: string
+    filename: string
+    contentType: string
+    fileSize: number
+    fileData: Buffer
+    ticketId: string
+    createdAt: Date
+    _count: SupportTicketAttachmentCountAggregateOutputType | null
+    _avg: SupportTicketAttachmentAvgAggregateOutputType | null
+    _sum: SupportTicketAttachmentSumAggregateOutputType | null
+    _min: SupportTicketAttachmentMinAggregateOutputType | null
+    _max: SupportTicketAttachmentMaxAggregateOutputType | null
+  }
+
+  type GetSupportTicketAttachmentGroupByPayload<T extends SupportTicketAttachmentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SupportTicketAttachmentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SupportTicketAttachmentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SupportTicketAttachmentGroupByOutputType[P]>
+            : GetScalarType<T[P], SupportTicketAttachmentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SupportTicketAttachmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    filename?: boolean
+    contentType?: boolean
+    fileSize?: boolean
+    fileData?: boolean
+    ticketId?: boolean
+    createdAt?: boolean
+    ticket?: boolean | SupportTicketDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["supportTicketAttachment"]>
+
+  export type SupportTicketAttachmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    filename?: boolean
+    contentType?: boolean
+    fileSize?: boolean
+    fileData?: boolean
+    ticketId?: boolean
+    createdAt?: boolean
+    ticket?: boolean | SupportTicketDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["supportTicketAttachment"]>
+
+  export type SupportTicketAttachmentSelectScalar = {
+    id?: boolean
+    filename?: boolean
+    contentType?: boolean
+    fileSize?: boolean
+    fileData?: boolean
+    ticketId?: boolean
+    createdAt?: boolean
+  }
+
+  export type SupportTicketAttachmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    ticket?: boolean | SupportTicketDefaultArgs<ExtArgs>
+  }
+  export type SupportTicketAttachmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    ticket?: boolean | SupportTicketDefaultArgs<ExtArgs>
+  }
+
+  export type $SupportTicketAttachmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SupportTicketAttachment"
+    objects: {
+      ticket: Prisma.$SupportTicketPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      filename: string
+      contentType: string
+      fileSize: number
+      fileData: Buffer
+      ticketId: string
+      createdAt: Date
+    }, ExtArgs["result"]["supportTicketAttachment"]>
+    composites: {}
+  }
+
+  type SupportTicketAttachmentGetPayload<S extends boolean | null | undefined | SupportTicketAttachmentDefaultArgs> = $Result.GetResult<Prisma.$SupportTicketAttachmentPayload, S>
+
+  type SupportTicketAttachmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<SupportTicketAttachmentFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: SupportTicketAttachmentCountAggregateInputType | true
+    }
+
+  export interface SupportTicketAttachmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SupportTicketAttachment'], meta: { name: 'SupportTicketAttachment' } }
+    /**
+     * Find zero or one SupportTicketAttachment that matches the filter.
+     * @param {SupportTicketAttachmentFindUniqueArgs} args - Arguments to find a SupportTicketAttachment
+     * @example
+     * // Get one SupportTicketAttachment
+     * const supportTicketAttachment = await prisma.supportTicketAttachment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SupportTicketAttachmentFindUniqueArgs>(args: SelectSubset<T, SupportTicketAttachmentFindUniqueArgs<ExtArgs>>): Prisma__SupportTicketAttachmentClient<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one SupportTicketAttachment that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {SupportTicketAttachmentFindUniqueOrThrowArgs} args - Arguments to find a SupportTicketAttachment
+     * @example
+     * // Get one SupportTicketAttachment
+     * const supportTicketAttachment = await prisma.supportTicketAttachment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SupportTicketAttachmentFindUniqueOrThrowArgs>(args: SelectSubset<T, SupportTicketAttachmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SupportTicketAttachmentClient<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first SupportTicketAttachment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportTicketAttachmentFindFirstArgs} args - Arguments to find a SupportTicketAttachment
+     * @example
+     * // Get one SupportTicketAttachment
+     * const supportTicketAttachment = await prisma.supportTicketAttachment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SupportTicketAttachmentFindFirstArgs>(args?: SelectSubset<T, SupportTicketAttachmentFindFirstArgs<ExtArgs>>): Prisma__SupportTicketAttachmentClient<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first SupportTicketAttachment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportTicketAttachmentFindFirstOrThrowArgs} args - Arguments to find a SupportTicketAttachment
+     * @example
+     * // Get one SupportTicketAttachment
+     * const supportTicketAttachment = await prisma.supportTicketAttachment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SupportTicketAttachmentFindFirstOrThrowArgs>(args?: SelectSubset<T, SupportTicketAttachmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__SupportTicketAttachmentClient<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more SupportTicketAttachments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportTicketAttachmentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SupportTicketAttachments
+     * const supportTicketAttachments = await prisma.supportTicketAttachment.findMany()
+     * 
+     * // Get first 10 SupportTicketAttachments
+     * const supportTicketAttachments = await prisma.supportTicketAttachment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const supportTicketAttachmentWithIdOnly = await prisma.supportTicketAttachment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SupportTicketAttachmentFindManyArgs>(args?: SelectSubset<T, SupportTicketAttachmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a SupportTicketAttachment.
+     * @param {SupportTicketAttachmentCreateArgs} args - Arguments to create a SupportTicketAttachment.
+     * @example
+     * // Create one SupportTicketAttachment
+     * const SupportTicketAttachment = await prisma.supportTicketAttachment.create({
+     *   data: {
+     *     // ... data to create a SupportTicketAttachment
+     *   }
+     * })
+     * 
+     */
+    create<T extends SupportTicketAttachmentCreateArgs>(args: SelectSubset<T, SupportTicketAttachmentCreateArgs<ExtArgs>>): Prisma__SupportTicketAttachmentClient<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many SupportTicketAttachments.
+     * @param {SupportTicketAttachmentCreateManyArgs} args - Arguments to create many SupportTicketAttachments.
+     * @example
+     * // Create many SupportTicketAttachments
+     * const supportTicketAttachment = await prisma.supportTicketAttachment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SupportTicketAttachmentCreateManyArgs>(args?: SelectSubset<T, SupportTicketAttachmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SupportTicketAttachments and returns the data saved in the database.
+     * @param {SupportTicketAttachmentCreateManyAndReturnArgs} args - Arguments to create many SupportTicketAttachments.
+     * @example
+     * // Create many SupportTicketAttachments
+     * const supportTicketAttachment = await prisma.supportTicketAttachment.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SupportTicketAttachments and only return the `id`
+     * const supportTicketAttachmentWithIdOnly = await prisma.supportTicketAttachment.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SupportTicketAttachmentCreateManyAndReturnArgs>(args?: SelectSubset<T, SupportTicketAttachmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a SupportTicketAttachment.
+     * @param {SupportTicketAttachmentDeleteArgs} args - Arguments to delete one SupportTicketAttachment.
+     * @example
+     * // Delete one SupportTicketAttachment
+     * const SupportTicketAttachment = await prisma.supportTicketAttachment.delete({
+     *   where: {
+     *     // ... filter to delete one SupportTicketAttachment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SupportTicketAttachmentDeleteArgs>(args: SelectSubset<T, SupportTicketAttachmentDeleteArgs<ExtArgs>>): Prisma__SupportTicketAttachmentClient<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one SupportTicketAttachment.
+     * @param {SupportTicketAttachmentUpdateArgs} args - Arguments to update one SupportTicketAttachment.
+     * @example
+     * // Update one SupportTicketAttachment
+     * const supportTicketAttachment = await prisma.supportTicketAttachment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SupportTicketAttachmentUpdateArgs>(args: SelectSubset<T, SupportTicketAttachmentUpdateArgs<ExtArgs>>): Prisma__SupportTicketAttachmentClient<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more SupportTicketAttachments.
+     * @param {SupportTicketAttachmentDeleteManyArgs} args - Arguments to filter SupportTicketAttachments to delete.
+     * @example
+     * // Delete a few SupportTicketAttachments
+     * const { count } = await prisma.supportTicketAttachment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SupportTicketAttachmentDeleteManyArgs>(args?: SelectSubset<T, SupportTicketAttachmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SupportTicketAttachments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportTicketAttachmentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SupportTicketAttachments
+     * const supportTicketAttachment = await prisma.supportTicketAttachment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SupportTicketAttachmentUpdateManyArgs>(args: SelectSubset<T, SupportTicketAttachmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one SupportTicketAttachment.
+     * @param {SupportTicketAttachmentUpsertArgs} args - Arguments to update or create a SupportTicketAttachment.
+     * @example
+     * // Update or create a SupportTicketAttachment
+     * const supportTicketAttachment = await prisma.supportTicketAttachment.upsert({
+     *   create: {
+     *     // ... data to create a SupportTicketAttachment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SupportTicketAttachment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SupportTicketAttachmentUpsertArgs>(args: SelectSubset<T, SupportTicketAttachmentUpsertArgs<ExtArgs>>): Prisma__SupportTicketAttachmentClient<$Result.GetResult<Prisma.$SupportTicketAttachmentPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of SupportTicketAttachments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportTicketAttachmentCountArgs} args - Arguments to filter SupportTicketAttachments to count.
+     * @example
+     * // Count the number of SupportTicketAttachments
+     * const count = await prisma.supportTicketAttachment.count({
+     *   where: {
+     *     // ... the filter for the SupportTicketAttachments we want to count
+     *   }
+     * })
+    **/
+    count<T extends SupportTicketAttachmentCountArgs>(
+      args?: Subset<T, SupportTicketAttachmentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SupportTicketAttachmentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SupportTicketAttachment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportTicketAttachmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SupportTicketAttachmentAggregateArgs>(args: Subset<T, SupportTicketAttachmentAggregateArgs>): Prisma.PrismaPromise<GetSupportTicketAttachmentAggregateType<T>>
+
+    /**
+     * Group by SupportTicketAttachment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportTicketAttachmentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SupportTicketAttachmentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SupportTicketAttachmentGroupByArgs['orderBy'] }
+        : { orderBy?: SupportTicketAttachmentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SupportTicketAttachmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSupportTicketAttachmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SupportTicketAttachment model
+   */
+  readonly fields: SupportTicketAttachmentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SupportTicketAttachment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SupportTicketAttachmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    ticket<T extends SupportTicketDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SupportTicketDefaultArgs<ExtArgs>>): Prisma__SupportTicketClient<$Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SupportTicketAttachment model
+   */ 
+  interface SupportTicketAttachmentFieldRefs {
+    readonly id: FieldRef<"SupportTicketAttachment", 'String'>
+    readonly filename: FieldRef<"SupportTicketAttachment", 'String'>
+    readonly contentType: FieldRef<"SupportTicketAttachment", 'String'>
+    readonly fileSize: FieldRef<"SupportTicketAttachment", 'Int'>
+    readonly fileData: FieldRef<"SupportTicketAttachment", 'Bytes'>
+    readonly ticketId: FieldRef<"SupportTicketAttachment", 'String'>
+    readonly createdAt: FieldRef<"SupportTicketAttachment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SupportTicketAttachment findUnique
+   */
+  export type SupportTicketAttachmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which SupportTicketAttachment to fetch.
+     */
+    where: SupportTicketAttachmentWhereUniqueInput
+  }
+
+  /**
+   * SupportTicketAttachment findUniqueOrThrow
+   */
+  export type SupportTicketAttachmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which SupportTicketAttachment to fetch.
+     */
+    where: SupportTicketAttachmentWhereUniqueInput
+  }
+
+  /**
+   * SupportTicketAttachment findFirst
+   */
+  export type SupportTicketAttachmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which SupportTicketAttachment to fetch.
+     */
+    where?: SupportTicketAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SupportTicketAttachments to fetch.
+     */
+    orderBy?: SupportTicketAttachmentOrderByWithRelationInput | SupportTicketAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SupportTicketAttachments.
+     */
+    cursor?: SupportTicketAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SupportTicketAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SupportTicketAttachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SupportTicketAttachments.
+     */
+    distinct?: SupportTicketAttachmentScalarFieldEnum | SupportTicketAttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * SupportTicketAttachment findFirstOrThrow
+   */
+  export type SupportTicketAttachmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which SupportTicketAttachment to fetch.
+     */
+    where?: SupportTicketAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SupportTicketAttachments to fetch.
+     */
+    orderBy?: SupportTicketAttachmentOrderByWithRelationInput | SupportTicketAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SupportTicketAttachments.
+     */
+    cursor?: SupportTicketAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SupportTicketAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SupportTicketAttachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SupportTicketAttachments.
+     */
+    distinct?: SupportTicketAttachmentScalarFieldEnum | SupportTicketAttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * SupportTicketAttachment findMany
+   */
+  export type SupportTicketAttachmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which SupportTicketAttachments to fetch.
+     */
+    where?: SupportTicketAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SupportTicketAttachments to fetch.
+     */
+    orderBy?: SupportTicketAttachmentOrderByWithRelationInput | SupportTicketAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SupportTicketAttachments.
+     */
+    cursor?: SupportTicketAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SupportTicketAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SupportTicketAttachments.
+     */
+    skip?: number
+    distinct?: SupportTicketAttachmentScalarFieldEnum | SupportTicketAttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * SupportTicketAttachment create
+   */
+  export type SupportTicketAttachmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a SupportTicketAttachment.
+     */
+    data: XOR<SupportTicketAttachmentCreateInput, SupportTicketAttachmentUncheckedCreateInput>
+  }
+
+  /**
+   * SupportTicketAttachment createMany
+   */
+  export type SupportTicketAttachmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SupportTicketAttachments.
+     */
+    data: SupportTicketAttachmentCreateManyInput | SupportTicketAttachmentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SupportTicketAttachment createManyAndReturn
+   */
+  export type SupportTicketAttachmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many SupportTicketAttachments.
+     */
+    data: SupportTicketAttachmentCreateManyInput | SupportTicketAttachmentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SupportTicketAttachment update
+   */
+  export type SupportTicketAttachmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a SupportTicketAttachment.
+     */
+    data: XOR<SupportTicketAttachmentUpdateInput, SupportTicketAttachmentUncheckedUpdateInput>
+    /**
+     * Choose, which SupportTicketAttachment to update.
+     */
+    where: SupportTicketAttachmentWhereUniqueInput
+  }
+
+  /**
+   * SupportTicketAttachment updateMany
+   */
+  export type SupportTicketAttachmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SupportTicketAttachments.
+     */
+    data: XOR<SupportTicketAttachmentUpdateManyMutationInput, SupportTicketAttachmentUncheckedUpdateManyInput>
+    /**
+     * Filter which SupportTicketAttachments to update
+     */
+    where?: SupportTicketAttachmentWhereInput
+  }
+
+  /**
+   * SupportTicketAttachment upsert
+   */
+  export type SupportTicketAttachmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the SupportTicketAttachment to update in case it exists.
+     */
+    where: SupportTicketAttachmentWhereUniqueInput
+    /**
+     * In case the SupportTicketAttachment found by the `where` argument doesn't exist, create a new SupportTicketAttachment with this data.
+     */
+    create: XOR<SupportTicketAttachmentCreateInput, SupportTicketAttachmentUncheckedCreateInput>
+    /**
+     * In case the SupportTicketAttachment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SupportTicketAttachmentUpdateInput, SupportTicketAttachmentUncheckedUpdateInput>
+  }
+
+  /**
+   * SupportTicketAttachment delete
+   */
+  export type SupportTicketAttachmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter which SupportTicketAttachment to delete.
+     */
+    where: SupportTicketAttachmentWhereUniqueInput
+  }
+
+  /**
+   * SupportTicketAttachment deleteMany
+   */
+  export type SupportTicketAttachmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SupportTicketAttachments to delete
+     */
+    where?: SupportTicketAttachmentWhereInput
+  }
+
+  /**
+   * SupportTicketAttachment without action
+   */
+  export type SupportTicketAttachmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupportTicketAttachment
+     */
+    select?: SupportTicketAttachmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupportTicketAttachmentInclude<ExtArgs> | null
   }
 
 
@@ -8552,6 +9686,19 @@ export namespace Prisma {
   export type SupportTicketScalarFieldEnum = (typeof SupportTicketScalarFieldEnum)[keyof typeof SupportTicketScalarFieldEnum]
 
 
+  export const SupportTicketAttachmentScalarFieldEnum: {
+    id: 'id',
+    filename: 'filename',
+    contentType: 'contentType',
+    fileSize: 'fileSize',
+    fileData: 'fileData',
+    ticketId: 'ticketId',
+    createdAt: 'createdAt'
+  };
+
+  export type SupportTicketAttachmentScalarFieldEnum = (typeof SupportTicketAttachmentScalarFieldEnum)[keyof typeof SupportTicketAttachmentScalarFieldEnum]
+
+
   export const SystemLogScalarFieldEnum: {
     id: 'id',
     type: 'type',
@@ -8705,6 +9852,34 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Bytes'
+   */
+  export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
+    
+
+
+  /**
+   * Reference to a field of type 'Bytes[]'
+   */
+  export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
   /**
    * Deep Input Types
@@ -9075,6 +10250,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"SupportTicket"> | Date | string
     updatedAt?: DateTimeFilter<"SupportTicket"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
+    attachments2?: SupportTicketAttachmentListRelationFilter
   }
 
   export type SupportTicketOrderByWithRelationInput = {
@@ -9090,6 +10266,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
+    attachments2?: SupportTicketAttachmentOrderByRelationAggregateInput
   }
 
   export type SupportTicketWhereUniqueInput = Prisma.AtLeast<{
@@ -9108,6 +10285,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"SupportTicket"> | Date | string
     updatedAt?: DateTimeFilter<"SupportTicket"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
+    attachments2?: SupportTicketAttachmentListRelationFilter
   }, "id">
 
   export type SupportTicketOrderByWithAggregationInput = {
@@ -9142,6 +10320,73 @@ export namespace Prisma {
     resolvedAt?: DateTimeNullableWithAggregatesFilter<"SupportTicket"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"SupportTicket"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"SupportTicket"> | Date | string
+  }
+
+  export type SupportTicketAttachmentWhereInput = {
+    AND?: SupportTicketAttachmentWhereInput | SupportTicketAttachmentWhereInput[]
+    OR?: SupportTicketAttachmentWhereInput[]
+    NOT?: SupportTicketAttachmentWhereInput | SupportTicketAttachmentWhereInput[]
+    id?: StringFilter<"SupportTicketAttachment"> | string
+    filename?: StringFilter<"SupportTicketAttachment"> | string
+    contentType?: StringFilter<"SupportTicketAttachment"> | string
+    fileSize?: IntFilter<"SupportTicketAttachment"> | number
+    fileData?: BytesFilter<"SupportTicketAttachment"> | Buffer
+    ticketId?: StringFilter<"SupportTicketAttachment"> | string
+    createdAt?: DateTimeFilter<"SupportTicketAttachment"> | Date | string
+    ticket?: XOR<SupportTicketRelationFilter, SupportTicketWhereInput>
+  }
+
+  export type SupportTicketAttachmentOrderByWithRelationInput = {
+    id?: SortOrder
+    filename?: SortOrder
+    contentType?: SortOrder
+    fileSize?: SortOrder
+    fileData?: SortOrder
+    ticketId?: SortOrder
+    createdAt?: SortOrder
+    ticket?: SupportTicketOrderByWithRelationInput
+  }
+
+  export type SupportTicketAttachmentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SupportTicketAttachmentWhereInput | SupportTicketAttachmentWhereInput[]
+    OR?: SupportTicketAttachmentWhereInput[]
+    NOT?: SupportTicketAttachmentWhereInput | SupportTicketAttachmentWhereInput[]
+    filename?: StringFilter<"SupportTicketAttachment"> | string
+    contentType?: StringFilter<"SupportTicketAttachment"> | string
+    fileSize?: IntFilter<"SupportTicketAttachment"> | number
+    fileData?: BytesFilter<"SupportTicketAttachment"> | Buffer
+    ticketId?: StringFilter<"SupportTicketAttachment"> | string
+    createdAt?: DateTimeFilter<"SupportTicketAttachment"> | Date | string
+    ticket?: XOR<SupportTicketRelationFilter, SupportTicketWhereInput>
+  }, "id">
+
+  export type SupportTicketAttachmentOrderByWithAggregationInput = {
+    id?: SortOrder
+    filename?: SortOrder
+    contentType?: SortOrder
+    fileSize?: SortOrder
+    fileData?: SortOrder
+    ticketId?: SortOrder
+    createdAt?: SortOrder
+    _count?: SupportTicketAttachmentCountOrderByAggregateInput
+    _avg?: SupportTicketAttachmentAvgOrderByAggregateInput
+    _max?: SupportTicketAttachmentMaxOrderByAggregateInput
+    _min?: SupportTicketAttachmentMinOrderByAggregateInput
+    _sum?: SupportTicketAttachmentSumOrderByAggregateInput
+  }
+
+  export type SupportTicketAttachmentScalarWhereWithAggregatesInput = {
+    AND?: SupportTicketAttachmentScalarWhereWithAggregatesInput | SupportTicketAttachmentScalarWhereWithAggregatesInput[]
+    OR?: SupportTicketAttachmentScalarWhereWithAggregatesInput[]
+    NOT?: SupportTicketAttachmentScalarWhereWithAggregatesInput | SupportTicketAttachmentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SupportTicketAttachment"> | string
+    filename?: StringWithAggregatesFilter<"SupportTicketAttachment"> | string
+    contentType?: StringWithAggregatesFilter<"SupportTicketAttachment"> | string
+    fileSize?: IntWithAggregatesFilter<"SupportTicketAttachment"> | number
+    fileData?: BytesWithAggregatesFilter<"SupportTicketAttachment"> | Buffer
+    ticketId?: StringWithAggregatesFilter<"SupportTicketAttachment"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"SupportTicketAttachment"> | Date | string
   }
 
   export type SystemLogWhereInput = {
@@ -9605,6 +10850,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutSupportTicketsInput
+    attachments2?: SupportTicketAttachmentCreateNestedManyWithoutTicketInput
   }
 
   export type SupportTicketUncheckedCreateInput = {
@@ -9619,6 +10865,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    attachments2?: SupportTicketAttachmentUncheckedCreateNestedManyWithoutTicketInput
   }
 
   export type SupportTicketUpdateInput = {
@@ -9633,6 +10880,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSupportTicketsNestedInput
+    attachments2?: SupportTicketAttachmentUpdateManyWithoutTicketNestedInput
   }
 
   export type SupportTicketUncheckedUpdateInput = {
@@ -9647,6 +10895,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attachments2?: SupportTicketAttachmentUncheckedUpdateManyWithoutTicketNestedInput
   }
 
   export type SupportTicketCreateManyInput = {
@@ -9688,6 +10937,75 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SupportTicketAttachmentCreateInput = {
+    id?: string
+    filename: string
+    contentType: string
+    fileSize: number
+    fileData: Buffer
+    createdAt?: Date | string
+    ticket: SupportTicketCreateNestedOneWithoutAttachments2Input
+  }
+
+  export type SupportTicketAttachmentUncheckedCreateInput = {
+    id?: string
+    filename: string
+    contentType: string
+    fileSize: number
+    fileData: Buffer
+    ticketId: string
+    createdAt?: Date | string
+  }
+
+  export type SupportTicketAttachmentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    contentType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    fileData?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ticket?: SupportTicketUpdateOneRequiredWithoutAttachments2NestedInput
+  }
+
+  export type SupportTicketAttachmentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    contentType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    fileData?: BytesFieldUpdateOperationsInput | Buffer
+    ticketId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SupportTicketAttachmentCreateManyInput = {
+    id?: string
+    filename: string
+    contentType: string
+    fileSize: number
+    fileData: Buffer
+    ticketId: string
+    createdAt?: Date | string
+  }
+
+  export type SupportTicketAttachmentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    contentType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    fileData?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SupportTicketAttachmentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    contentType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    fileData?: BytesFieldUpdateOperationsInput | Buffer
+    ticketId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SystemLogCreateInput = {
@@ -10183,6 +11501,16 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
+  export type SupportTicketAttachmentListRelationFilter = {
+    every?: SupportTicketAttachmentWhereInput
+    some?: SupportTicketAttachmentWhereInput
+    none?: SupportTicketAttachmentWhereInput
+  }
+
+  export type SupportTicketAttachmentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type SupportTicketCountOrderByAggregateInput = {
     id?: SortOrder
     subject?: SortOrder
@@ -10255,6 +11583,93 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type BytesFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel>
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Buffer
+  }
+
+  export type SupportTicketRelationFilter = {
+    is?: SupportTicketWhereInput
+    isNot?: SupportTicketWhereInput
+  }
+
+  export type SupportTicketAttachmentCountOrderByAggregateInput = {
+    id?: SortOrder
+    filename?: SortOrder
+    contentType?: SortOrder
+    fileSize?: SortOrder
+    fileData?: SortOrder
+    ticketId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SupportTicketAttachmentAvgOrderByAggregateInput = {
+    fileSize?: SortOrder
+  }
+
+  export type SupportTicketAttachmentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    filename?: SortOrder
+    contentType?: SortOrder
+    fileSize?: SortOrder
+    fileData?: SortOrder
+    ticketId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SupportTicketAttachmentMinOrderByAggregateInput = {
+    id?: SortOrder
+    filename?: SortOrder
+    contentType?: SortOrder
+    fileSize?: SortOrder
+    fileData?: SortOrder
+    ticketId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SupportTicketAttachmentSumOrderByAggregateInput = {
+    fileSize?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type BytesWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel>
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Buffer
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBytesFilter<$PrismaModel>
+    _max?: NestedBytesFilter<$PrismaModel>
   }
 
   export type DeviceNullableRelationFilter = {
@@ -10677,6 +12092,20 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type SupportTicketAttachmentCreateNestedManyWithoutTicketInput = {
+    create?: XOR<SupportTicketAttachmentCreateWithoutTicketInput, SupportTicketAttachmentUncheckedCreateWithoutTicketInput> | SupportTicketAttachmentCreateWithoutTicketInput[] | SupportTicketAttachmentUncheckedCreateWithoutTicketInput[]
+    connectOrCreate?: SupportTicketAttachmentCreateOrConnectWithoutTicketInput | SupportTicketAttachmentCreateOrConnectWithoutTicketInput[]
+    createMany?: SupportTicketAttachmentCreateManyTicketInputEnvelope
+    connect?: SupportTicketAttachmentWhereUniqueInput | SupportTicketAttachmentWhereUniqueInput[]
+  }
+
+  export type SupportTicketAttachmentUncheckedCreateNestedManyWithoutTicketInput = {
+    create?: XOR<SupportTicketAttachmentCreateWithoutTicketInput, SupportTicketAttachmentUncheckedCreateWithoutTicketInput> | SupportTicketAttachmentCreateWithoutTicketInput[] | SupportTicketAttachmentUncheckedCreateWithoutTicketInput[]
+    connectOrCreate?: SupportTicketAttachmentCreateOrConnectWithoutTicketInput | SupportTicketAttachmentCreateOrConnectWithoutTicketInput[]
+    createMany?: SupportTicketAttachmentCreateManyTicketInputEnvelope
+    connect?: SupportTicketAttachmentWhereUniqueInput | SupportTicketAttachmentWhereUniqueInput[]
+  }
+
   export type EnumTicketStatusFieldUpdateOperationsInput = {
     set?: $Enums.TicketStatus
   }
@@ -10700,6 +12129,60 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutSupportTicketsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSupportTicketsInput, UserUpdateWithoutSupportTicketsInput>, UserUncheckedUpdateWithoutSupportTicketsInput>
+  }
+
+  export type SupportTicketAttachmentUpdateManyWithoutTicketNestedInput = {
+    create?: XOR<SupportTicketAttachmentCreateWithoutTicketInput, SupportTicketAttachmentUncheckedCreateWithoutTicketInput> | SupportTicketAttachmentCreateWithoutTicketInput[] | SupportTicketAttachmentUncheckedCreateWithoutTicketInput[]
+    connectOrCreate?: SupportTicketAttachmentCreateOrConnectWithoutTicketInput | SupportTicketAttachmentCreateOrConnectWithoutTicketInput[]
+    upsert?: SupportTicketAttachmentUpsertWithWhereUniqueWithoutTicketInput | SupportTicketAttachmentUpsertWithWhereUniqueWithoutTicketInput[]
+    createMany?: SupportTicketAttachmentCreateManyTicketInputEnvelope
+    set?: SupportTicketAttachmentWhereUniqueInput | SupportTicketAttachmentWhereUniqueInput[]
+    disconnect?: SupportTicketAttachmentWhereUniqueInput | SupportTicketAttachmentWhereUniqueInput[]
+    delete?: SupportTicketAttachmentWhereUniqueInput | SupportTicketAttachmentWhereUniqueInput[]
+    connect?: SupportTicketAttachmentWhereUniqueInput | SupportTicketAttachmentWhereUniqueInput[]
+    update?: SupportTicketAttachmentUpdateWithWhereUniqueWithoutTicketInput | SupportTicketAttachmentUpdateWithWhereUniqueWithoutTicketInput[]
+    updateMany?: SupportTicketAttachmentUpdateManyWithWhereWithoutTicketInput | SupportTicketAttachmentUpdateManyWithWhereWithoutTicketInput[]
+    deleteMany?: SupportTicketAttachmentScalarWhereInput | SupportTicketAttachmentScalarWhereInput[]
+  }
+
+  export type SupportTicketAttachmentUncheckedUpdateManyWithoutTicketNestedInput = {
+    create?: XOR<SupportTicketAttachmentCreateWithoutTicketInput, SupportTicketAttachmentUncheckedCreateWithoutTicketInput> | SupportTicketAttachmentCreateWithoutTicketInput[] | SupportTicketAttachmentUncheckedCreateWithoutTicketInput[]
+    connectOrCreate?: SupportTicketAttachmentCreateOrConnectWithoutTicketInput | SupportTicketAttachmentCreateOrConnectWithoutTicketInput[]
+    upsert?: SupportTicketAttachmentUpsertWithWhereUniqueWithoutTicketInput | SupportTicketAttachmentUpsertWithWhereUniqueWithoutTicketInput[]
+    createMany?: SupportTicketAttachmentCreateManyTicketInputEnvelope
+    set?: SupportTicketAttachmentWhereUniqueInput | SupportTicketAttachmentWhereUniqueInput[]
+    disconnect?: SupportTicketAttachmentWhereUniqueInput | SupportTicketAttachmentWhereUniqueInput[]
+    delete?: SupportTicketAttachmentWhereUniqueInput | SupportTicketAttachmentWhereUniqueInput[]
+    connect?: SupportTicketAttachmentWhereUniqueInput | SupportTicketAttachmentWhereUniqueInput[]
+    update?: SupportTicketAttachmentUpdateWithWhereUniqueWithoutTicketInput | SupportTicketAttachmentUpdateWithWhereUniqueWithoutTicketInput[]
+    updateMany?: SupportTicketAttachmentUpdateManyWithWhereWithoutTicketInput | SupportTicketAttachmentUpdateManyWithWhereWithoutTicketInput[]
+    deleteMany?: SupportTicketAttachmentScalarWhereInput | SupportTicketAttachmentScalarWhereInput[]
+  }
+
+  export type SupportTicketCreateNestedOneWithoutAttachments2Input = {
+    create?: XOR<SupportTicketCreateWithoutAttachments2Input, SupportTicketUncheckedCreateWithoutAttachments2Input>
+    connectOrCreate?: SupportTicketCreateOrConnectWithoutAttachments2Input
+    connect?: SupportTicketWhereUniqueInput
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type BytesFieldUpdateOperationsInput = {
+    set?: Buffer
+  }
+
+  export type SupportTicketUpdateOneRequiredWithoutAttachments2NestedInput = {
+    create?: XOR<SupportTicketCreateWithoutAttachments2Input, SupportTicketUncheckedCreateWithoutAttachments2Input>
+    connectOrCreate?: SupportTicketCreateOrConnectWithoutAttachments2Input
+    upsert?: SupportTicketUpsertWithoutAttachments2Input
+    connect?: SupportTicketWhereUniqueInput
+    update?: XOR<XOR<SupportTicketUpdateToOneWithWhereWithoutAttachments2Input, SupportTicketUpdateWithoutAttachments2Input>, SupportTicketUncheckedUpdateWithoutAttachments2Input>
   }
 
   export type DeviceCreateNestedOneWithoutSystemLogsInput = {
@@ -10954,6 +12437,50 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedBytesFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel>
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Buffer
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedBytesWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel>
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Buffer
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBytesFilter<$PrismaModel>
+    _max?: NestedBytesFilter<$PrismaModel>
+  }
+
   export type DeviceCreateWithoutOwnerInput = {
     id?: string
     name: string
@@ -11061,6 +12588,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    attachments2?: SupportTicketAttachmentCreateNestedManyWithoutTicketInput
   }
 
   export type SupportTicketUncheckedCreateWithoutUserInput = {
@@ -11074,6 +12602,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    attachments2?: SupportTicketAttachmentUncheckedCreateNestedManyWithoutTicketInput
   }
 
   export type SupportTicketCreateOrConnectWithoutUserInput = {
@@ -11688,6 +13217,34 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutSupportTicketsInput, UserUncheckedCreateWithoutSupportTicketsInput>
   }
 
+  export type SupportTicketAttachmentCreateWithoutTicketInput = {
+    id?: string
+    filename: string
+    contentType: string
+    fileSize: number
+    fileData: Buffer
+    createdAt?: Date | string
+  }
+
+  export type SupportTicketAttachmentUncheckedCreateWithoutTicketInput = {
+    id?: string
+    filename: string
+    contentType: string
+    fileSize: number
+    fileData: Buffer
+    createdAt?: Date | string
+  }
+
+  export type SupportTicketAttachmentCreateOrConnectWithoutTicketInput = {
+    where: SupportTicketAttachmentWhereUniqueInput
+    create: XOR<SupportTicketAttachmentCreateWithoutTicketInput, SupportTicketAttachmentUncheckedCreateWithoutTicketInput>
+  }
+
+  export type SupportTicketAttachmentCreateManyTicketInputEnvelope = {
+    data: SupportTicketAttachmentCreateManyTicketInput | SupportTicketAttachmentCreateManyTicketInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutSupportTicketsInput = {
     update: XOR<UserUpdateWithoutSupportTicketsInput, UserUncheckedUpdateWithoutSupportTicketsInput>
     create: XOR<UserCreateWithoutSupportTicketsInput, UserUncheckedCreateWithoutSupportTicketsInput>
@@ -11723,6 +13280,107 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutOwnerNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     systemLogs?: SystemLogUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type SupportTicketAttachmentUpsertWithWhereUniqueWithoutTicketInput = {
+    where: SupportTicketAttachmentWhereUniqueInput
+    update: XOR<SupportTicketAttachmentUpdateWithoutTicketInput, SupportTicketAttachmentUncheckedUpdateWithoutTicketInput>
+    create: XOR<SupportTicketAttachmentCreateWithoutTicketInput, SupportTicketAttachmentUncheckedCreateWithoutTicketInput>
+  }
+
+  export type SupportTicketAttachmentUpdateWithWhereUniqueWithoutTicketInput = {
+    where: SupportTicketAttachmentWhereUniqueInput
+    data: XOR<SupportTicketAttachmentUpdateWithoutTicketInput, SupportTicketAttachmentUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type SupportTicketAttachmentUpdateManyWithWhereWithoutTicketInput = {
+    where: SupportTicketAttachmentScalarWhereInput
+    data: XOR<SupportTicketAttachmentUpdateManyMutationInput, SupportTicketAttachmentUncheckedUpdateManyWithoutTicketInput>
+  }
+
+  export type SupportTicketAttachmentScalarWhereInput = {
+    AND?: SupportTicketAttachmentScalarWhereInput | SupportTicketAttachmentScalarWhereInput[]
+    OR?: SupportTicketAttachmentScalarWhereInput[]
+    NOT?: SupportTicketAttachmentScalarWhereInput | SupportTicketAttachmentScalarWhereInput[]
+    id?: StringFilter<"SupportTicketAttachment"> | string
+    filename?: StringFilter<"SupportTicketAttachment"> | string
+    contentType?: StringFilter<"SupportTicketAttachment"> | string
+    fileSize?: IntFilter<"SupportTicketAttachment"> | number
+    fileData?: BytesFilter<"SupportTicketAttachment"> | Buffer
+    ticketId?: StringFilter<"SupportTicketAttachment"> | string
+    createdAt?: DateTimeFilter<"SupportTicketAttachment"> | Date | string
+  }
+
+  export type SupportTicketCreateWithoutAttachments2Input = {
+    id?: string
+    subject: string
+    message: string
+    status?: $Enums.TicketStatus
+    priority?: $Enums.TicketPriority
+    attachments?: SupportTicketCreateattachmentsInput | string[]
+    adminNotes?: string | null
+    resolvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutSupportTicketsInput
+  }
+
+  export type SupportTicketUncheckedCreateWithoutAttachments2Input = {
+    id?: string
+    subject: string
+    message: string
+    status?: $Enums.TicketStatus
+    priority?: $Enums.TicketPriority
+    userId: string
+    attachments?: SupportTicketCreateattachmentsInput | string[]
+    adminNotes?: string | null
+    resolvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SupportTicketCreateOrConnectWithoutAttachments2Input = {
+    where: SupportTicketWhereUniqueInput
+    create: XOR<SupportTicketCreateWithoutAttachments2Input, SupportTicketUncheckedCreateWithoutAttachments2Input>
+  }
+
+  export type SupportTicketUpsertWithoutAttachments2Input = {
+    update: XOR<SupportTicketUpdateWithoutAttachments2Input, SupportTicketUncheckedUpdateWithoutAttachments2Input>
+    create: XOR<SupportTicketCreateWithoutAttachments2Input, SupportTicketUncheckedCreateWithoutAttachments2Input>
+    where?: SupportTicketWhereInput
+  }
+
+  export type SupportTicketUpdateToOneWithWhereWithoutAttachments2Input = {
+    where?: SupportTicketWhereInput
+    data: XOR<SupportTicketUpdateWithoutAttachments2Input, SupportTicketUncheckedUpdateWithoutAttachments2Input>
+  }
+
+  export type SupportTicketUpdateWithoutAttachments2Input = {
+    id?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
+    priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
+    attachments?: SupportTicketUpdateattachmentsInput | string[]
+    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSupportTicketsNestedInput
+  }
+
+  export type SupportTicketUncheckedUpdateWithoutAttachments2Input = {
+    id?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
+    priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
+    userId?: StringFieldUpdateOperationsInput | string
+    attachments?: SupportTicketUpdateattachmentsInput | string[]
+    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DeviceCreateWithoutSystemLogsInput = {
@@ -12023,6 +13681,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attachments2?: SupportTicketAttachmentUpdateManyWithoutTicketNestedInput
   }
 
   export type SupportTicketUncheckedUpdateWithoutUserInput = {
@@ -12036,6 +13695,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attachments2?: SupportTicketAttachmentUncheckedUpdateManyWithoutTicketNestedInput
   }
 
   export type SupportTicketUncheckedUpdateManyWithoutUserInput = {
@@ -12151,6 +13811,42 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type SupportTicketAttachmentCreateManyTicketInput = {
+    id?: string
+    filename: string
+    contentType: string
+    fileSize: number
+    fileData: Buffer
+    createdAt?: Date | string
+  }
+
+  export type SupportTicketAttachmentUpdateWithoutTicketInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    contentType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    fileData?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SupportTicketAttachmentUncheckedUpdateWithoutTicketInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    contentType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    fileData?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SupportTicketAttachmentUncheckedUpdateManyWithoutTicketInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    contentType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    fileData?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
 
 
   /**
@@ -12164,6 +13860,10 @@ export namespace Prisma {
      * @deprecated Use DeviceCountOutputTypeDefaultArgs instead
      */
     export type DeviceCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DeviceCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use SupportTicketCountOutputTypeDefaultArgs instead
+     */
+    export type SupportTicketCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SupportTicketCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use UserDefaultArgs instead
      */
@@ -12188,6 +13888,10 @@ export namespace Prisma {
      * @deprecated Use SupportTicketDefaultArgs instead
      */
     export type SupportTicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SupportTicketDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use SupportTicketAttachmentDefaultArgs instead
+     */
+    export type SupportTicketAttachmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SupportTicketAttachmentDefaultArgs<ExtArgs>
     /**
      * @deprecated Use SystemLogDefaultArgs instead
      */

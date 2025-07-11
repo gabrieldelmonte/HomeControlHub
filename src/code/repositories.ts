@@ -7,7 +7,7 @@
 */
 
 import { Database, Logger } from './infrastructure';
-import { Device, User, SupportTicket, CreateSupportTicketData, UpdateSupportTicketData } from './entities';
+import { Device, User, SupportTicket, CreateSupportTicketData, UpdateSupportTicketData, SupportTicketAttachment } from './entities';
 import { UserRole_ENUM } from './enums';
 import { Prisma } from '../db/prisma/generated/prisma-client';
 
@@ -664,6 +664,25 @@ export class SupportTicketRepository {
                     attachments: data.attachments || [],
                 },
             });
+
+            // Handle file attachments if provided
+            if (data.fileAttachments && data.fileAttachments.length > 0) {
+                const attachmentPromises = data.fileAttachments.map(async (file) => {
+                    const buffer = Buffer.from(await file.arrayBuffer());
+                    return this.db.supportTicketAttachment.create({
+                        data: {
+                            filename: file.name,
+                            contentType: file.type,
+                            fileSize: file.size,
+                            fileData: buffer,
+                            ticketId: ticket.id,
+                        },
+                    });
+                });
+
+                await Promise.all(attachmentPromises);
+            }
+
             return ticket as SupportTicket;
         } catch (error) {
             this.logger.logError(`Error creating support ticket: ${error}`);
@@ -682,7 +701,8 @@ export class SupportTicketRepository {
                             username: true,
                             email: true,
                         }
-                    }
+                    },
+                    attachments2: true
                 }
             });
             return ticket as SupportTicket;
@@ -696,6 +716,9 @@ export class SupportTicketRepository {
         try {
             const tickets = await this.db.supportTicket.findMany({
                 where: { userId },
+                include: {
+                    attachments2: true
+                },
                 orderBy: { createdAt: 'desc' },
             });
             return tickets as SupportTicket[];
@@ -715,7 +738,8 @@ export class SupportTicketRepository {
                             username: true,
                             email: true,
                         }
-                    }
+                    },
+                    attachments2: true
                 },
                 orderBy: { createdAt: 'desc' },
             });
@@ -765,7 +789,8 @@ export class SupportTicketRepository {
                             username: true,
                             email: true,
                         }
-                    }
+                    },
+                    attachments2: true
                 },
                 orderBy: { createdAt: 'desc' },
             });
@@ -788,6 +813,18 @@ export class SupportTicketRepository {
         } catch (error) {
             this.logger.logError(`Error getting ticket stats: ${error}`);
             return { open: 0, inProgress: 0, resolved: 0, closed: 0 };
+        }
+    }
+
+    async getAttachment(attachmentId: string): Promise<SupportTicketAttachment | null> {
+        try {
+            const attachment = await this.db.supportTicketAttachment.findUnique({
+                where: { id: attachmentId }
+            });
+            return attachment as SupportTicketAttachment;
+        } catch (error) {
+            this.logger.logError(`Error getting attachment: ${error}`);
+            return null;
         }
     }
 }

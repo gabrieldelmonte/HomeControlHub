@@ -100,6 +100,8 @@ const Support: React.FC = () => {
   const [newStatus, setNewStatus] = useState<string>("");
   const [adminNotes, setAdminNotes] = useState<string>("");
   const [updatingTicket, setUpdatingTicket] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [showFileViewer, setShowFileViewer] = useState(false);
   const navigate = useNavigate();
 
   // Fetch user info and tickets on component mount
@@ -216,11 +218,23 @@ const Support: React.FC = () => {
         return;
       }
 
+      // Process file attachments
+      const attachmentNames: string[] = [];
+      if (files && files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          // In a real implementation, you would upload the file to a server
+          // For now, we'll just store the filename and size
+          const fileInfo = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+          attachmentNames.push(fileInfo);
+        }
+      }
+
       const ticketData = {
         subject: finalSubject,
         message: message.trim(),
         priority,
-        attachments: files ? Array.from(files).map(file => file.name) : [],
+        attachments: attachmentNames,
       };
 
       const response = await fetch("http://localhost:8080/api/v1/support/tickets", {
@@ -535,6 +549,59 @@ const Support: React.FC = () => {
                   </TicketMeta>
                   <TicketMessage>{ticket.message}</TicketMessage>
                   
+                  {/* File Attachments */}
+                  {ticket.attachments && ticket.attachments.length > 0 && (
+                    <div style={{ 
+                      marginTop: '0.5rem', 
+                      padding: '0.5rem', 
+                      background: '#f8f9fa', 
+                      borderRadius: '4px',
+                      fontSize: '0.9rem'
+                    }}>
+                      <strong>Attachments ({ticket.attachments.length}):</strong>
+                      <div style={{ 
+                        display: 'flex', 
+                        flexWrap: 'wrap', 
+                        gap: '0.5rem', 
+                        marginTop: '0.25rem' 
+                      }}>
+                        {ticket.attachments.map((attachment, index) => (
+                          <span
+                            key={index}
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              background: '#e3f2fd',
+                              borderRadius: '12px',
+                              fontSize: '0.8rem',
+                              color: '#1976d2',
+                              border: '1px solid #bbdefb',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              transition: 'all 0.2s'
+                            }}
+                            onClick={() => {
+                              setSelectedFile(attachment);
+                              setShowFileViewer(true);
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#bbdefb';
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = '#e3f2fd';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                            title="Click to view file details"
+                          >
+                            📎 {attachment}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Admin Notes */}
                   {ticket.adminNotes && (
                     <div style={{ 
@@ -630,6 +697,143 @@ const Support: React.FC = () => {
           )}
         </TicketPanel>
       </MainContent>
+
+      {/* File Viewer Modal */}
+      {showFileViewer && selectedFile && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '8px',
+            maxWidth: '500px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '1rem',
+              borderBottom: '1px solid #e0e0e0',
+              paddingBottom: '1rem'
+            }}>
+              <h3 style={{ margin: 0, color: '#333' }}>File Details</h3>
+              <button
+                onClick={() => {
+                  setShowFileViewer(false);
+                  setSelectedFile(null);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                marginBottom: '0.5rem'
+              }}>
+                <span style={{ fontWeight: 'bold', color: '#333' }}>File Information</span>
+              </div>
+              
+              <div style={{ 
+                background: '#f8f9fa', 
+                padding: '1rem', 
+                borderRadius: '6px',
+                marginBottom: '1rem'
+              }}>
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <strong>Filename:</strong> {selectedFile.split(' (')[0]}
+                </div>
+                {selectedFile.includes('(') && (
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <strong>Size:</strong> {selectedFile.split('(')[1].split(')')[0]}
+                  </div>
+                )}
+                <div>
+                  <strong>Type:</strong> {selectedFile.split('.').pop()?.toUpperCase() || 'Unknown'}
+                </div>
+              </div>
+              
+              <div style={{ 
+                background: '#e3f2fd', 
+                padding: '1rem', 
+                borderRadius: '6px',
+                border: '1px solid #bbdefb'
+              }}>
+                <div style={{ 
+                  color: '#1976d2', 
+                  fontSize: '0.9rem',
+                  lineHeight: '1.4'
+                }}>
+                  <strong>Note:</strong> In a production environment, this would display the actual file content or provide a download link. 
+                  Currently showing file metadata only.
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ 
+              display: 'flex', 
+              gap: '1rem', 
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={() => {
+                  setShowFileViewer(false);
+                  setSelectedFile(null);
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  border: '1px solid #dc3545',
+                  borderRadius: '4px',
+                  background: 'white',
+                  color: '#dc3545',
+                  cursor: 'pointer'
+                }}
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  // In a real implementation, this would download the file
+                  alert('Download functionality would be implemented here in a production environment.');
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#28a745',
+                  color: 'white',
+                  cursor: 'pointer'
+                }}
+              >
+                Download File
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Container>
   );
 };

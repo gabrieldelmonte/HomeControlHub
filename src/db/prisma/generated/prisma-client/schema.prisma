@@ -108,21 +108,36 @@ model Notification {
 }
 
 model SupportTicket {
-  id          String         @id @default(uuid())
-  subject     String
-  message     String
-  status      TicketStatus   @default(OPEN)
-  priority    TicketPriority @default(MEDIUM)
-  userId      String
-  user        User           @relation(fields: [userId], references: [id])
-  attachments String[]       @default([]) // Array of file paths/names
-  adminNotes  String? // Notes from admin/support team
-  resolvedAt  DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id           String                    @id @default(uuid())
+  subject      String
+  message      String
+  status       TicketStatus              @default(OPEN)
+  priority     TicketPriority            @default(MEDIUM)
+  userId       String
+  user         User                      @relation(fields: [userId], references: [id])
+  attachments  String[]                  @default([]) // Array of file paths/names (legacy)
+  attachments2 SupportTicketAttachment[] // New binary file attachments
+  adminNotes   String? // Notes from admin/support team
+  resolvedAt   DateTime?
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
 
   @@index([userId, status])
   @@index([status, priority])
+  @@index([createdAt])
+}
+
+model SupportTicketAttachment {
+  id          String        @id @default(uuid())
+  filename    String // Original filename
+  contentType String // MIME type (e.g., "image/jpeg", "application/pdf")
+  fileSize    Int // File size in bytes
+  fileData    Bytes // Actual file binary data
+  ticketId    String
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+
+  @@index([ticketId])
   @@index([createdAt])
 }
 

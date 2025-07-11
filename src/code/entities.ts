@@ -305,10 +305,21 @@ export interface SupportTicket {
     priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
     userId: string;
     attachments: string[];
+    attachments2?: SupportTicketAttachment[];
     adminNotes?: string;
     resolvedAt?: Date;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface SupportTicketAttachment {
+    id: string;
+    filename: string;
+    contentType: string;
+    fileSize: number;
+    fileData: Buffer;
+    ticketId: string;
+    createdAt: Date;
 }
 
 export interface CreateSupportTicketData {
@@ -316,6 +327,7 @@ export interface CreateSupportTicketData {
     message: string;
     priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
     attachments?: string[];
+    fileAttachments?: File[];
 }
 
 export interface UpdateSupportTicketData {
