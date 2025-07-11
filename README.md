@@ -1,4 +1,4 @@
-# HomeControlHub 🏠🎛️
+# HomeControlHub 🏠
 
 A comprehensive IoT home automation platform that enables centralized control and monitoring of smart devices through a modern web interface, robust backend API, and MQTT communication protocol.
 
@@ -18,6 +18,9 @@ HomeControlHub is a full-stack home automation solution designed to provide seam
 - 🐳 **Docker Support** - Complete containerized deployment with Docker Compose
 - 📋 **API Documentation** - Comprehensive Swagger/OpenAPI documentation
 - 🔧 **ESP32 Integration** - Ready-to-use Arduino code for ESP32 devices
+- 📂 **Support Ticket Attachments** - Upload and download files with support tickets (binary storage in DB)
+- 🧑‍💼 **Admin & Role-based UI** - Admins can view/manage all tickets, users have device-limited access
+- 🕹️ **MQTT Terminal & Command History** - Send/view device commands, persistent per-device history
 
 ## 🏗️ Project Structure
 
@@ -40,11 +43,11 @@ HomeControlHub/
 │   ├── ui/                     # Frontend React application
 │   │   └── src/components/     # React components
 │   └── tests/                  # Test scripts and utilities
-├── iotdevice/                  # ESP32/Arduino device code
-│   ├── main/                   # ESP32 main application
-│   ├── esp_mqtt_subscriber.ino # Arduino IDE compatible code
-│   └── ESP32_MQTT_README.md    # Device setup documentation
-└── docs/                       # Project documentation
+└── iotdevice/                  # ESP32/Arduino device code
+    ├── main/                   # ESP32 main application
+    ├── esp_mqtt_subscriber.ino # Arduino IDE compatible code
+    ├── ESP32_SETUP_GUIDE.md    # Device setup documentation
+    └── test-esp32-mqtt.sh      # ESP32 MQTT integration test script
 ```
 
 ## 🚀 Quick Start
@@ -80,7 +83,7 @@ DATABASE_URL="postgresql://homecontrolhub:password@localhost:5432/homecontrolhub
 JWT_SECRET="your-super-secret-jwt-key-here"
 
 # MQTT Configuration
-MQTT_BROKER_URL="mqtt://localhost:1883"
+MQTT_BROKER_URL="mqtt://mosquitto_broker:1884"  # Use service name if using Docker Compose
 MQTT_USERNAME=""
 MQTT_PASSWORD=""
 
@@ -99,7 +102,7 @@ docker-compose up -d
 
 This will start:
 - **PostgreSQL Database** (port 5432)
-- **Mosquitto MQTT Broker** (port 1883)
+- **Mosquitto MQTT Broker** (port 1884)
 - **Backend API Server** (port 8080)
 - **Frontend Web Interface** (port 9877)
 - **Swagger Documentation** (port 3000)
@@ -115,6 +118,7 @@ This will start:
 1. Register a new user account through the web interface
 2. Create your first device in the dashboard
 3. Set up automation rules as needed
+4. (Optional) Test ESP32 integration with the provided test script
 
 ## 🎯 Backend Architecture
 
@@ -131,18 +135,28 @@ This will start:
 - Automatic topic subscription management
 - Real-time message handling
 - Device status monitoring and heartbeat detection
+- **MQTT command publishing from UI and automation**
+- **WebSocket support for real-time updates (optional)**
 
 #### 🤖 Automation Service
 - Rule-based automation engine
 - Trigger condition evaluation
 - Command execution and scheduling
 - Event-driven device interactions
+- **Automation rules can trigger MQTT commands**
 
 #### 🔧 Device Service
 - Device lifecycle management
 - Status monitoring and control
 - Command queuing and execution
 - Telemetry data collection
+- **Device deletion also cleans up MQTT topics, automations, and logs**
+
+#### 📨 Support Ticket Service
+- Create/view support tickets
+- **Upload and download file attachments (binary in DB)**
+- Admins can view/manage all tickets, users see their own
+- Ticket status management (open, in progress, resolved, closed)
 
 ### API Endpoints
 
@@ -160,6 +174,7 @@ POST   /api/v1/devices     # Create new device
 GET    /api/v1/devices/:id # Get device details
 PUT    /api/v1/devices/:id # Update device
 DELETE /api/v1/devices/:id # Remove device
+PUT    /api/v1/devices/:id/status # Toggle device status (and send MQTT command)
 ```
 
 #### Automation
@@ -168,14 +183,23 @@ GET    /api/v1/automation/rules                # List automation rules
 POST   /api/v1/automation/rules                # Create automation rule
 PUT    /api/v1/automation/rules/:id            # Update rule
 DELETE /api/v1/automation/rules/:id            # Delete rule
-POST   /api/v1/automation/devices/:id/commands # Send device command
+POST   /api/v1/automation/devices/:id/commands # Send device command (MQTT)
 ```
 
 #### User Management
 ```
 GET    /api/v1/users/profile # Get user profile
 PUT    /api/v1/users/profile # Update profile
+DELETE /api/v1/users/profile # Delete user and all devices
 GET    /api/v1/users/devices # Get user's devices
+```
+
+#### Support Tickets
+```
+GET    /api/v1/support/tickets                # List tickets
+POST   /api/v1/support/tickets                # Create ticket (with file upload)
+GET    /api/v1/support/attachments/:id/download # Download attachment
+PUT    /api/v1/support/tickets/:id/status     # Update ticket status (admin)
 ```
 
 ### Database Schema
@@ -188,6 +212,7 @@ The application uses PostgreSQL with Prisma ORM for data management:
 - **AutomationRules**: Automation logic and triggers
 - **Notifications**: User alerts and system messages
 - **SystemLogs**: Audit trail and debugging information
+- **SupportTickets**: User support requests (with file attachments)
 
 ## 🎨 Frontend Architecture
 
@@ -203,27 +228,37 @@ The application uses PostgreSQL with Prisma ORM for data management:
 
 #### 🏠 Dashboard
 - Device overview and status monitoring
-- Quick device controls
+- Quick device controls (toggle ON/OFF sends MQTT command)
 - System status indicators
 - Recent activity feed
+- **Command history persists per device**
 
 #### 🔧 Device Management
 - Add/edit/remove devices
 - Device configuration and settings
 - Real-time status updates
-- Command execution interface
+- Command execution interface (MQTT terminal)
+- **MQTT terminal with persistent command/response history**
+- **Admin view is read-only**
 
 #### 🤖 Automation Rules
 - Visual rule builder
 - Trigger condition setup
 - Action configuration
 - Rule testing and validation
+- **Automation rules can send MQTT commands**
 
 #### 👤 User Profile
 - Account settings and preferences
 - Security settings
 - Device access permissions
 - Usage statistics
+- **Account deletion with double confirmation and cascading device cleanup**
+
+#### 🆘 Support
+- Create/view support tickets
+- **Upload and download file attachments**
+- Admins can view/manage all tickets, change status
 
 ### Key Features
 
@@ -232,6 +267,8 @@ The application uses PostgreSQL with Prisma ORM for data management:
 - **Intuitive Controls** - Easy device management and automation setup
 - **Secure Access** - JWT-based authentication throughout
 - **Modern UI** - Clean, professional design with dark/light theme support
+- **Persistent Command History** - MQTT terminal history is saved per device
+- **Role-based UI** - Admins have global view, users see their own data
 
 ### Building and Development
 
@@ -263,7 +300,8 @@ topicmqtt/{device-id}/ # Base device topic
 ├── telemetry          # Sensor data and metrics
 ├── heartbeat          # Connectivity monitoring
 ├── response           # Command acknowledgments
-└── error              # Error reporting
+├── error              # Error reporting
+└── command/{command}  # Commands sent to device (e.g., turn_on, turn_off)
 ```
 
 ### Message Flow
@@ -288,10 +326,7 @@ topicmqtt/{device-id}/ # Base device topic
   "command": "turn_on",
   "deviceId": "esp32_device_01",
   "timestamp": "2024-01-01T12:00:00Z",
-  "payload": {
-    "brightness": 80,
-    "duration": 3600
-  }
+  "payload": {}
 }
 ```
 
@@ -305,6 +340,17 @@ topicmqtt/{device-id}/ # Base device topic
 }
 ```
 
+#### 4. Command Responses (Device → Hub)
+```json
+{
+  "deviceId": "esp32_device_01",
+  "response": "Turning ON...",
+  "success": true,
+  "timestamp": 15234,
+  "currentState": "ON"
+}
+```
+
 ### Security Features
 
 - **AES-256-GCM Encryption** - All device messages are encrypted
@@ -314,7 +360,7 @@ topicmqtt/{device-id}/ # Base device topic
 
 ## 🔧 ESP32 Device Integration
 
-The project includes complete ESP32 integration support with ready-to-use Arduino code.
+The project includes complete ESP32 integration support with ready-to-use Arduino code and a detailed setup guide.
 
 ### Supported Features
 
@@ -324,6 +370,15 @@ The project includes complete ESP32 integration support with ready-to-use Arduin
 - ✅ **Status Reporting** - Periodic status updates and telemetry
 - ✅ **Error Handling** - Robust error handling and recovery
 - ✅ **LED Control** - Built-in LED control for testing
+
+### Topic Structure for ESP32
+
+- **Commands:** `topicmqtt/{device-id}/command/{command}` (e.g., `topicmqtt/testdevice/command/turn_on`)
+- **Status:**   `topicmqtt/{device-id}/status`
+- **Response:** `topicmqtt/{device-id}/response`
+- **Heartbeat:**`topicmqtt/{device-id}/heartbeat`
+- **Telemetry:**`topicmqtt/{device-id}/telemetry`
+- **Error:**    `topicmqtt/{device-id}/error`
 
 ### Quick ESP32 Setup
 
@@ -347,12 +402,15 @@ The project includes complete ESP32 integration support with ready-to-use Arduin
    const char* password = "YOUR_WIFI_PASSWORD";
    const char* mqtt_server = "192.168.1.100";  // Your hub IP
    const char* device_id = "testdevice";
+   const char* base_topic = "topicmqtt/testdevice";
+   // ...
    ```
 
 4. **Upload and Test**
    - Upload the code to your ESP32
    - Monitor Serial output for connection status
    - Test commands through the web interface
+   - Use `iotdevice/test-esp32-mqtt.sh` for automated testing
 
 ### Supported Commands
 
@@ -386,7 +444,7 @@ This script provides:
 - Interactive command interface
 - Real-time topic monitoring
 
-For detailed ESP32 setup instructions, see: [`iotdevice/ESP32_MQTT_README.md`](iotdevice/ESP32_MQTT_README.md)
+For detailed ESP32 setup instructions, see: [`iotdevice/ESP32_SETUP_GUIDE.md`](iotdevice/ESP32_SETUP_GUIDE.md)
 
 ## 🛠️ Development
 
@@ -462,6 +520,7 @@ The application provides comprehensive logging:
 - **MQTT Communication** - Message flows, connection status
 - **Automation Execution** - Rule triggers and actions
 - **Error Tracking** - System errors and exceptions
+- **Support Ticket Activity** - Ticket creation, status changes, file uploads/downloads
 
 ### Health Monitoring
 - **Device Connectivity** - Real-time online/offline status
